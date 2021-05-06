@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@amis-sdk/*": ["./packages/*/src"]
+    },
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "isolatedModules": true,
+    "jsx": "react-native",
+    "lib": ["esnext", "dom"],
+    "moduleResolution": "node",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "exclude": [
+    "coverage",
+    "dist/**",
+    "node_modules",
+    "**/__tests__",
+    "**/__mocks__",
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@amis-sdk/browser",
+  "version": "0.1.11",
+  "description": "",
+  "license": "Unlicense",
+  "source": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "yarn build"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@amis-sdk/core": "*"
+  },
+  "devDependencies": {
+    "@amis-sdk/core": "*",
+    "@types/react": "^16.9.35",
+    "typescript": "^3.6.4"
+  }
+}

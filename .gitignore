@@ -1,0 +1,16 @@
+node_modules/**/*
+
+# macOS
+.DS_Store
+
+# cache
+.eslintcache
+
+.expo/*
+
+releases
+dist
+build
+
+# testing
+junit.xml
