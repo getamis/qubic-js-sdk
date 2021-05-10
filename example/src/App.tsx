@@ -298,6 +298,22 @@ const App = React.memo(() => {
     });
   }, [activate]);
 
+  const handleEstimateGas = useCallback(() => {
+    web3?.eth.estimateGas(
+      {
+        from: '0x6c8d905b6480D32fF2E7A46B3325a6dE912a553b',
+        to: '0xd46e8dd67c5d32be8058bb8eb970870f07244567',
+        gas: '0x76c0',
+        gasPrice: '0x9184e72a000',
+        value: '0x9184e72a',
+        data: '0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675',
+      },
+      (error, gas) => {
+        console.log(`gas=${gas}`);
+      },
+    );
+  }, [Boolean(web3)]);
+
   const handleEstimateCosts = useCallback(async () => {
     const amis = qubicConnector.getClient();
     const result = await amis?.estimateCosts();
@@ -480,6 +496,7 @@ const App = React.memo(() => {
       </View>
       <View style={styles.group}>
         <Text style={styles.title}>2. 估算 Gas Price (顯示在 console 中)</Text>
+        <Button onPress={handleEstimateGas}>Estimate Gas</Button>
         <Button onPress={handleEstimateCosts}>Estimate Costs</Button>
       </View>
       <View style={styles.group}>
