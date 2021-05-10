@@ -2,14 +2,12 @@
   "workspaces": {
     "packages": [
       "packages/**",
-      "example",
-      "wallet"
+      "example"
     ]
   },
   "name": "amis-sdk",
   "scripts": {
     "example": "yarn --cwd ./example web",
-    "postinstall": "patch-package",
     "build": "lerna run build",
     "prerelease": "lerna run clean",
     "release": "lerna publish",
@@ -74,7 +72,6 @@
     "jest-junit": "^11.1.0",
     "lerna": "^3.22.1",
     "lint-staged": "^10.2.11",
-    "patch-package": "^6.2.2",
     "prettier": "^2.0.5",
     "typescript": "~3.9.5"
   },
