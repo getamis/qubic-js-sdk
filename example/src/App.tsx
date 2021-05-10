@@ -7,7 +7,7 @@ import Web3Utils, { AbiItem } from 'web3-utils';
 import { TransactionReceipt } from 'web3-core';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 
-import { QubicConnector } from '@qubic-js-sdk/react';
+import { QubicConnector } from '@qubic-js/react';
 
 const erc20Abi = [
   {
@@ -414,52 +414,6 @@ const App = React.memo(() => {
       });
   }, [account, web3]);
 
-  const productPrice = '0.001'; // ETH
-
-  const handleFiatSend = useCallback(async () => {
-    const tx = {
-      from: account || '',
-      // to: '0x702f271affa40d8f5526bff19f0596f52b42b044', // Lootex
-      to: '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c',
-      // optional if you want to specify the gas limit
-      gas: 60000,
-      // optional if you are invoking say a payable function
-      value: '0',
-      // call fallback
-      data: '0xdeadbeef',
-      // payment
-      payment: {
-        product: {
-          description: 'SANDBOX LAND(110,-167)\nXXXXXXXXXXXXXXXXXXX',
-          price: productPrice,
-          currency: 'ETH',
-        },
-        billing: {
-          method: 'creditCard',
-          currency: 'TWD',
-        },
-      },
-    };
-
-    web3?.eth
-      .sendTransaction(tx, (error, hash) => {
-        if (error) console.error(error);
-        else console.log('tx hash:', hash);
-      })
-      .once('transactionHash', hash => {
-        console.log('transactionHash:', hash);
-      })
-      .once('confirmation', (confirmationNumber, receipt) => {
-        console.log('confirmation:', confirmationNumber, receipt);
-      })
-      .on('error', error => {
-        console.error(error);
-      })
-      .then(receipt => {
-        console.log('receipt:', receipt);
-      });
-  }, [account, Boolean(web3)]);
-
   const handleSignSign = useCallback(
     async (signer: (data: string) => Promise<string>) => {
       const data = '0xc9b8e1f1df93f7535e849d70806b546555549da9a6c2ae38ba674bf2db1a5817';
@@ -509,11 +463,7 @@ const App = React.memo(() => {
         <Button onPress={handleSendERC20}>Send Test ERC-20 Token</Button>
       </View>
       <View style={styles.group}>
-        <Text style={styles.title}>5. 透過信用卡購買 NFT</Text>
-        <Button onPress={handleFiatSend}>{`Buy something ${productPrice} ETH with TWD`}</Button>
-      </View>
-      <View style={styles.group}>
-        <Text style={styles.title}>6. 簽名</Text>
+        <Text style={styles.title}>5. 簽名</Text>
         <Button onPress={handlePersonalSign}>personal_sign</Button>
         <Button onPress={handleEthSignTypedData}>eth_signTypedData</Button>
       </View>
