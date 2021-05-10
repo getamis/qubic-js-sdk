@@ -5,7 +5,7 @@
       "example"
     ]
   },
-  "name": "amis-sdk",
+  "name": "qubic-js-sdk",
   "scripts": {
     "example": "yarn --cwd ./example web",
     "build": "lerna run build",

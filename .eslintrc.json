@@ -21,7 +21,7 @@
         "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
     },
-    "import/core-modules": ["@amis-sdk/core", "@amis-sdk/browser"]
+    "import/core-modules": ["@qubic-js/core", "@qubic-js/browser"]
   },
   "rules": {
     "@typescript-eslint/ban-ts-comment": "off",

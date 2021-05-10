@@ -7,7 +7,7 @@ import Web3Utils, { AbiItem } from 'web3-utils';
 import { TransactionReceipt } from 'web3-core';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 
-import { QubicConnector } from '@amis-sdk/react';
+import { QubicConnector } from '@qubic-js-sdk/react';
 
 const erc20Abi = [
   {

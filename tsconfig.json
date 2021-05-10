@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@amis-sdk/*": ["./packages/*/src"]
+      "@qubic-js/*": ["./packages/*/src"]
     },
     "allowJs": true,
     "allowSyntheticDefaultImports": true,

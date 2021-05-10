@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "example",
-    "slug": "amis-sdk-example",
+    "slug": "qubic-js-example",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

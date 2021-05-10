@@ -1,5 +1,5 @@
 {
-  "name": "@amis-sdk/browser",
+  "name": "@qubic-js/browser",
   "version": "0.1.11",
   "description": "",
   "license": "Unlicense",
@@ -15,10 +15,10 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@amis-sdk/core": "*"
+    "@qubic-js/core": "*"
   },
   "devDependencies": {
-    "@amis-sdk/core": "*",
+    "@qubic-js/core": "*",
     "@types/react": "^16.9.35",
     "typescript": "^3.6.4"
   }

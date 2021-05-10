@@ -1,4 +1,4 @@
-import AMIS, { Payload } from '@amis-sdk/core';
+import AMIS, { Payload } from '@qubic-js/core';
 
 import { IFrame } from './ui';
 import { BrowserStore } from './store';

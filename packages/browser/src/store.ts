@@ -1,4 +1,4 @@
-import { Store, Address } from '@amis-sdk/core';
+import { Store, Address } from '@qubic-js/core';
 
 export class BrowserStore implements Store {
   private getItem = (key: string): string | null => {

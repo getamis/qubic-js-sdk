@@ -9,25 +9,19 @@ module.exports = config => {
 
   config.context = path.resolve(__dirname);
 
-  config.module.rules.push(
-    {
-      test: /\.(js|ts|tsx)$/,
-      include: /(packages|example)\/.+/,
-      exclude: /node_modules/,
-      use: 'babel-loader',
-    },
-    {
-      test: /\.wasm$/,
-      type: 'javascript/auto',
-    },
-  );
+  config.module.rules.push({
+    test: /\.(js|ts|tsx)$/,
+    include: /(packages|example)\/.+/,
+    exclude: /node_modules/,
+    use: 'babel-loader',
+  });
 
   config.resolve.plugins = config.resolve.plugins.filter(p => !(p instanceof ModuleScopePlugin));
 
   fs.readdirSync(packages)
     .filter(name => !name.startsWith('.'))
     .forEach(name => {
-      config.resolve.alias[`@amis-sdk/${name}`] = path.resolve(
+      config.resolve.alias[`@qubic-js/${name}`] = path.resolve(
         packages,
         name,
         // eslint-disable-next-line global-require, import/no-dynamic-require
