@@ -31,5 +31,9 @@
     "@types/node": "^12.11.5",
     "@types/web3-provider-engine": "^14.0.0",
     "typescript": "^3.6.4"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "e516056bfe62df67d2b18ad585110333fb63fc62"
 }
