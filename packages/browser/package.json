@@ -2,7 +2,7 @@
   "name": "@qubic-js/browser",
   "version": "0.1.12-alpha.0",
   "description": "",
-  "license": "Unlicense",
+  "license": "Apache License 2.0",
   "source": "./src/index.ts",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
