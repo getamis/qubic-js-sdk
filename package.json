@@ -11,12 +11,6 @@
     "build": "lerna run build",
     "prerelease": "lerna run clean",
     "release": "lerna publish",
-    "version:major": "lerna exec 'yarn version --no-git-tag-version --major'",
-    "version:minor": "lerna exec 'yarn version --no-git-tag-version --minor'",
-    "version:patch": "lerna exec 'yarn version --no-git-tag-version --patch'",
-    "prepack": "mkdir -p releases",
-    "pack": "lerna exec yarn pack",
-    "postpack": "lerna exec 'mv -f *.tgz ../../releases'",
     "test": "jest"
   },
   "engines": {
