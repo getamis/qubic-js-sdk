@@ -1,6 +1,6 @@
 # AMIS Wallet SDK
 
-![Node.js CI](https://github.com/getamis/amis-sdk/workflows/Node.js%20CI/badge.svg)
+![Node.js CI](https://github.com/getamis/qubic-js/workflows/Node.js%20CI/badge.svg)
 <br />
 
 # Installation
@@ -11,9 +11,9 @@
 {
   ...
   "dependencies": {
-    "@amis-sdk/core": "https://github.com/getamis/amis-sdk-releases/releases/download/v0.1.12/amis-sdk-core-v0.1.12.tgz",
-    "@amis-sdk/browser": "https://github.com/getamis/amis-sdk-releases/releases/download/v0.1.12/amis-sdk-browser-v0.1.12.tgz",
-    "@amis-sdk/react": "https://github.com/getamis/amis-sdk-releases/releases/download/v0.1.12/amis-sdk-react-v0.1.12.tgz",
+    "@qubic-js/core": "^0.1.12",
+    "@qubic-js/browser": "^0.1.12",
+    "@qubic-js/react": "^0.1.12",
   },
 }
 ```
@@ -24,7 +24,7 @@
 
 ```javascript
 import Web3 from 'web3';
-import AMIS from '@amis-sdk/browser';
+import AMIS from '@qubic-js/browser';
 
 const amis = new AMIS(API_KEY, API_SECRET, Network.RINKEBY);
 amis.setSpeed(Speed.FAST);
@@ -36,7 +36,7 @@ const web3 = new Web3(amis.getProvider());
 
 ```javascript
 import Web3 from 'web3';
-import { QubicConnector } from '@amis-sdk/react';
+import { QubicConnector } from '@qubic-js/react';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 
 const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID);
@@ -63,8 +63,8 @@ export default () => {
 ## Run Example
 
 ```
-$ git clone git@github.com:getamis/amis-sdk.git
-$ cd amis-sdk
+$ git clone git@github.com:getamis/qubic-js.git
+$ cd qubic-js
 $ yarn example
 ```
 
