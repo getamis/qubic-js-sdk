@@ -1,22 +1,25 @@
 import { gqlQuery } from './gql';
 import { CostData, AuthConfig } from '../types';
-import { Speed } from '../enums';
+import { Network, Speed } from '../enums';
 
 export const estimateCosts = async (cfg?: AuthConfig): Promise<CostData | null> => {
   const query = `
     query getGasPrice {
-      gasPrice {
-        blockNumber
-        blockHash
-        fastest
-        fast
-        average
+      ethChain(chainId: ${cfg?.network || Network.RINKEBY}) {
+        gasPrice {
+          blockNumber
+          blockHash
+          fastest
+          fast
+          average
+        }
       }
     }
   `;
 
   try {
-    const { gasPrice } = await gqlQuery(query, cfg);
+    const { ethChain } = await gqlQuery(query, cfg);
+    const { gasPrice } = ethChain || {};
     const { blockNumber, blockHash, fastest, fast, average } = gasPrice;
 
     return {
