@@ -6,7 +6,10 @@ import Web3 from 'web3';
 import Web3Utils, { AbiItem } from 'web3-utils';
 import { TransactionReceipt } from 'web3-core';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
-
+import { ExchangeContract } from '@0x/contract-wrappers';
+import { BigNumber } from '@0x/utils';
+import { Network, Speed } from '@qubic-js/core';
+import AMIS from '@qubic-js/browser';
 import { QubicConnector } from '@qubic-js/react';
 
 const erc20Abi = [
@@ -441,6 +444,51 @@ const App = React.memo(() => {
     });
   }, [web3, account, handleSignSign]);
 
+  const handleFillOrKillOrder = useCallback(async () => {
+    if (!address) {
+      throw Error('You need to sign in first');
+    }
+    // const exchangeAddress = '0x0000000000000000000000000000000000000000';
+    const exchangeAddress = '0x9f3a0c1a98fc9d9ca5fde7ca12ff4f8b8e755b3d';
+    const amis = new AMIS(API_KEY, API_SECRET, Network.RINKEBY);
+    amis.setSpeed(Speed.FAST);
+
+    const provider = amis.getProvider();
+    const exchangeContract = new ExchangeContract(exchangeAddress, provider as any);
+
+    const order = {
+      takerFee: new BigNumber('0'),
+      hash: '0x435b7ccbf403b83956ef30e6acaa171fd7bcb434009919b94374e20bf499139a',
+      makerAddress: '0xbcd715f63299979e2e0fc78e09d81438e51374f0',
+      makerAssetData:
+        '0x02571792000000000000000000000000365547bec2a767ddd7c53fe758e19d6507b930b00000000000000000000000000000000000000000000000000000000000000016',
+      makerAssetAmount: new BigNumber('1'),
+      makerFee: new BigNumber('0'),
+      takerAddress: address,
+      takerAssetData: '0xf47261b0000000000000000000000000c778417e063141139fce010982780140aa0cd5ab',
+      takerAssetAmount: new BigNumber('10000000000000000'),
+      senderAddress: '0x0000000000000000000000000000000000000000',
+      exchangeAddress: '0x9f3a0c1a98fc9d9ca5fde7ca12ff4f8b8e755b3d',
+      feeRecipientAddress: '0x0000000000000000000000000000000000000000',
+      expirationTimeSeconds: new BigNumber('1628497386'),
+      salt: new BigNumber('1620721386377'),
+      signature:
+        '0x1bce0fc2aa766aeb25ef4b47870ec70da36b0a08c0712957d7b70b56f0c6925b4d0c3da4628138d000d8294c07271fd9286dabd3434bb6e1880ae64f81c3894e3302',
+      endState: 'ADDED',
+      side: 'MAKER',
+      chainId: 4,
+    } as any;
+    const txHash = await exchangeContract.fillOrKillOrder.sendTransactionAsync(
+      order,
+      new BigNumber('0') as any,
+      order.signature,
+      {
+        from: address,
+      },
+    );
+    console.log({ txHash });
+  }, [address]);
+
   return (
     <View style={styles.container}>
       <View style={styles.group}>
@@ -466,6 +514,11 @@ const App = React.memo(() => {
         <Text style={styles.title}>5. 簽名</Text>
         <Button onPress={handlePersonalSign}>personal_sign</Button>
         <Button onPress={handleEthSign}>eth_sign</Button>
+      </View>
+
+      <View style={styles.group}>
+        <Text style={styles.title}>6. 0x</Text>
+        <Button onPress={handleFillOrKillOrder}>fillOrKillOrder</Button>
       </View>
 
       {/* eslint-disable-next-line react/style-prop-object */}

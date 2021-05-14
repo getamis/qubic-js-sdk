@@ -6,6 +6,8 @@
     "web": "expo start --web --https"
   },
   "dependencies": {
+    "@0x/contract-wrappers": "12",
+    "@0x/utils": "^6.4.3",
     "@qubic-js/browser": "*",
     "@qubic-js/core": "*",
     "@qubic-js/react": "*",
