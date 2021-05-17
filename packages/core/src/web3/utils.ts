@@ -1,5 +1,6 @@
 /* @ts-ignore */
 import InputDataDecoder from 'ethereum-input-data-decoder';
+import { AbstractProvider } from 'web3-core';
 import Web3Utils from 'web3-utils';
 import erc20 from '../abi/erc20';
 
@@ -93,3 +94,24 @@ export const tryExtractDescriptor = (
     };
   }
 };
+
+export function adaptEtherWeb3Provider(provider: AbstractProvider): AbstractProvider {
+  const originalSendAsync = provider.sendAsync;
+  provider.sendAsync = (request, callback: (error: any, result: any) => void) => {
+    return originalSendAsync.call(provider, request, (error, result) => {
+      callback(error, {
+        result,
+      });
+    });
+  };
+
+  const originalSend = provider.send;
+  provider.send = (request, callback: (error: any, response: any) => void) => {
+    return originalSend?.call(provider, request, (error, response) => {
+      callback(error, {
+        result: response,
+      });
+    });
+  };
+  return provider;
+}

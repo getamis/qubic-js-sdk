@@ -8,9 +8,10 @@ import { TransactionReceipt } from 'web3-core';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 import { ExchangeContract } from '@0x/contract-wrappers';
 import { BigNumber } from '@0x/utils';
-import { Network, Speed } from '@qubic-js/core';
+import { Network, Speed, adaptEtherWeb3Provider } from '@qubic-js/core';
 import AMIS from '@qubic-js/browser';
 import { QubicConnector } from '@qubic-js/react';
+import { Web3Provider as EthersWeb3Provider } from '@ethersproject/providers';
 
 const erc20Abi = [
   {
@@ -448,15 +449,20 @@ const App = React.memo(() => {
     if (!address) {
       throw Error('You need to sign in first');
     }
-    // const exchangeAddress = '0x0000000000000000000000000000000000000000';
-    const exchangeAddress = '0x9f3a0c1a98fc9d9ca5fde7ca12ff4f8b8e755b3d';
+
     const amis = new AMIS(API_KEY, API_SECRET, Network.RINKEBY);
     amis.setSpeed(Speed.FAST);
-
     const provider = amis.getProvider();
-    const exchangeContract = new ExchangeContract(exchangeAddress, provider as any);
 
-    const order = {
+    // fixed ethers web3 provider incompatible issue
+    const adaptedProvider = adaptEtherWeb3Provider(provider);
+    const web3Provider = new EthersWeb3Provider(adaptedProvider as any);
+
+    const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
+    const EXCHANGE_ADDRESS = '0x9f3a0c1a98fc9d9ca5fde7ca12ff4f8b8e755b3d';
+    const exchangeContract = new ExchangeContract(EXCHANGE_ADDRESS, web3Provider as any);
+
+    const signedOrder = {
       takerFee: new BigNumber('0'),
       hash: '0x435b7ccbf403b83956ef30e6acaa171fd7bcb434009919b94374e20bf499139a',
       makerAddress: '0xbcd715f63299979e2e0fc78e09d81438e51374f0',
@@ -464,12 +470,12 @@ const App = React.memo(() => {
         '0x02571792000000000000000000000000365547bec2a767ddd7c53fe758e19d6507b930b00000000000000000000000000000000000000000000000000000000000000016',
       makerAssetAmount: new BigNumber('1'),
       makerFee: new BigNumber('0'),
-      takerAddress: address,
+      takerAddress: NULL_ADDRESS,
       takerAssetData: '0xf47261b0000000000000000000000000c778417e063141139fce010982780140aa0cd5ab',
       takerAssetAmount: new BigNumber('10000000000000000'),
-      senderAddress: '0x0000000000000000000000000000000000000000',
-      exchangeAddress: '0x9f3a0c1a98fc9d9ca5fde7ca12ff4f8b8e755b3d',
-      feeRecipientAddress: '0x0000000000000000000000000000000000000000',
+      senderAddress: NULL_ADDRESS,
+      exchangeAddress: EXCHANGE_ADDRESS,
+      feeRecipientAddress: NULL_ADDRESS,
       expirationTimeSeconds: new BigNumber('1628497386'),
       salt: new BigNumber('1620721386377'),
       signature:
@@ -478,10 +484,11 @@ const App = React.memo(() => {
       side: 'MAKER',
       chainId: 4,
     } as any;
+
     const txHash = await exchangeContract.fillOrKillOrder.sendTransactionAsync(
-      order,
+      signedOrder,
       new BigNumber('0') as any,
-      order.signature,
+      signedOrder.signature,
       {
         from: address,
       },
@@ -517,7 +524,7 @@ const App = React.memo(() => {
       </View>
 
       <View style={styles.group}>
-        <Text style={styles.title}>6. 0x</Text>
+        <Text style={styles.title}>6. 0x and @ethersproject/providers </Text>
         <Button onPress={handleFillOrKillOrder}>fillOrKillOrder</Button>
       </View>
 
