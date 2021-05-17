@@ -8,7 +8,7 @@ import { TransactionReceipt } from 'web3-core';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 import { ExchangeContract } from '@0x/contract-wrappers';
 import { BigNumber } from '@0x/utils';
-import { Network, Speed, adaptEtherWeb3Provider } from '@qubic-js/core';
+import { Network, Speed, adaptEthersWeb3Provider } from '@qubic-js/core';
 import AMIS from '@qubic-js/browser';
 import { QubicConnector } from '@qubic-js/react';
 import { Web3Provider as EthersWeb3Provider } from '@ethersproject/providers';
@@ -455,7 +455,7 @@ const App = React.memo(() => {
     const provider = amis.getProvider();
 
     // fixed ethers web3 provider incompatible issue
-    const adaptedProvider = adaptEtherWeb3Provider(provider);
+    const adaptedProvider = adaptEthersWeb3Provider(provider);
     const web3Provider = new EthersWeb3Provider(adaptedProvider as any);
 
     const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';

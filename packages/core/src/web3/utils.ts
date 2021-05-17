@@ -95,7 +95,7 @@ export const tryExtractDescriptor = (
   }
 };
 
-export function adaptEtherWeb3Provider(provider: AbstractProvider): AbstractProvider {
+export function adaptEthersWeb3Provider(provider: AbstractProvider): AbstractProvider {
   const originalSendAsync = provider.sendAsync;
   provider.sendAsync = (request, callback: (error: any, result: any) => void) => {
     return originalSendAsync.call(provider, request, (error, result) => {
