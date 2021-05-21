@@ -435,7 +435,7 @@ const App = React.memo(() => {
     });
   }, [web3, account, handleSignSign]);
 
-  const handleEthSignTypedData = useCallback(async () => {
+  const handleEthSign = useCallback(async () => {
     await handleSignSign(async data => {
       return (await web3?.eth.sign(data, account || '')) || '';
     });
@@ -465,7 +465,7 @@ const App = React.memo(() => {
       <View style={styles.group}>
         <Text style={styles.title}>5. 簽名</Text>
         <Button onPress={handlePersonalSign}>personal_sign</Button>
-        <Button onPress={handleEthSignTypedData}>eth_signTypedData</Button>
+        <Button onPress={handleEthSign}>eth_sign</Button>
       </View>
 
       {/* eslint-disable-next-line react/style-prop-object */}
