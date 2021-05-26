@@ -10,7 +10,7 @@ export default class QubicConnector extends AbstractConnector {
   private apiSecret: string;
   private chainId: number;
 
-  constructor(apiKey: string, apiSecret: string, chainId: number) {
+  constructor(apiKey: string, apiSecret: string, chainId: number | string) {
     super({ supportedChainIds: [1, 4] }); // [mainnet, rinkeby]
 
     this.apiKey = apiKey;

@@ -41,9 +41,16 @@ export class AMIS {
 
   private engine!: Web3ProviderEngine;
 
-  constructor(apiKey: string, apiSecret: string, network: Network) {
+  constructor(apiKey: string, apiSecret: string, network: Network | string) {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
+    if (typeof network === 'string') {
+      const parseNetwork = Number(network);
+      if (!Object.values(Network).includes(parseNetwork)) {
+        throw Error(`Network ${network} not support`);
+      }
+      network = parseNetwork as Network;
+    }
     this.network = network;
 
     AMIS.initialize(
