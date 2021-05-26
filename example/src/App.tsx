@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Web3 from 'web3';
@@ -8,10 +8,14 @@ import { TransactionReceipt } from 'web3-core';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 import { ExchangeContract } from '@0x/contract-wrappers';
 import { BigNumber } from '@0x/utils';
-import { Network, Speed, adaptEthersWeb3Provider } from '@qubic-js/core';
-import AMIS from '@qubic-js/browser';
 import { QubicConnector } from '@qubic-js/react';
+import { InjectedConnector } from '@web3-react/injected-connector';
 import { Web3Provider as EthersWeb3Provider } from '@ethersproject/providers';
+import { BigNumber as BN } from '@ethersproject/bignumber';
+import { MaxUint256 } from '@ethersproject/constants';
+import { Network, Speed } from '@qubic-js/core';
+import AMIS from '@qubic-js/browser';
+import { WETH9Fx } from './WETH9Fx';
 
 const erc20Abi = [
   {
@@ -283,6 +287,8 @@ const Button = React.memo<{ children: string; onPress: () => void }>(({ children
 const API_KEY = 'a857a616-21ed-4d9e-9aff-2091993bff73';
 const API_SECRET = 'DnAYwfFMCGzdMNMMdTCeLWifJbGYgZFP';
 const CHAIN_ID = 4;
+const WETHTokenAddress = '0xc778417e063141139fce010982780140aa0cd5ab';
+const ERC20ProxyAddress = '0x131816505b32b7bd1cc99e273950e26e5c7197c2';
 
 const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID);
 
@@ -445,56 +451,76 @@ const App = React.memo(() => {
     });
   }, [web3, account, handleSignSign]);
 
-  const handleFillOrKillOrder = useCallback(async () => {
-    if (!address) {
-      throw Error('You need to sign in first');
-    }
+  const handleConnectMetamask = useCallback(() => {
+    const connector = new InjectedConnector({ supportedChainIds: [4] });
+    return activate(connector);
+  }, [activate]);
 
+  const WETH9Contract = useMemo(() => {
     const amis = new AMIS(API_KEY, API_SECRET, Network.RINKEBY);
     amis.setSpeed(Speed.FAST);
     const provider = amis.getProvider();
+    const ethersWeb3 = new EthersWeb3Provider(provider as any);
+    const signer = (ethersWeb3 as any as EthersWeb3Provider).getSigner();
+    // eslint-disable-next-line consistent-return
+    return WETH9Fx.connect(WETHTokenAddress, signer);
+  }, []);
 
-    // fixed ethers web3 provider incompatible issue
-    const adaptedProvider = adaptEthersWeb3Provider(provider);
-    const web3Provider = new EthersWeb3Provider(adaptedProvider as any);
+  const handleToggleApprove = useCallback(async () => {
+    if (!WETH9Contract) {
+      return;
+    }
+
+    const { allowance, approve } = WETH9Contract;
+    const isApprove = await allowance(account, ERC20ProxyAddress).then(r => r.gt(BN.from(0)));
+
+    // eslint-disable-next-line consistent-return
+    return approve(ERC20ProxyAddress, isApprove ? BN.from(0) : MaxUint256)
+      .then(({ hash, wait }: any) => {
+        console.log('Waiting for result ... \n-> %s', hash);
+        return wait().then(() => allowance(account, ERC20ProxyAddress));
+      })
+      .then(console.info);
+  }, [WETH9Contract, account]);
+
+  const handleFillOrKillOrder = useCallback(async () => {
+    const amis = new AMIS(API_KEY, API_SECRET, Network.RINKEBY);
+    amis.setSpeed(Speed.FAST);
+    const provider = amis.getProvider() as any;
 
     const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
-    const EXCHANGE_ADDRESS = '0x9f3a0c1a98fc9d9ca5fde7ca12ff4f8b8e755b3d';
-    const exchangeContract = new ExchangeContract(EXCHANGE_ADDRESS, web3Provider as any);
 
     const signedOrder = {
       takerFee: new BigNumber('0'),
-      hash: '0x435b7ccbf403b83956ef30e6acaa171fd7bcb434009919b94374e20bf499139a',
+      hash: '0x11a9ee4b6c32e991e893124bc980fdd66775949f6667449264e961d64ab9db54',
       makerAddress: '0xbcd715f63299979e2e0fc78e09d81438e51374f0',
       makerAssetData:
-        '0x02571792000000000000000000000000365547bec2a767ddd7c53fe758e19d6507b930b00000000000000000000000000000000000000000000000000000000000000016',
+        '0x0257179200000000000000000000000087ebf88ec25e4a6104c992abd1323330d9c0cb6c000000000000000000000000000000000000000000000000000000000000006c',
       makerAssetAmount: new BigNumber('1'),
       makerFee: new BigNumber('0'),
       takerAddress: NULL_ADDRESS,
       takerAssetData: '0xf47261b0000000000000000000000000c778417e063141139fce010982780140aa0cd5ab',
       takerAssetAmount: new BigNumber('10000000000000000'),
       senderAddress: NULL_ADDRESS,
-      exchangeAddress: EXCHANGE_ADDRESS,
+      exchangeAddress: '0x9f3a0c1a98fc9d9ca5fde7ca12ff4f8b8e755b3d',
       feeRecipientAddress: NULL_ADDRESS,
-      expirationTimeSeconds: new BigNumber('1628497386'),
-      salt: new BigNumber('1620721386377'),
+      expirationTimeSeconds: new BigNumber('1629187620'),
+      salt: new BigNumber('1621411620500'),
       signature:
-        '0x1bce0fc2aa766aeb25ef4b47870ec70da36b0a08c0712957d7b70b56f0c6925b4d0c3da4628138d000d8294c07271fd9286dabd3434bb6e1880ae64f81c3894e3302',
+        '0x1bfec889dc37ee891fbe4f54d5799e9b02f35bb06fa8740ee117d643cb8ff5ce7a5778932953c4332dcdae219cd92b97aeb577ca15621c24c7fd75cc3a24a10c5302',
       endState: 'ADDED',
-      side: 'MAKER',
-      chainId: 4,
     } as any;
 
-    const txHash = await exchangeContract.fillOrKillOrder.sendTransactionAsync(
-      signedOrder,
-      new BigNumber('0') as any,
-      signedOrder.signature,
-      {
-        from: address,
-      },
-    );
+    const exchangeContract = new ExchangeContract(signedOrder.exchangeAddress, provider);
+
+    const txHash = await exchangeContract.fillOrKillOrder
+      .sendTransactionAsync(signedOrder, signedOrder.takerAssetAmount, signedOrder.signature, {
+        from: account || '',
+        gas: 1e9,
+      })
+      .catch(console.error);
     console.log({ txHash });
-  }, [address]);
+  }, [account]);
 
   return (
     <View style={styles.container}>
@@ -502,6 +528,11 @@ const App = React.memo(() => {
         <Text style={styles.title}>1. 註冊或登錄以獲得地址</Text>
         <Button onPress={handleSignInUp}>SIGN IN / SIGN UP</Button>
         <Text style={styles.addrText}>{address}</Text>
+      </View>
+      <View style={styles.group}>
+        <Text style={styles.title}>1. Connect Metamask</Text>
+        <Button onPress={handleConnectMetamask}>Connect Metamask</Button>
+        <Text style={styles.addrText}>{account}</Text>
       </View>
       <View style={styles.group}>
         <Text style={styles.title}>2. 估算 Gas Price (顯示在 console 中)</Text>
@@ -521,6 +552,10 @@ const App = React.memo(() => {
         <Text style={styles.title}>5. 簽名</Text>
         <Button onPress={handlePersonalSign}>personal_sign</Button>
         <Button onPress={handleEthSign}>eth_sign</Button>
+      </View>
+      <View style={styles.group}>
+        <Text style={styles.title}>6.1. Toggle approve ERC20Proxy to ERC20Token(WETH) </Text>
+        <Button onPress={handleToggleApprove}>Toggle approve</Button>
       </View>
 
       <View style={styles.group}>
