@@ -415,10 +415,8 @@ const App = React.memo(() => {
   }, [account, web3]);
 
   const handleSignSign = useCallback(
-    async (signer: (data: string) => Promise<string>) => {
-      const data = '0xc9b8e1f1df93f7535e849d70806b546555549da9a6c2ae38ba674bf2db1a5817';
-
-      const signature = await signer(data);
+    async (data, signer: () => Promise<string>) => {
+      const signature = await signer();
       // const signature = await web3.eth.personal.sign(data, addr, 'xxxxxx');
       console.log(`signature=${signature}`);
 
@@ -430,13 +428,15 @@ const App = React.memo(() => {
   );
 
   const handlePersonalSign = useCallback(async () => {
-    await handleSignSign(async data => {
-      return web3?.eth.personal.sign(data, account || '', 'test password!') || '';
+    const data = `0x${Buffer.from('example message', 'utf8').toString('hex')}`;
+    await handleSignSign(data, async () => {
+      return (await web3?.eth.personal.sign(data, account || '', 'test password!')) || '';
     });
-  }, [web3, account, handleSignSign]);
+  }, [handleSignSign, web3?.eth.personal, account]);
 
   const handleEthSign = useCallback(async () => {
-    await handleSignSign(async data => {
+    const data = '0xc9b8e1f1df93f7535e849d70806b546555549da9a6c2ae38ba674bf2db1a5817';
+    await handleSignSign(data, async () => {
       return (await web3?.eth.sign(data, account || '')) || '';
     });
   }, [web3, account, handleSignSign]);
