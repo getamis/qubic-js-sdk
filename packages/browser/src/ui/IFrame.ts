@@ -42,6 +42,7 @@ class IFrame {
 
   public hide = (): void => {
     this.element.style.display = 'none';
+    this.element.contentWindow?.postMessage({ action: 'hideIframeDone' }, '*');
   };
 
   public open = (action: string, payload?: { [key: string]: any }): void => {
