@@ -46,6 +46,15 @@ class IFrame {
   };
 
   public open = (action: string, payload?: { [key: string]: any }): void => {
+    // console.log('Iframe open');
+    // console.log({
+    //   action,
+    //   payload,
+    // });
+    // if (payload?.method === 'eth_sendTransaction') {
+    //   payload.params[0] = {};
+    // }
+    this.element.contentWindow?.postMessage({ action: 'echo', payload: '' }, '*');
     this.element.contentWindow?.postMessage({ action, payload }, '*');
     this.show();
   };

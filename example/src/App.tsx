@@ -472,7 +472,7 @@ const App = React.memo(() => {
     }
 
     const { allowance, approve } = WETH9Contract;
-    const isApprove = await allowance(account, ERC20ProxyAddress).then(r => r.gt(BN.from(0)));
+    const isApprove = await allowance(account, ERC20ProxyAddress).then((r: any) => r.gt(BN.from(0)));
 
     // eslint-disable-next-line consistent-return
     return approve(ERC20ProxyAddress, isApprove ? BN.from(0) : MaxUint256)

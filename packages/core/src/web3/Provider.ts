@@ -88,7 +88,13 @@ export class Provider implements ProviderInterface {
    */
   public handleRequest = async (payload: Payload, next: NextFunc, end: EndFunc): Promise<void> => {
     const { method, params } = payload;
+    if (payload.id === 1 && payload.method === 'eth_blockNumber') {
+      payload.id = new Date().getTime();
+    }
 
+    // if (payload.method !== 'eth_getBlockByNumber' && payload.method !== 'eth_blockNumber') {
+    //   console.log(JSON.stringify(payload));
+    // }
     switch (method) {
       case 'personal_sign':
       case 'eth_sign':
@@ -106,11 +112,9 @@ export class Provider implements ProviderInterface {
         break;
       case 'eth_sendTransaction':
         if (params.length === 0) end(new Error(`${payload.method} has invalid parameters`));
-
         // pre-process tx
         // TODO: move to WalletCoordinator
         params[0] = await preprocessTx(AMIS.currentClient, params[0]);
-
         try {
           const result = await this.callRequest(payload);
           end(null, result);
@@ -171,6 +175,11 @@ export class Provider implements ProviderInterface {
       window.addEventListener('message', listener, false);
 
       if (onCallRequest) {
+        // console.log('onCallRequest');
+        // console.log({
+        //   ...payload,
+        //   id: requestId,
+        // });
         onCallRequest({
           ...payload,
           id: requestId,

@@ -22,7 +22,8 @@ export const getGQLEndpoint = (network?: Network): string => {
 export const WALLET_URLS = {
   [Network.MAINNET]: 'https://wallet.qubic.app',
   [Network.ROPSTEN]: 'https://d3klxj5aubi32r.cloudfront.net',
-  [Network.RINKEBY]: 'https://d3klxj5aubi32r.cloudfront.net',
+  // [Network.RINKEBY]: 'https://d3klxj5aubi32r.cloudfront.net',
+  [Network.RINKEBY]: 'https://localhost:19007',
 };
 
 export const getWalletUrl = (network: Network = 1): string => {
