@@ -484,9 +484,7 @@ const App = React.memo(() => {
   }, [WETH9Contract, account]);
 
   const handleFillOrKillOrder = useCallback(async () => {
-    const amis = new AMIS(API_KEY, API_SECRET, Network.RINKEBY);
-    amis.setSpeed(Speed.FAST);
-    const provider = amis.getProvider() as any;
+    const provider = web3?.currentProvider;
 
     const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -520,7 +518,7 @@ const App = React.memo(() => {
       })
       .catch(console.error);
     console.log({ txHash });
-  }, [account]);
+  }, [account, web3?.currentProvider]);
 
   return (
     <View style={styles.container}>
