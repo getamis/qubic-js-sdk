@@ -126,12 +126,6 @@ export class Provider implements ProviderInterface {
           end(e);
         }
         break;
-      case 'eth_estimateGas':
-        if (params?.[0]?.from) {
-          delete params[0].from;
-        }
-        next();
-        break;
       default:
         next();
     }
