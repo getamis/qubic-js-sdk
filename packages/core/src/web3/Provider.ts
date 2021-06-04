@@ -79,6 +79,10 @@ export class Provider implements ProviderInterface {
     return new Provider(options);
   }
 
+  private static getRandomId(): number {
+    return Math.round(Math.random() * Number.MAX_SAFE_INTEGER);
+  }
+
   constructor(options: ProviderOptions) {
     this.opts = options;
   }
@@ -88,6 +92,13 @@ export class Provider implements ProviderInterface {
    */
   public handleRequest = async (payload: Payload, next: NextFunc, end: EndFunc): Promise<void> => {
     const { method, params } = payload;
+
+    // fixed issue https://github.com/MetaMask/eth-block-tracker/pull/42
+    // web-provider-engine has dependency eth-block-tracer@^4.4.2
+    // delete these lines when eth-block-tracer above 5.x.x
+    if (method === 'eth_blockNumber' && payload.id === 1) {
+      payload.id = Provider.getRandomId();
+    }
 
     switch (method) {
       case 'personal_sign':
@@ -138,7 +149,7 @@ export class Provider implements ProviderInterface {
   private callRequest = async (payload: Payload): Promise<string> => {
     const { onCallRequest } = this.opts;
 
-    const requestId = Math.round(Math.random() * Number.MAX_SAFE_INTEGER);
+    const requestId = Provider.getRandomId();
 
     return new Promise((resolve, reject) => {
       const listener = (e: MessageEvent): void => {
