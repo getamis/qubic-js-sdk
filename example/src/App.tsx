@@ -3,10 +3,11 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Web3 from 'web3';
-import Web3Utils, { AbiItem } from 'web3-utils';
-import { TransactionReceipt } from 'web3-core';
+import Web3Utils, { AbiItem, toChecksumAddress } from 'web3-utils';
+import { AbstractProvider, TransactionReceipt } from 'web3-core';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
-
+// eslint-disable-next-line camelcase
+import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { QubicConnector } from '@qubic-js/react';
 
 const erc20Abi = [
@@ -441,6 +442,162 @@ const App = React.memo(() => {
     });
   }, [web3, account, handleSignSign]);
 
+  const handleSignTypedDataV3 = useCallback(async () => {
+    const chainId = CHAIN_ID;
+    const from = address;
+    const msgParams = {
+      types: {
+        EIP712Domain: [
+          { name: 'name', type: 'string' },
+          { name: 'version', type: 'string' },
+          { name: 'chainId', type: 'uint256' },
+          { name: 'verifyingContract', type: 'address' },
+        ],
+        Person: [
+          { name: 'name', type: 'string' },
+          { name: 'wallet', type: 'address' },
+        ],
+        Mail: [
+          { name: 'from', type: 'Person' },
+          { name: 'to', type: 'Person' },
+          { name: 'contents', type: 'string' },
+        ],
+      },
+      primaryType: 'Mail',
+      domain: {
+        name: 'Ether Mail',
+        version: '1',
+        chainId,
+        verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
+      },
+      message: {
+        sender: {
+          name: 'Cow',
+          wallet: '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826',
+        },
+        recipient: {
+          name: 'Bob',
+          wallet: '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB',
+        },
+        contents: 'Hello, Bob!',
+      },
+    };
+
+    function ethSignTypedDataV3() {
+      return new Promise<string>((resolve, reject) => {
+        (web3?.currentProvider as AbstractProvider).sendAsync(
+          {
+            jsonrpc: '2.0',
+            method: 'eth_signTypedData_v3',
+            params: [from, JSON.stringify(msgParams)],
+          },
+          (error, response) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(response?.result);
+            }
+          },
+        );
+      });
+    }
+
+    const signature = (await ethSignTypedDataV3()) || '';
+
+    const recoveredAddr = await recoverTypedSignature({
+      data: msgParams as any,
+      sig: signature,
+    });
+    if (toChecksumAddress(recoveredAddr) === toChecksumAddress(from)) {
+      console.log(`Successfully verified signer as ${recoveredAddr}`);
+    } else {
+      console.log(`Failed to verify signer when comparing ${recoveredAddr} to ${from}`);
+    }
+  }, [address, web3]);
+
+  const handleSignTypedDataV4 = useCallback(async () => {
+    const chainId = CHAIN_ID;
+    const from = address;
+    const msgParams = {
+      domain: {
+        chainId,
+        name: 'Ether Mail',
+        verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
+        version: '1',
+      },
+      message: {
+        contents: 'Hello, Bob!',
+        from: {
+          name: 'Cow',
+          wallets: ['0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826', '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF'],
+        },
+        to: [
+          {
+            name: 'Bob',
+            wallets: [
+              '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB',
+              '0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57',
+              '0xB0B0b0b0b0b0B000000000000000000000000000',
+            ],
+          },
+        ],
+      },
+      primaryType: 'Mail',
+      types: {
+        EIP712Domain: [
+          { name: 'name', type: 'string' },
+          { name: 'version', type: 'string' },
+          { name: 'chainId', type: 'uint256' },
+          { name: 'verifyingContract', type: 'address' },
+        ],
+        Group: [
+          { name: 'name', type: 'string' },
+          { name: 'members', type: 'Person[]' },
+        ],
+        Mail: [
+          { name: 'from', type: 'Person' },
+          { name: 'to', type: 'Person[]' },
+          { name: 'contents', type: 'string' },
+        ],
+        Person: [
+          { name: 'name', type: 'string' },
+          { name: 'wallets', type: 'address[]' },
+        ],
+      },
+    };
+
+    function ethSignTypedDataV4() {
+      return new Promise<string>((resolve, reject) => {
+        (web3?.currentProvider as AbstractProvider).sendAsync(
+          {
+            jsonrpc: '2.0',
+            method: 'eth_signTypedData_v4',
+            params: [from, JSON.stringify(msgParams)],
+          },
+          (error, response) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(response?.result);
+            }
+          },
+        );
+      });
+    }
+
+    const signature = (await ethSignTypedDataV4()) || '';
+
+    const recoveredAddr = await recoverTypedSignature_v4({
+      data: msgParams as any,
+      sig: signature,
+    });
+    if (toChecksumAddress(recoveredAddr) === toChecksumAddress(from)) {
+      console.log(`Successfully verified signer as ${recoveredAddr}`);
+    } else {
+      console.log(`Failed to verify signer when comparing ${recoveredAddr} to ${from}`);
+    }
+  }, [address, web3]);
+
   return (
     <View style={styles.container}>
       <View style={styles.group}>
@@ -466,6 +623,8 @@ const App = React.memo(() => {
         <Text style={styles.title}>5. 簽名</Text>
         <Button onPress={handlePersonalSign}>personal_sign</Button>
         <Button onPress={handleEthSign}>eth_sign</Button>
+        <Button onPress={handleSignTypedDataV3}>eth_signTypedData_v3</Button>
+        <Button onPress={handleSignTypedDataV4}>eth_signTypedData_v4</Button>
       </View>
 
       {/* eslint-disable-next-line react/style-prop-object */}
