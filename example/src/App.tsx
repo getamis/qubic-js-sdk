@@ -344,11 +344,12 @@ const App = React.memo(() => {
       .on('confirmation', (confirmationNumber, receipt) => {
         console.log('confirmation:', confirmationNumber, receipt);
       })
-      .on('error', error => {
-        console.error(error);
-      })
       .then(receipt => {
         console.log('receipt:', receipt);
+      })
+      .catch(() => {
+        // if you use then, than you have to use catch
+        // already handle in sendTransaction(tx, (error, hash)
       });
   }, [account, web3]);
 
@@ -376,11 +377,12 @@ const App = React.memo(() => {
       .once('confirmation', (confirmationNumber, receipt) => {
         console.log('confirmation:', confirmationNumber, receipt);
       })
-      .on('error', error => {
-        console.error(error);
-      })
       .then(receipt => {
         console.log('receipt:', receipt);
+      })
+      .catch(() => {
+        // if you use then, than you have to use catch
+        // already handle in sendTransaction(tx, (error, hash)
       });
   }, [account, web3]);
 
@@ -417,13 +419,22 @@ const App = React.memo(() => {
 
   const handleSignSign = useCallback(
     async (data, signer: () => Promise<string>) => {
-      const signature = await signer();
-      // const signature = await web3.eth.personal.sign(data, addr, 'xxxxxx');
-      console.log(`signature=${signature}`);
+      try {
+        const signature = await signer();
+        // const signature = await web3.eth.personal.sign(data, addr, 'xxxxxx');
+        console.log(`signature=${signature}`);
 
-      // The signer should always be the proxy owner
-      const signerAddress = web3?.eth.accounts.recover(data, signature);
-      console.log(`signerAddress=${signerAddress}`);
+        // The signer should always be the proxy owner
+        const signerAddress = web3?.eth.accounts.recover(data, signature);
+        console.log(`signerAddress=${signerAddress}`);
+      } catch (error) {
+        const { code, message, stack } = error;
+        console.error({
+          code,
+          message,
+          stack,
+        });
+      }
     },
     [web3],
   );

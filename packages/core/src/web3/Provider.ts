@@ -1,5 +1,6 @@
 import Web3Utils from 'web3-utils';
 import Web3ProviderEngine from 'web3-provider-engine';
+import { ethErrors } from 'eth-rpc-errors';
 
 import { AMIS } from '../client';
 import { Network, Speed } from '../enums';
@@ -155,6 +156,11 @@ export class Provider implements ProviderInterface {
       const listener = (e: MessageEvent): void => {
         const { data } = e;
         const { action, id, result, error } = data as { action: string; id: number; result: string; error?: Error };
+
+        if (action === 'hideIframe') {
+          reject(ethErrors.provider.userRejectedRequest('Qubic Message Signature: User denied message signature.'));
+          return;
+        }
 
         if (requestId === id) {
           if (action === 'approve_request') {
