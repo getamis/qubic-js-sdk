@@ -11,6 +11,7 @@
     "@qubic-js/react": "*",
     "@web3-react/core": "^6.1.1",
     "dotenv": "^8.2.0",
+    "eth-sig-util": "^3.0.1",
     "expo": "~40.0.1",
     "expo-status-bar": "~1.0.3",
     "react": "16.13.1",
