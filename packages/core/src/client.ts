@@ -36,7 +36,7 @@ export class AMIS {
 
   public apiKey: string;
   public apiSecret: string;
-  public network: Network = Network.ROPSTEN;
+  public network: Network = Network.MAINNET;
   public speed?: Speed;
 
   private engine!: Web3ProviderEngine;
