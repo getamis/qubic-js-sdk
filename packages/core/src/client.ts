@@ -54,7 +54,7 @@ export class AMIS {
     this.network = network;
 
     AMIS.initialize(
-      `${getWalletUrl(this.network)}?${queryWithAuthConfig({
+      `${getWalletUrl()}?${queryWithAuthConfig({
         apiKey,
         apiSecret,
         network,

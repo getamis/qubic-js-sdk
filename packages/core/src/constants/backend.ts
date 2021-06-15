@@ -1,44 +1,33 @@
 import { Network } from '../enums';
 
-const BACKEND_DOMAINS = {
-  [Network.MAINNET]: 'wallet.qubic.app',
-  [Network.ROPSTEN]: 'tmp-dev-xiuzhu.raicrypt.com',
-  [Network.RINKEBY]: 'qubee-rinkeby-xiuzhu.raicrypt.com',
-};
+const DEFAULT_SCHEME = 'https';
+const BACKEND_DOMAINS = 'wallet.qubic.app';
+export const WALLET_URLS = `${DEFAULT_SCHEME}://wallet.qubic.app`;
 
-export const getBackendDomain = (network: Network = 1): string => {
+// Only example that created by expo cen ues process.env.APP_MANIFEST ENVs
+export const getBackendDomain = (devDomain?: string): string => {
+  // wallet || example || SDK
   // @ts-ignore
-  return process.env.APP_MANIFEST?.extra?.BACKEND_DOMAIN || BACKEND_DOMAINS[network];
+  return devDomain || process.env.APP_MANIFEST?.extra?.BACKEND_DOMAIN || BACKEND_DOMAINS;
 };
 
-export const getBackendUrl = (scheme: string, path: string, network?: Network): string => {
-  return `${scheme}://${getBackendDomain(network)}${path}`;
-};
-
-export const getGQLEndpoint = (network?: Network): string => {
-  return getBackendUrl('https', '/graphql', network);
-};
-
-export const WALLET_URLS = {
-  [Network.MAINNET]: 'https://wallet.qubic.app',
-  [Network.ROPSTEN]: 'https://d3klxj5aubi32r.cloudfront.net',
-  [Network.RINKEBY]: 'https://d3klxj5aubi32r.cloudfront.net',
-};
-
-export const getWalletUrl = (network: Network = 1): string => {
+// Only example that created by expo cen ues process.env.APP_MANIFEST ENVs
+export const getWalletUrl = (devUrl?: string): string => {
+  // wallet || example || SDK
   // @ts-ignore
-  return process.env.APP_MANIFEST?.extra?.WALLET_URL || WALLET_URLS[network];
+  return devUrl || process.env.APP_MANIFEST?.extra?.WALLET_URL || WALLET_URLS;
 };
 
-const endpoints = (path: string) => ({
-  [Network.MAINNET]: `${getWalletUrl(Network.MAINNET)}${path}`,
-  [Network.ROPSTEN]: `${getWalletUrl(Network.ROPSTEN)}${path}`,
-  [Network.RINKEBY]: `${getWalletUrl(Network.RINKEBY)}${path}`,
-});
+export const getBackendUrl = (scheme: string, path: string, devDomain?: string): string =>
+  `${scheme}://${getBackendDomain(devDomain)}${path}`;
 
-export const SEND_RESULT_URLS = endpoints('/send/result');
+export const getGQLEndpoint = (devDomain?: string): string => getBackendUrl(DEFAULT_SCHEME, '/graphql', devDomain);
 
-export const THIRD_PARTY_TAPPAY_CARD = endpoints('/thirdparty/tappay/creditcard');
+const endpoints = (path: string, devUrl?: string) => `${getWalletUrl(devUrl)}${path}`;
+
+export const getSendRequltUrl = (devUrl?: string): string => endpoints('/send/result', devUrl);
+
+export const getThirdPartyCardUrl = (devUrl?: string): string => endpoints('/thirdparty/tappay/creditcard', devUrl);
 
 export const NODE_URLS = {
   [Network.MAINNET]: 'wss://mainnet.infura.io/ws/v3/3e0eb8f34fac469b9286936ff1423270',
