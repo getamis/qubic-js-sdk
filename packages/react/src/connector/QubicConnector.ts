@@ -15,7 +15,7 @@ export default class QubicConnector extends AbstractConnector {
 
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
-    this.chainId = Number(chainId);
+    this.chainId = Number(chainId) || 1;
   }
 
   public activate = async (): Promise<ConnectorUpdate> => {
