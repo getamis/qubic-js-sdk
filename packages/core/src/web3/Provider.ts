@@ -157,11 +157,6 @@ export class Provider implements ProviderInterface {
         const { data } = e;
         const { action, id, result, error } = data as { action: string; id: number; result: string; error?: Error };
 
-        if (action === 'hideIframe') {
-          reject(ethErrors.provider.userRejectedRequest('Qubic Message Signature: User denied message signature.'));
-          return;
-        }
-
         if (requestId === id) {
           if (action === 'approve_request') {
             if (!result) {
@@ -175,6 +170,17 @@ export class Provider implements ProviderInterface {
               reject(error);
             }
           }
+          window.removeEventListener('message', listener);
+          return;
+        }
+
+        // workaround: should be removed when persist WalletCoordinator requests ready
+        if (action === 'complete3dPayment') {
+          window.removeEventListener('message', listener);
+          return;
+        }
+        if (action === 'hideIframe') {
+          reject(ethErrors.provider.userRejectedRequest('Qubic Message Signature: User denied message signature.'));
           window.removeEventListener('message', listener);
         }
       };
