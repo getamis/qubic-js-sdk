@@ -173,6 +173,12 @@ export class Provider implements ProviderInterface {
           window.removeEventListener('message', listener);
           return;
         }
+
+        // workaround: should be removed when persist WalletCoordinator requests ready
+        if (action === 'complete3dPayment') {
+          window.removeEventListener('message', listener);
+          return;
+        }
         if (action === 'hideIframe') {
           reject(ethErrors.provider.userRejectedRequest('Qubic Message Signature: User denied message signature.'));
           window.removeEventListener('message', listener);
