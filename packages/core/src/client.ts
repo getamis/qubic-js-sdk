@@ -105,6 +105,19 @@ export class AMIS {
       }),
     );
     this.engine.start();
+    const origSend = this.engine.send;
+
+    const { qubic } = window as any;
+
+    this.engine.send = payload => {
+      qubic?.show();
+      return origSend.apply(this.engine, [payload]);
+    };
+    const originSendAsync = this.engine.sendAsync;
+    this.engine.sendAsync = (payload, finished) => {
+      qubic?.show();
+      return originSendAsync.apply(this.engine, [payload, finished]);
+    };
     return this.engine;
   };
 
