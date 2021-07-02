@@ -94,13 +94,6 @@ export class Provider implements ProviderInterface {
   public handleRequest = async (payload: Payload, next: NextFunc, end: EndFunc): Promise<void> => {
     const { method, params } = payload;
 
-    // fixed issue https://github.com/MetaMask/eth-block-tracker/pull/42
-    // web-provider-engine has dependency eth-block-tracer@^4.4.2
-    // delete these lines when eth-block-tracer above 5.x.x
-    if (method === 'eth_blockNumber' && payload.id === 1) {
-      payload.id = Provider.getRandomId();
-    }
-
     switch (method) {
       case 'personal_sign':
       case 'eth_sign':
@@ -137,6 +130,15 @@ export class Provider implements ProviderInterface {
         } catch (e) {
           end(e);
         }
+        break;
+      case 'eth_blockNumber':
+        // fixed issue https://github.com/MetaMask/eth-block-tracker/pull/42
+        // web-provider-engine has dependency eth-block-tracer@^4.4.2
+        // delete these lines when eth-block-tracer above 5.x.x
+        if (payload.id === 1) {
+          payload.id = Provider.getRandomId();
+        }
+        next();
         break;
       default:
         next();
