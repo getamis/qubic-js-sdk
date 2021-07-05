@@ -3,8 +3,9 @@ class PopupWindow {
   private windowProxy: Window | null = null;
   private task: { action: string; payload?: Record<string, any> } | null = null;
   private isReady = false;
-
+  private url = '';
   constructor(url: string) {
+    this.url = url;
     const backdropDiv = document.createElement('div');
     backdropDiv.id = 'backdrop';
     backdropDiv.style.display = 'none';
@@ -71,7 +72,7 @@ class PopupWindow {
     okButton.style.borderColor = '#ff9500';
     okButton.onclick = () => {
       this.hideBackdrop();
-      this.openPopupWindow(url);
+      this.openPopupWindow();
     };
     footerDiv.appendChild(okButton);
 
@@ -149,13 +150,16 @@ class PopupWindow {
     }
   };
 
-  private openPopupWindow = (url: string): void => {
+  private openPopupWindow = (): Window | null => {
     if (!this.windowProxy || this.windowProxy.closed) {
       const target = 'qubic-wallet';
-      const windowFeatures = 'location=no,resizable=yes,scrollbars=yes,status=yes,height=600,width=350';
-      this.windowProxy = window.open(url, target, windowFeatures);
-      this.detectPopupWindowCloseEvent(this.windowProxy);
+      const windowFeatures = 'location=no,resizable=yes,scrollbars=yes,status=yes,height=680,width=350';
+      const windowProxy = window.open(this.url, target, windowFeatures);
+      this.detectPopupWindowCloseEvent(windowProxy);
+      this.windowProxy = windowProxy;
+      return windowProxy;
     }
+    return null;
   };
 
   private hideBackdrop = (): void => {
@@ -185,7 +189,13 @@ class PopupWindow {
         this.executeTask();
       }
     } else {
-      this.show();
+      // some action is quick enough, we can open window immediately
+      const tryOpenWindow = this.openPopupWindow();
+
+      // if tryOpenWindow failed, we will show the confirm box, let user open popup manually
+      if (!tryOpenWindow) {
+        this.show();
+      }
     }
   };
 }
