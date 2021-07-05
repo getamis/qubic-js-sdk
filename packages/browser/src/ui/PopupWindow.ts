@@ -175,7 +175,6 @@ class PopupWindow {
   public hide = (): void => {
     this.hideBackdrop();
     if (this.windowProxy && !this.windowProxy.closed) {
-      this.windowProxy.postMessage({ action: 'hideIframeDone' }, '*');
       this.windowProxy.close();
       this.windowProxy = null;
     }
