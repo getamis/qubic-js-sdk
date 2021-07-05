@@ -29,7 +29,8 @@ class PopupWindow {
     paperDiv.style.display = 'flex';
     paperDiv.style.backgroundColor = 'white';
     paperDiv.style.borderWidth = '0';
-    paperDiv.style.width = '320px';
+    paperDiv.style.maxWidth = '320px';
+    paperDiv.style.boxSizing = 'border-box';
     paperDiv.style.alignItems = 'center';
     paperDiv.style.justifyContent = 'center';
     paperDiv.style.borderRadius = '24px';
