@@ -20,9 +20,6 @@ class PopupWindow {
     backdropDiv.style.background = 'rgba(0,0,0,.5)';
     backdropDiv.style.alignItems = 'center';
     backdropDiv.style.justifyContent = 'center';
-    backdropDiv.onclick = () => {
-      this.hideBackdrop();
-    };
 
     const paperDiv = document.createElement('div');
     paperDiv.id = 'paper';
@@ -39,31 +36,46 @@ class PopupWindow {
     backdropDiv.appendChild(paperDiv);
 
     const text = document.createElement('p');
-    text.innerHTML = 'Qubic care about you security, this will open a popup window';
+    text.innerHTML = 'Attempt to open Qubic to complete the transaction. Do you want to proceed ?';
     text.style.marginBottom = '48px';
     paperDiv.appendChild(text);
 
-    const button = document.createElement('button');
-    button.innerHTML = 'Continue Qubic';
-    button.style.paddingRight = '24px';
-    button.style.paddingLeft = '24px';
-    button.style.paddingTop = '4px';
-    button.style.paddingBottom = '4px';
-    button.style.backgroundColor = '#ff9500';
-    button.style.color = 'white';
-    button.style.borderRadius = '8px';
-    button.style.borderWidth = '0';
-    button.style.height = '48px';
-    button.style.fontSize = '18px';
-    button.style.cursor = 'pointer';
-    paperDiv.appendChild(button);
+    const footerDiv = document.createElement('div');
+    footerDiv.style.display = 'flex';
+    footerDiv.style.flexDirection = 'row';
+    footerDiv.style.width = '100%';
+    footerDiv.style.marginLeft = '-16px';
+    footerDiv.style.marginRight = '-16px';
 
-    this.element = backdropDiv;
+    paperDiv.appendChild(footerDiv);
 
-    button.onclick = () => {
+    const cancelButton = this.createButton();
+    cancelButton.innerHTML = 'No';
+    cancelButton.style.backgroundColor = 'white';
+    cancelButton.style.color = '#ff9500';
+    cancelButton.style.borderColor = '#ff9500';
+    cancelButton.onclick = () => {
+      window.postMessage(
+        {
+          action: 'hideIframe',
+        },
+        '*',
+      );
+    };
+    footerDiv.appendChild(cancelButton);
+
+    const okButton = this.createButton();
+    okButton.innerHTML = 'Yes';
+    okButton.style.backgroundColor = '#ff9500';
+    okButton.style.color = 'white';
+    okButton.style.borderColor = '#ff9500';
+    okButton.onclick = () => {
       this.hideBackdrop();
       this.openPopupWindow(url);
     };
+    footerDiv.appendChild(okButton);
+
+    this.element = backdropDiv;
     window.addEventListener(
       'message',
       e => {
@@ -77,13 +89,35 @@ class PopupWindow {
 
         if (action === 'ready') {
           this.isReady = true;
-          // TODO: find why failed without setTimeout
-          setTimeout(() => this.executeTask(), 0);
+          this.executeTask();
         }
       },
       false,
     );
   }
+
+  private createButton = () => {
+    const button = document.createElement('button');
+    button.innerHTML = 'Yes';
+    button.style.flex = '1';
+    button.style.paddingRight = '24px';
+    button.style.paddingLeft = '24px';
+    button.style.paddingTop = '4px';
+    button.style.paddingBottom = '4px';
+    button.style.marginLeft = '8px';
+    button.style.marginRight = '8px';
+    button.style.borderRadius = '8px';
+    button.style.borderWidth = '1px';
+    button.style.borderStyle = 'solid';
+    button.style.height = '48px';
+    button.style.fontSize = '18px';
+    button.style.cursor = 'pointer';
+
+    button.style.backgroundColor = '#ff9500';
+    button.style.color = 'white';
+    button.style.borderColor = '#ff9500';
+    return button;
+  };
 
   private executeTask = () => {
     if (this.task) {
@@ -97,10 +131,10 @@ class PopupWindow {
   private detectPopupWindowCloseEvent = (windowProxy: Window | null): void => {
     // this.windowProxy.onclose event can't works with cross domain
     // based on https://stackoverflow.com/questions/9388380/capture-the-close-event-of-popup-window-in-javascript
+    window.clearInterval(this.detectCloseEventTimer);
     if (windowProxy) {
-      window.clearInterval(this.detectCloseEventTimer);
       this.detectCloseEventTimer = window.setInterval(() => {
-        if (!this.windowProxy || this.windowProxy.closed) {
+        if (windowProxy.closed) {
           clearInterval(this.detectCloseEventTimer);
           // in general, action:hideIframe is coming from popup window
           // if user closed popup window via browser, sdk need to be informed with that action

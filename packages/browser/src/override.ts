@@ -1,23 +1,23 @@
 import AMIS, { Payload } from '@qubic-js/core';
 
-import { PopupWindow } from './ui';
+import { IFrame, PopupWindow } from './ui';
 import { BrowserStore } from './store';
 
-let popupWindow: PopupWindow;
+let target: IFrame | PopupWindow;
 
 AMIS.initialize = url => {
   const { body } = document;
 
-  popupWindow = new PopupWindow(url);
-  body.appendChild(popupWindow.element);
+  target = new PopupWindow(url);
+  body.appendChild(target.element);
 };
 
 AMIS.authModalHandler = () => {
-  popupWindow?.open('auth');
+  target?.open('auth');
 };
 
 AMIS.requestModalHandler = (payload: Payload) => {
-  popupWindow?.open('call_request', payload);
+  target?.open('call_request', payload);
 };
 
 AMIS.sharedStore = new BrowserStore();
