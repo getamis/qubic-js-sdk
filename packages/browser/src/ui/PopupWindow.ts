@@ -31,7 +31,7 @@ class PopupWindow {
     paperDiv.style.boxSizing = 'border-box';
     paperDiv.style.alignItems = 'center';
     paperDiv.style.justifyContent = 'center';
-    paperDiv.style.borderRadius = '24px';
+    paperDiv.style.borderRadius = '8px';
     paperDiv.style.flexDirection = 'column';
     paperDiv.style.padding = '24px';
     backdropDiv.appendChild(paperDiv);
@@ -46,9 +46,9 @@ class PopupWindow {
     const footerDiv = document.createElement('div');
     footerDiv.style.display = 'flex';
     footerDiv.style.flexDirection = 'row';
-    footerDiv.style.width = '100%';
-    footerDiv.style.marginLeft = '-16px';
-    footerDiv.style.marginRight = '-16px';
+    footerDiv.style.alignSelf = 'stretch';
+    footerDiv.style.marginLeft = '-8px';
+    footerDiv.style.marginRight = '-8px';
 
     paperDiv.appendChild(footerDiv);
 
