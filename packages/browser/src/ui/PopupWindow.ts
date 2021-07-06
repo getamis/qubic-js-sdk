@@ -39,6 +39,8 @@ class PopupWindow {
     const text = document.createElement('p');
     text.innerHTML = 'Attempt to open Qubic to complete the transaction. Do you want to proceed ?';
     text.style.marginBottom = '48px';
+    text.style.color = '#555559';
+    text.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
     paperDiv.appendChild(text);
 
     const footerDiv = document.createElement('div');
