@@ -446,6 +446,13 @@ const App = React.memo(() => {
     });
   }, [handleSignSign, web3?.eth.personal, account]);
 
+  const handlePersonalSignUnknownEncoding = useCallback(async () => {
+    const data = `0xb073a86cd7e07dc4c222a7b4c489149c627684842c74b7dab99a2f99ceb46249`;
+    await handleSignSign(data, async () => {
+      return (await web3?.eth.personal.sign(data, account || '', 'test password!')) || '';
+    });
+  }, [handleSignSign, web3?.eth.personal, account]);
+
   const handleEthSign = useCallback(async () => {
     const data = '0xc9b8e1f1df93f7535e849d70806b546555549da9a6c2ae38ba674bf2db1a5817';
     await handleSignSign(data, async () => {
@@ -633,6 +640,7 @@ const App = React.memo(() => {
       <View style={styles.group}>
         <Text style={styles.title}>5. 簽名</Text>
         <Button onPress={handlePersonalSign}>personal_sign</Button>
+        <Button onPress={handlePersonalSignUnknownEncoding}>personal_sign_unknown_encoding</Button>
         <Button onPress={handleEthSign}>eth_sign</Button>
         <Button onPress={handleSignTypedDataV3}>eth_signTypedData_v3</Button>
         <Button onPress={handleSignTypedDataV4}>eth_signTypedData_v4</Button>
