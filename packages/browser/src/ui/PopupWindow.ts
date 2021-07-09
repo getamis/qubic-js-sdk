@@ -31,7 +31,7 @@ class PopupWindow {
     paperDiv.style.boxSizing = 'border-box';
     paperDiv.style.alignItems = 'center';
     paperDiv.style.justifyContent = 'center';
-    paperDiv.style.borderRadius = '24px';
+    paperDiv.style.borderRadius = '8px';
     paperDiv.style.flexDirection = 'column';
     paperDiv.style.padding = '24px';
     backdropDiv.appendChild(paperDiv);
@@ -39,14 +39,16 @@ class PopupWindow {
     const text = document.createElement('p');
     text.innerHTML = 'Attempt to open Qubic to complete the transaction. Do you want to proceed ?';
     text.style.marginBottom = '48px';
+    text.style.color = '#555559';
+    text.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
     paperDiv.appendChild(text);
 
     const footerDiv = document.createElement('div');
     footerDiv.style.display = 'flex';
     footerDiv.style.flexDirection = 'row';
-    footerDiv.style.width = '100%';
-    footerDiv.style.marginLeft = '-16px';
-    footerDiv.style.marginRight = '-16px';
+    footerDiv.style.alignSelf = 'stretch';
+    footerDiv.style.marginLeft = '-8px';
+    footerDiv.style.marginRight = '-8px';
 
     paperDiv.appendChild(footerDiv);
 
@@ -181,9 +183,10 @@ class PopupWindow {
   };
 
   public open = (action: string, payload?: Record<string, any>): void => {
+    this.windowProxy?.close();
+
     this.task = { action, payload };
     if (this.windowProxy && !this.windowProxy.closed) {
-      this.windowProxy.focus();
       if (this.isReady) {
         this.executeTask();
       }
