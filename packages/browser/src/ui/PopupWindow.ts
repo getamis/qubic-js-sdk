@@ -199,6 +199,10 @@ class PopupWindow {
       }
     }
   };
+
+  public close = (): void => {
+    this.windowProxy?.close();
+  };
 }
 
 export default PopupWindow;
