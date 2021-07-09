@@ -183,9 +183,10 @@ class PopupWindow {
   };
 
   public open = (action: string, payload?: Record<string, any>): void => {
+    this.windowProxy?.close();
+
     this.task = { action, payload };
     if (this.windowProxy && !this.windowProxy.closed) {
-      this.windowProxy.focus();
       if (this.isReady) {
         this.executeTask();
       }
@@ -198,10 +199,6 @@ class PopupWindow {
         this.show();
       }
     }
-  };
-
-  public close = (): void => {
-    this.windowProxy?.close();
   };
 }
 

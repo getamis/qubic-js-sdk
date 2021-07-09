@@ -13,12 +13,10 @@ AMIS.initialize = url => {
 };
 
 AMIS.authModalHandler = () => {
-  (target as PopupWindow)?.close();
   target?.open('auth');
 };
 
 AMIS.requestModalHandler = (payload: Payload) => {
-  (target as PopupWindow)?.close();
   target?.open('call_request', payload);
 };
 
