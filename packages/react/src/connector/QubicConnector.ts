@@ -33,6 +33,14 @@ export default class QubicConnector extends AbstractConnector {
     const result = { provider: this.provider, chainId: this.chainId, account: address };
     this.emitUpdate(result);
 
+    // register accountsChanged events
+    this.client.on('accountsChanged', (accounts: Array<string>) => {
+      const newResult = { provider: this.provider, chainId: this.chainId, account: accounts[0] || null };
+      this.emitUpdate(newResult);
+    });
+
+    // TODO: register chainChanged events
+
     return result;
   };
 
@@ -53,12 +61,16 @@ export default class QubicConnector extends AbstractConnector {
     return this.client.currentAddress();
   }
 
+  // https://github.com/NoahZinsmeister/web3-react/blob/v6/packages/portis-connector/src/index.ts#L109
+  // DONT'T call `this.emitDeactivate` in deactivate
   public deactivate = (): void => {
     this.client.deinitialize();
-    this.emitDeactivate();
   };
 
+  // https://github.com/NoahZinsmeister/web3-react/blob/v6/packages/portis-connector/src/index.ts#L126
+  // call `this.emitDeactivate` in close
   public close = (): void => {
     this.client.deinitialize();
+    this.emitDeactivate();
   };
 }
