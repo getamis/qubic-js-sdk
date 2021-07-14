@@ -41,6 +41,9 @@ export class AMIS {
 
   private engine!: Web3ProviderEngine;
 
+  private onAccountsChanged?: (accounts: Array<string>) => void;
+  private onChainChanged?: (chainId: string) => void;
+
   constructor(apiKey: string, apiSecret: string, network: Network | string) {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
@@ -69,8 +72,10 @@ export class AMIS {
 
         if (method === 'setAddress') {
           AMIS.sharedStore.setCurrentAddress(address);
+          this.onAccountsChanged?.([address]);
         } else if (method === 'clear') {
           AMIS.sharedStore.clear();
+          this.onAccountsChanged?.([]);
         }
       },
       false,
@@ -139,5 +144,19 @@ export class AMIS {
 
   public currentAddress = (): string => {
     return AMIS.sharedStore.getCurrentAddress() || '';
+  };
+
+  // register events
+  // https://docs.metamask.io/guide/ethereum-provider.html#events
+  public on = (
+    event: 'accountsChanged' | 'chainChanged',
+    handler: ((accounts: Array<string>) => void) | ((chainId: string) => void),
+  ): void => {
+    if (event === 'accountsChanged') {
+      this.onAccountsChanged = handler as (accounts: Array<string>) => void;
+    }
+    if (event === 'chainChanged') {
+      this.onChainChanged = handler as (chainId: string) => void;
+    }
   };
 }
