@@ -24,5 +24,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "e516056bfe62df67d2b18ad585110333fb63fc62"
+  "gitHead": "e516056bfe62df67d2b18ad585110333fb63fc62",
+  "dependencies": {
+    "detect-inapp": "^1.4.0"
+  }
 }
