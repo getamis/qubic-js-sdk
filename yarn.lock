@@ -7374,6 +7374,13 @@ destroy@~1.0.4:
   resolved "https://registry.yarnpkg.com/destroy/-/destroy-1.0.4.tgz#978857442c44749e4206613e37946205826abd80"
   integrity sha1-l4hXRCxEdJ5CBmE+N5RiBYJqvYA=
 
+detect-inapp@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/detect-inapp/-/detect-inapp-1.4.0.tgz#9cc42c837495aeba98b57914cf88e266b9dab944"
+  integrity sha1-nMQsg3SVrrqYtXkUz4jiZrnauUQ=
+  dependencies:
+    lodash "^4.17.5"
+
 detect-indent@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/detect-indent/-/detect-indent-5.0.0.tgz#3871cc0a6a002e8c3e5b3cf7f336264675f06b9d"
