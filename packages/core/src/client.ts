@@ -39,7 +39,7 @@ export class AMIS {
   public network: Network = Network.MAINNET;
   public speed?: Speed;
 
-  private engine!: Web3ProviderEngine;
+  private engine!: Web3ProviderEngine & { isQubic?: boolean };
 
   private onAccountsChanged?: (accounts: Array<string>) => void;
   private onChainChanged?: (chainId: string) => void;
@@ -110,6 +110,7 @@ export class AMIS {
       }),
     );
     this.engine.start();
+    this.engine.isQubic = true;
     return this.engine;
   };
 
