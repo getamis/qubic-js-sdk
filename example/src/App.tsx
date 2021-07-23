@@ -654,6 +654,9 @@ const App = React.memo(() => {
 
 export default React.memo(() => {
   const library = (provider: any): Web3 => {
+    console.log({
+      'provider.isQubic': provider.isQubic,
+    });
     return new Web3(provider);
   };
 
