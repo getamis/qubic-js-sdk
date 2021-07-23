@@ -6,7 +6,7 @@ const enUs = {
   ok: 'Ok',
   yes: 'Yes',
   no: 'No',
-  'in-app-hint': 'Please open this web in Safari or Chrome browser',
+  'in-app-hint': 'Please open this page in Safari or Chrome',
   'popup-window-hint': 'Attempt to open Qubic to complete the action. Do you want to proceed ?',
 };
 
