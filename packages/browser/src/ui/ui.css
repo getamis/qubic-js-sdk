@@ -1,0 +1,113 @@
+.qubic-modal__backdrop {
+  position: absolute;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999;
+  border-width: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+.qubic-modal__paper {
+  background-color: white;
+  border-width: 0;
+  border-radius: 8px;
+  max-width: 320px;
+  box-sizing: border-box;
+  flex-direction: column;
+}
+
+.qubic-modal__header {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-self: stretch;
+  background-color: #f9f9f9;
+  height: 44px;
+  padding: 0 8px;
+}
+
+.qubic-modal__header-button {
+  padding: 4px;
+  cursor: pointer;
+}
+.qubic-modal__header-button:active {
+  opacity: 0.3;
+}
+
+.qubic-modal__content {
+  padding: 12px 24px;
+}
+
+.qubic-modal__message {
+  margin: 0;
+  color: #555559;
+  text-align: center;
+}
+
+.qubic-modal__footer {
+  display: flex;
+  flex-direction: row;
+  align-self: stretch;
+  padding: 24px;
+}
+
+.qubic-modal__button {
+  flex: 1;
+  padding: 12px 24px;
+  margin: 0 8px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-style: solid;
+  height: 48px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.qubic-modal__button:active {
+  opacity: 0.3;
+}
+
+.qubic-modal__button--cancel {
+  background-color: white;
+  color: #ff9500;
+  border-color: #ff9500;
+}
+
+.qubic-modal__button--primary {
+  background-color: #ff9500;
+  color: white;
+  border-color: #ff9500;
+}
+
+.qubic-in-app-warning__container {
+  margin-top: 24px;
+}
+
+.qubic-in-app-warning__link {
+  color: #568ddc;
+  word-break: break-all;
+  margin: 0;
+  text-align: center;
+  line-height: 1.7;
+}
+
+@media only screen and (max-width: 640px) {
+  .qubic-modal__backdrop {
+    align-items: flex-end;
+  }
+  .qubic-modal__paper {
+    border-radius: 0;
+    max-width: initial;
+    width: 100%;
+  }
+}

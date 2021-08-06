@@ -26,6 +26,7 @@ class PopupWindow {
       onConfirm: () => {
         this.openPopupWindow();
       },
+      hideWhenConfirm: true,
     });
     this.element = this.modal.element;
 

@@ -5,6 +5,9 @@ import { IFrame, PopupWindow } from './ui';
 import { BrowserStore } from './store';
 import { t } from './translation';
 
+const isIOS =
+  /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
 
 let target: IFrame | PopupWindow;
@@ -13,11 +16,22 @@ let modal: Modal;
 AMIS.initialize = url => {
   const { body } = document;
   if (inApp.isInApp) {
+    const container = document.createElement('div');
+    container.className = 'qubic-in-app-warning__container ';
+
+    const link = window.location.href;
+
+    const messageP = document.createElement('p');
+    messageP.className = 'qubic-in-app-warning__link';
+    messageP.innerHTML = link;
+    container.appendChild(messageP);
+
     modal = new Modal({
-      description: t('in-app-hint'),
-      confirmText: t('ok'),
+      children: container,
+      description: isIOS ? t('in-app-hint-ios') : t('in-app-hint'),
+      confirmText: t('copyLink'),
       onConfirm: () => {
-        // noop
+        navigator.clipboard.writeText(link);
       },
     });
     body.appendChild(modal.element);
