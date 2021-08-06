@@ -5,32 +5,19 @@
 
 # Installation
 
-**_package.json_**
+### React
 
 ```
-{
-  ...
-  "dependencies": {
-    "@qubic-js/core": "^0.1.12",
-    "@qubic-js/browser": "^0.1.12",
-    "@qubic-js/react": "^0.1.12",
-  },
-}
+$ npm install @qubic-js/react
 ```
-
-# Usage
 
 ### Javascript
 
-```javascript
-import Web3 from 'web3';
-import AMIS from '@qubic-js/browser';
-
-const amis = new AMIS(API_KEY, API_SECRET, Network.RINKEBY);
-amis.setSpeed(Speed.FAST);
-
-const web3 = new Web3(amis.getProvider());
 ```
+$ npm install @qubic-js/browser
+```
+
+# Usage
 
 ### React
 
@@ -58,6 +45,18 @@ export default () => {
     </Web3ReactProvider>
   );
 }
+```
+
+### Javascript
+
+```javascript
+import Web3 from 'web3';
+import AMIS from '@qubic-js/browser';
+
+const amis = new AMIS(API_KEY, API_SECRET, Network.RINKEBY);
+amis.setSpeed(Speed.FAST);
+
+const web3 = new Web3(amis.getProvider());
 ```
 
 ## Run Example
