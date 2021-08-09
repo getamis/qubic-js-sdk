@@ -1,85 +1,97 @@
+import closeIcon from '../svg/close';
+
 interface Props {
   description: string;
   cancelText?: string;
   onCancel?: () => void;
   confirmText?: string;
   onConfirm?: () => void;
+  hideWhenConfirm?: boolean;
+  children?: HTMLElement;
 }
 
 export default class Modal {
   public element: HTMLDivElement;
 
   constructor(props: Props) {
-    const { description, onCancel, cancelText, onConfirm, confirmText } = props;
+    const { description, onCancel, cancelText, onConfirm, confirmText, hideWhenConfirm, children } = props;
 
     const rootDiv = document.createElement('div');
-    rootDiv.id = 'backdrop';
+    rootDiv.className = 'qubic-modal__backdrop';
     rootDiv.style.display = 'none';
-    rootDiv.style.position = 'fixed';
-    rootDiv.style.top = '0';
-    rootDiv.style.left = '0';
-    rootDiv.style.right = '0';
-    rootDiv.style.bottom = '0';
-    rootDiv.style.zIndex = '99999';
-    rootDiv.style.borderWidth = '0';
-    rootDiv.style.width = '100%';
-    rootDiv.style.height = '100%';
-    rootDiv.style.background = 'rgba(0,0,0,.5)';
-    rootDiv.style.alignItems = 'center';
-    rootDiv.style.justifyContent = 'center';
+    rootDiv.onclick = (event: MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.hide();
+      onCancel?.();
+    };
 
     const paperDiv = document.createElement('div');
-    paperDiv.id = 'paper';
-    paperDiv.style.display = 'flex';
-    paperDiv.style.backgroundColor = 'white';
-    paperDiv.style.borderWidth = '0';
-    paperDiv.style.maxWidth = '320px';
-    paperDiv.style.boxSizing = 'border-box';
-    paperDiv.style.alignItems = 'center';
-    paperDiv.style.justifyContent = 'center';
-    paperDiv.style.borderRadius = '8px';
-    paperDiv.style.flexDirection = 'column';
-    paperDiv.style.padding = '24px';
+    paperDiv.className = 'qubic-modal__paper';
     rootDiv.appendChild(paperDiv);
+
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'qubic-modal__header';
+    paperDiv.appendChild(headerDiv);
+
+    const closeSpan = document.createElement('span');
+    closeSpan.className = 'qubic-modal__header-button';
+    closeSpan.innerHTML = closeIcon;
+    closeSpan.onclick = (event: MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.hide();
+      onCancel?.();
+    };
+    headerDiv.appendChild(closeSpan);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'qubic-modal__content';
+    paperDiv.appendChild(contentDiv);
 
     const text = document.createElement('p');
     text.innerHTML = description;
-    text.style.marginBottom = '48px';
-    text.style.color = '#555559';
-    text.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-    paperDiv.appendChild(text);
+    text.className = 'qubic-modal__message';
+
+    contentDiv.appendChild(text);
+
+    if (children) {
+      contentDiv.appendChild(children);
+    }
 
     const footerDiv = document.createElement('div');
-    footerDiv.style.display = 'flex';
-    footerDiv.style.flexDirection = 'row';
-    footerDiv.style.alignSelf = 'stretch';
-    footerDiv.style.marginLeft = '-8px';
-    footerDiv.style.marginRight = '-8px';
+    footerDiv.className = 'qubic-modal__footer';
     paperDiv.appendChild(footerDiv);
 
     if (cancelText && onCancel) {
-      const cancelButton = this.createButton();
-      cancelButton.innerHTML = cancelText;
-      cancelButton.style.backgroundColor = 'white';
-      cancelButton.style.color = '#ff9500';
-      cancelButton.style.borderColor = '#ff9500';
-      cancelButton.onclick = () => {
-        this.hide();
-        onCancel();
-      };
+      const cancelButton = this.createButton({
+        innerHtml: cancelText,
+        className: 'qubic-modal__button--cancel',
+        onclick: (event: MouseEvent) => {
+          event.preventDefault();
+          event.stopPropagation();
+          this.hide();
+          onCancel();
+        },
+      });
+
       footerDiv.appendChild(cancelButton);
     }
 
     if (confirmText && onConfirm) {
-      const okButton = this.createButton();
-      okButton.innerHTML = confirmText;
-      okButton.style.backgroundColor = '#ff9500';
-      okButton.style.color = 'white';
-      okButton.style.borderColor = '#ff9500';
-      okButton.onclick = () => {
-        this.hide();
-        onConfirm();
-      };
+      const okButton = this.createButton({
+        innerHtml: confirmText,
+        className: 'qubic-modal__button--primary',
+        onclick: (event: MouseEvent) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (hideWhenConfirm) {
+            this.hide();
+          }
+          onConfirm();
+        },
+      });
+
       footerDiv.appendChild(okButton);
     }
 
@@ -96,26 +108,19 @@ export default class Modal {
     }, 500);
   };
 
-  private createButton = () => {
+  private createButton = ({
+    innerHtml,
+    className,
+    onclick,
+  }: {
+    innerHtml: string;
+    className: string;
+    onclick: GlobalEventHandlers['onclick'];
+  }) => {
     const button = document.createElement('button');
-    button.innerHTML = 'Yes';
-    button.style.flex = '1';
-    button.style.paddingRight = '24px';
-    button.style.paddingLeft = '24px';
-    button.style.paddingTop = '4px';
-    button.style.paddingBottom = '4px';
-    button.style.marginLeft = '8px';
-    button.style.marginRight = '8px';
-    button.style.borderRadius = '8px';
-    button.style.borderWidth = '1px';
-    button.style.borderStyle = 'solid';
-    button.style.height = '48px';
-    button.style.fontSize = '18px';
-    button.style.cursor = 'pointer';
-
-    button.style.backgroundColor = '#ff9500';
-    button.style.color = 'white';
-    button.style.borderColor = '#ff9500';
+    button.innerHTML = innerHtml;
+    button.className = `${'qubic-modal__button '}${className}`;
+    button.onclick = onclick;
     return button;
   };
 }

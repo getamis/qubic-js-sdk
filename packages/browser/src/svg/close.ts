@@ -3,7 +3,7 @@ export default `
     viewBox="0 0 24 24"
     width="24"
     height="24"
-    stroke="currentColor"
+    stroke="#555559"
     stroke-width="2"
     fill="none"
     stroke-linecap="round"
