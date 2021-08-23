@@ -58,7 +58,10 @@
   display: flex;
   flex-direction: row;
   align-self: stretch;
-  padding: 24px;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-top: 24px;
+  padding-bottom: 32px;
 }
 
 .qubic-modal__button {
@@ -68,7 +71,6 @@
   border-radius: 8px;
   border-width: 1px;
   border-style: solid;
-  height: 48px;
   font-size: 18px;
   cursor: pointer;
 }

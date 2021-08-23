@@ -14,3 +14,6 @@ build
 
 # testing
 junit.xml
+
+# Local Netlify folder
+.netlify

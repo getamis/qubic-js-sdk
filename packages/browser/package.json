@@ -10,7 +10,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "copy-files": "copyfiles -u 1 src/**/*.css dist/",
+    "build": "tsc -p tsconfig.build.json && yarn run copy-files",
     "prepublishOnly": "yarn build"
   },
   "peerDependencies": {
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@qubic-js/core": "^0.1.20",
     "@types/react": "^16.9.35",
+    "copyfiles": "^2.4.1",
     "typescript": "^3.6.4"
   },
   "publishConfig": {

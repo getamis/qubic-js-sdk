@@ -239,6 +239,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3e4b64',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 40,
   },
   padding: {
     padding: 8,
