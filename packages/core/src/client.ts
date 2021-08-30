@@ -89,7 +89,7 @@ export class AMIS {
   };
 
   public getProvider = (options?: ProviderOptions): AbstractProvider => {
-    if ((window as any).ethereum.isQubic) return (window as any).ethereum;
+    if ((window as any).ethereum?.isQubic) return (window as any).ethereum;
     if (this.engine) return this.engine;
     this.engine = new Web3ProviderEngine();
     this.engine.addProvider(
@@ -116,7 +116,7 @@ export class AMIS {
 
   public signIn = async (): Promise<string> => {
     return new Promise((resolve, reject) => {
-      if ((window as any).ethereum.isQubic) {
+      if ((window as any).ethereum?.isQubic) {
         (window as any).ethereum.request({ method: 'eth_accounts' }).then((accounts: string[]) => resolve(accounts[0]));
         return;
       }
