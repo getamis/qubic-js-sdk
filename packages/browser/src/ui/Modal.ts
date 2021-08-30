@@ -1,7 +1,8 @@
-import { StyleSheet, css } from 'aphrodite';
+import { css, CSSInterpolation } from '@emotion/css';
+
 import closeIcon from '../svg/close';
 
-const styles = StyleSheet.create({
+const styles: Record<string, CSSInterpolation> = {
   container: {
     position: 'absolute',
     fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
   headerButton: {
     cursor: 'pointer',
     padding: '4px',
-    ':active': {
+    '&:active': {
       opacity: 0.3,
     },
   },
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     fontSize: '18px',
     cursor: 'pointer',
-    ':active': {
+    '&:active': {
       opacity: 0.3,
     },
   },
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
     color: 'white',
     borderColor: '#ff9500',
   },
-});
+};
 
 interface Props {
   description: string;

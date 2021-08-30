@@ -1,12 +1,12 @@
 import AMIS, { Payload } from '@qubic-js/core';
 import InApp from 'detect-inapp';
-import { StyleSheet, css } from 'aphrodite';
+import { css, CSSInterpolation } from '@emotion/css';
 import Modal from './ui/Modal';
 import { IFrame, PopupWindow } from './ui';
 import { BrowserStore } from './store';
 import { t } from './translation';
 
-const styles = StyleSheet.create({
+const styles: Record<string, CSSInterpolation> = {
   container: {
     marginTop: '24px',
   },
@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: '1.7',
   },
-});
+};
 
 const isIOS =
   /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
