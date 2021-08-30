@@ -10,8 +10,7 @@
     "dist"
   ],
   "scripts": {
-    "copy-files": "copyfiles -u 1 src/**/*.css dist/",
-    "build": "tsc -p tsconfig.build.json && yarn run copy-files",
+    "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "yarn build"
   },
   "peerDependencies": {
@@ -28,6 +27,7 @@
   },
   "gitHead": "e516056bfe62df67d2b18ad585110333fb63fc62",
   "dependencies": {
+    "aphrodite": "^2.4.0",
     "detect-inapp": "^1.4.0"
   }
 }

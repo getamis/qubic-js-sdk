@@ -1,9 +1,23 @@
 import AMIS, { Payload } from '@qubic-js/core';
 import InApp from 'detect-inapp';
+import { StyleSheet, css } from 'aphrodite';
 import Modal from './ui/Modal';
 import { IFrame, PopupWindow } from './ui';
 import { BrowserStore } from './store';
 import { t } from './translation';
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: '24px',
+  },
+  link: {
+    color: '#568ddc',
+    wordBreak: 'break-all',
+    margin: '0',
+    textAlign: 'center',
+    lineHeight: '1.7',
+  },
+});
 
 const isIOS =
   /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -17,12 +31,12 @@ AMIS.initialize = url => {
   const { body } = document;
   if (inApp.isInApp) {
     const container = document.createElement('div');
-    container.className = 'qubic-in-app-warning__container ';
+    container.className = css(styles.container);
 
     const link = window.location.href;
 
     const messageP = document.createElement('p');
-    messageP.className = 'qubic-in-app-warning__link';
+    messageP.className = css(styles.link);
     messageP.innerHTML = link;
     container.appendChild(messageP);
 
