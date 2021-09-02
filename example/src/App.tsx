@@ -418,6 +418,32 @@ const App = React.memo(() => {
       });
   }, [account, web3]);
 
+  const handleApproveERC20 = useCallback(async () => {
+    if (!web3) return;
+    const spender = '0x7a250d5630b4cf539739df2c5dacb4c659f2488d'; // spender: dapp uniswap smart contract address
+    const tokenDecimals = Web3Utils.toBN(18);
+    const tokenAmountToApprove = Web3Utils.toBN(1);
+    const amount = Web3Utils.toHex(tokenAmountToApprove.mul(Web3Utils.toBN(10).pow(tokenDecimals)));
+    const contractAddress = '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c'; // Xeenus
+    const xeenusContract = new web3.eth.Contract(erc20Abi, contractAddress);
+    xeenusContract.methods
+      .approve(spender, amount)
+      .send({
+        from: account || '', // default from address
+        value: 0,
+        gas: 100000,
+      })
+      .on('error', (error: Error): void => {
+        console.error(error);
+      })
+      .once('transactionHash', (hash: string) => {
+        console.log(hash);
+      })
+      .once('receipt', (receipt: TransactionReceipt) => {
+        console.log(receipt);
+      });
+  }, [account, address, web3]);
+
   const handleSignSign = useCallback(
     async (data, signer: () => Promise<string>) => {
       try {
@@ -637,6 +663,7 @@ const App = React.memo(() => {
         <Text style={styles.title}>4. ERC-20 交易</Text>
         <Button onPress={handleGetERC20}>Get Test ERC-20 Token</Button>
         <Button onPress={handleSendERC20}>Send Test ERC-20 Token</Button>
+        <Button onPress={handleApproveERC20}>Approve Test ERC-20 Token</Button>
       </View>
       <View style={styles.group}>
         <Text style={styles.title}>5. 簽名</Text>
