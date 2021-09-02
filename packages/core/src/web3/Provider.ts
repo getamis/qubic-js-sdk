@@ -54,7 +54,7 @@ const preprocessTx = async (client: AMIS, tx: TransactionConfig): Promise<Transa
 
   let { from, chainId, chain } = tx;
 
-  // overridee chain
+  // override chain
   chainId = client.network;
   chain = Network[client.network].toLowerCase();
 
