@@ -29,5 +29,5 @@ export const locales: Record<string, Record<localeKeys, string>> = {
 };
 
 export const t = (key: localeKeys): string => {
-  return language in locales ? locales[language][key] : locales['en-US'][key];
+  return language in locales ? locales[language][key] : locales['en-us'][key];
 };
