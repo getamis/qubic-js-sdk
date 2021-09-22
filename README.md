@@ -30,7 +30,10 @@ import Web3 from 'web3';
 import { QubicConnector } from '@qubic-js/react';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 
-const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID);
+const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID, {
+  // optional, default: false, when value is true, the popup will hide automatically
+  autoHideWelcome: true
+});
 const amis = qubicConnector.getClient();
 
 export default () => {
