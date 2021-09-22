@@ -4,7 +4,7 @@ import Web3ProviderEngine from 'web3-provider-engine';
 import WebsocketProvider from 'web3-provider-engine/subproviders/websocket';
 
 import { Provider as Web3Provider } from './web3';
-import { Store } from './store';
+import { Store, AmisOptions } from './store';
 import { Network, Speed } from './enums';
 import { CostData, Payload } from './types';
 import { NODE_URLS, getWalletUrl } from './constants/backend';
@@ -44,9 +44,10 @@ export class AMIS {
   private onAccountsChanged?: (accounts: Array<string>) => void;
   private onChainChanged?: (chainId: string) => void;
 
-  constructor(apiKey: string, apiSecret: string, network: Network | string) {
+  constructor(apiKey: string, apiSecret: string, network: Network | string, options: AmisOptions = {}) {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
+    AMIS.sharedStore.setAmisOptions(options);
     if (typeof network === 'string') {
       const parseNetwork = Number(network);
       if (!Object.values(Network).includes(parseNetwork)) {

@@ -1,4 +1,4 @@
-import { Store, Address } from '@qubic-js/core';
+import { Store, Address, AmisOptions } from '@qubic-js/core';
 
 export class BrowserStore implements Store {
   private getItem = (key: string): string | null => {
@@ -11,6 +11,14 @@ export class BrowserStore implements Store {
     } else {
       window.localStorage.removeItem(itemKey);
     }
+  };
+
+  public getAmisOptions = (): AmisOptions => {
+    return JSON.parse(this.getItem('amisOptions') || '{}');
+  };
+
+  public setAmisOptions = (options: AmisOptions): void => {
+    this.updateItem('amisOptions', JSON.stringify(options));
   };
 
   public getCurrentAddress = (): string | null => {

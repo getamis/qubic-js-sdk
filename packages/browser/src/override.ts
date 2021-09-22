@@ -27,6 +27,15 @@ const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as an
 let target: IFrame | PopupWindow;
 let modal: Modal;
 
+let isQubicConnected = false;
+const hidePopupWhenSetAddress = (e: MessageEvent) => {
+  const { method, address } = e.data;
+  if (method === 'setAddress' && address) {
+    target.hide();
+    window.removeEventListener('message', hidePopupWhenSetAddress);
+  }
+};
+
 AMIS.initialize = url => {
   const { body } = document;
   if (inApp.isInApp) {
@@ -62,6 +71,16 @@ AMIS.authModalHandler = () => {
     return;
   }
   target?.open('auth');
+
+  // only auto hide popup when first time connect qubic
+  const { autoHideWelcome } = AMIS.sharedStore.getAmisOptions();
+  if (!isQubicConnected) {
+    isQubicConnected = true;
+    if (autoHideWelcome) {
+      window.removeEventListener('message', hidePopupWhenSetAddress);
+      window.addEventListener('message', hidePopupWhenSetAddress);
+    }
+  }
 };
 
 AMIS.requestModalHandler = (payload: Payload) => {
