@@ -1,6 +1,5 @@
-import { Store, Address, AmisOptions } from '@qubic-js/core';
+import { Store, Address } from '@qubic-js/core';
 
-const QUBIC_AMIS_OPTIONS = 'QUBIC_AMIS_OPTIONS';
 const QUBIC_CURRENT_ADDRESS = 'QUBIC_CURRENT_ADDRESS';
 const QUBIC_ADDRESSES = 'QUBIC_ADDRESSES';
 
@@ -15,14 +14,6 @@ export class BrowserStore implements Store {
     } else {
       window.localStorage.removeItem(itemKey);
     }
-  };
-
-  public getAmisOptions = (): AmisOptions => {
-    return JSON.parse(this.getItem(QUBIC_AMIS_OPTIONS) || '{}');
-  };
-
-  public setAmisOptions = (options: AmisOptions): void => {
-    this.updateItem(QUBIC_AMIS_OPTIONS, JSON.stringify(options));
   };
 
   public getCurrentAddress = (): string | null => {
@@ -43,7 +34,6 @@ export class BrowserStore implements Store {
   };
 
   public clear = (): void => {
-    this.updateItem(QUBIC_AMIS_OPTIONS, null);
     this.updateItem(QUBIC_CURRENT_ADDRESS, null);
     this.updateItem(QUBIC_ADDRESSES, null);
   };

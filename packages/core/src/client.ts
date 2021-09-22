@@ -4,7 +4,7 @@ import Web3ProviderEngine from 'web3-provider-engine';
 import WebsocketProvider from 'web3-provider-engine/subproviders/websocket';
 
 import { Provider as Web3Provider } from './web3';
-import { Store, AmisOptions } from './store';
+import { Store } from './store';
 import { Network, Speed } from './enums';
 import { CostData, Payload } from './types';
 import { NODE_URLS, getWalletUrl } from './constants/backend';
@@ -12,6 +12,11 @@ import { estimateCosts } from './models';
 import { queryWithAuthConfig } from './utils';
 
 type ProviderOptions = any;
+
+export interface AmisOptions {
+  /** hide welcome screen after sign in success */
+  autoHideWelcome?: boolean;
+}
 
 // for sign in
 const addressResolver = (resolve: (value: string | PromiseLike<string>) => void) => {
@@ -33,6 +38,7 @@ export class AMIS {
   public static requestModalHandler?: (payload: Payload) => void;
 
   public static sharedStore: Store;
+  public static options?: AmisOptions;
 
   public apiKey: string;
   public apiSecret: string;
@@ -47,7 +53,7 @@ export class AMIS {
   constructor(apiKey: string, apiSecret: string, network: Network | string, options: AmisOptions = {}) {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
-    AMIS.sharedStore.setAmisOptions(options);
+    AMIS.options = options;
     if (typeof network === 'string') {
       const parseNetwork = Number(network);
       if (!Object.values(Network).includes(parseNetwork)) {
