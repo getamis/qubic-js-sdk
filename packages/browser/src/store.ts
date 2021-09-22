@@ -1,5 +1,9 @@
 import { Store, Address, AmisOptions } from '@qubic-js/core';
 
+const QUBIC_AMIS_OPTIONS = 'QUBIC_AMIS_OPTIONS';
+const QUBIC_CURRENT_ADDRESS = 'QUBIC_CURRENT_ADDRESS';
+const QUBIC_ADDRESSES = 'QUBIC_ADDRESSES';
+
 export class BrowserStore implements Store {
   private getItem = (key: string): string | null => {
     return window.localStorage.getItem(key);
@@ -14,32 +18,33 @@ export class BrowserStore implements Store {
   };
 
   public getAmisOptions = (): AmisOptions => {
-    return JSON.parse(this.getItem('amisOptions') || '{}');
+    return JSON.parse(this.getItem(QUBIC_AMIS_OPTIONS) || '{}');
   };
 
   public setAmisOptions = (options: AmisOptions): void => {
-    this.updateItem('amisOptions', JSON.stringify(options));
+    this.updateItem(QUBIC_AMIS_OPTIONS, JSON.stringify(options));
   };
 
   public getCurrentAddress = (): string | null => {
-    return this.getItem('currentAddress');
+    return this.getItem(QUBIC_CURRENT_ADDRESS);
   };
 
   public setCurrentAddress = (address: string | null | undefined): void => {
-    this.updateItem('currentAddress', address);
+    this.updateItem(QUBIC_CURRENT_ADDRESS, address);
   };
 
   public getAddresses = (): Address[] | null => {
-    const addressesStr = this.getItem('addresses');
+    const addressesStr = this.getItem(QUBIC_ADDRESSES);
     return addressesStr ? JSON.parse(addressesStr) : null;
   };
 
   public setAddresses = (addresses: Address[] | null | undefined): void => {
-    this.updateItem('addresses', addresses ? JSON.stringify(addresses) : null);
+    this.updateItem(QUBIC_ADDRESSES, addresses ? JSON.stringify(addresses) : null);
   };
 
   public clear = (): void => {
-    this.updateItem('currentAddress', null);
-    this.updateItem('addresses', null);
+    this.updateItem(QUBIC_AMIS_OPTIONS, null);
+    this.updateItem(QUBIC_CURRENT_ADDRESS, null);
+    this.updateItem(QUBIC_ADDRESSES, null);
   };
 }
