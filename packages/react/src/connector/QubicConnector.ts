@@ -25,7 +25,9 @@ export default class QubicConnector extends AbstractConnector {
 
     if (!this.client) {
       const AMIS = await import('@qubic-js/browser').then(dyIm => dyIm?.default ?? dyIm);
-      this.client = new AMIS(this.apiKey, this.apiSecret, this.chainId);
+      this.client = new AMIS(this.apiKey, this.apiSecret, this.chainId, {
+        autoHideWelcome: false,
+      });
       this.provider = this.client.getProvider();
     }
 
