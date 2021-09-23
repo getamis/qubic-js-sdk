@@ -30,9 +30,9 @@ export const getSendRequltUrl = (devUrl?: string): string => endpoints('/send/re
 export const getThirdPartyCardUrl = (devUrl?: string): string => endpoints('/thirdparty/tappay/creditcard', devUrl);
 
 export const NODE_URLS = {
-  [Network.MAINNET]: 'wss://mainnet.infura.io/ws/v3/3e0eb8f34fac469b9286936ff1423270',
-  [Network.ROPSTEN]: 'wss://ropsten.infura.io/ws/v3/3e0eb8f34fac469b9286936ff1423270',
-  [Network.RINKEBY]: 'wss://rinkeby.infura.io/ws/v3/3e0eb8f34fac469b9286936ff1423270',
+  [Network.MAINNET]: 'wss://mainnet.infura.io/ws/v3/34813e03032144f691039e83a1461972',
+  [Network.ROPSTEN]: 'wss://ropsten.infura.io/ws/v3/34813e03032144f691039e83a1461972',
+  [Network.RINKEBY]: 'wss://rinkeby.infura.io/ws/v3/34813e03032144f691039e83a1461972',
 };
 
 export const FORWARDER_ADDRESSES = {
