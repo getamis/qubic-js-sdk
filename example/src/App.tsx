@@ -282,7 +282,9 @@ const API_KEY = 'a857a616-21ed-4d9e-9aff-2091993bff73';
 const API_SECRET = 'DnAYwfFMCGzdMNMMdTCeLWifJbGYgZFP';
 const CHAIN_ID = 4;
 
-const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID);
+const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID, {
+  autoHideWelcome: false,
+});
 
 const App = React.memo(() => {
   const context = useWeb3React<Web3>();
