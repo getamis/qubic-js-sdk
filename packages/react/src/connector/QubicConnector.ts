@@ -1,6 +1,7 @@
 import { AbstractProvider } from 'web3-core';
 import { ConnectorUpdate } from '@web3-react/types';
 import { AbstractConnector } from '@web3-react/abstract-connector';
+import { AmisOptions } from '../../../core/src/client';
 
 export default class QubicConnector extends AbstractConnector {
   private client: any;
@@ -9,13 +10,15 @@ export default class QubicConnector extends AbstractConnector {
   private apiKey: string;
   private apiSecret: string;
   private chainId: number;
+  private options?: AmisOptions;
 
-  constructor(apiKey: string, apiSecret: string, chainId: number | string) {
+  constructor(apiKey: string, apiSecret: string, chainId: number | string, options?: AmisOptions) {
     super({ supportedChainIds: [1, 4] }); // [mainnet, rinkeby]
 
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
     this.chainId = Number(chainId) || 1;
+    this.options = options;
   }
 
   public activate = async (): Promise<ConnectorUpdate> => {
@@ -25,9 +28,7 @@ export default class QubicConnector extends AbstractConnector {
 
     if (!this.client) {
       const AMIS = await import('@qubic-js/browser').then(dyIm => dyIm?.default ?? dyIm);
-      this.client = new AMIS(this.apiKey, this.apiSecret, this.chainId, {
-        autoHideWelcome: false,
-      });
+      this.client = new AMIS(this.apiKey, this.apiSecret, this.chainId, this.options);
       this.provider = this.client.getProvider();
     }
 
