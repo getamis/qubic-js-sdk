@@ -9,6 +9,7 @@ import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 // eslint-disable-next-line camelcase
 import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { QubicConnector } from '@qubic-js/react';
+import qs from 'query-string';
 
 const erc20Abi = [
   {
@@ -262,6 +263,7 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: '#fff',
+    textAlign: 'center',
   },
   addrText: {
     color: '#fff',
@@ -282,13 +284,14 @@ const API_KEY = 'a857a616-21ed-4d9e-9aff-2091993bff73';
 const API_SECRET = 'DnAYwfFMCGzdMNMMdTCeLWifJbGYgZFP';
 const CHAIN_ID = 4;
 
+const parsed = qs.parse(window.location.search);
 const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID, {
-  autoHideWelcome: false,
+  autoHideWelcome: parsed.autoHideWelcome === 'true' || false,
 });
 
 const App = React.memo(() => {
   const context = useWeb3React<Web3>();
-  const { account, activate, library: web3 } = context;
+  const { account, activate, deactivate, library: web3 } = context;
   const [address, setAddress] = useState<string>('');
 
   useEffect(() => {
@@ -301,6 +304,32 @@ const App = React.memo(() => {
       console.error(e);
     });
   }, [activate]);
+
+  const [enableSignMsgAfterActivate, setEnableSignMsgAfterActivate] = useState(false);
+  const handleSignInUpAndSignMessage = useCallback(async () => {
+    setEnableSignMsgAfterActivate(true);
+    await activate(qubicConnector, (e: Error): void => {
+      console.error(e);
+    });
+  }, [activate]);
+
+  useEffect(() => {
+    if (enableSignMsgAfterActivate && account) {
+      setEnableSignMsgAfterActivate(false);
+
+      web3?.eth.personal
+        .sign('some custom msg', account || '', '')
+        .then(signature => {
+          console.log('handleSignInUpAndSignMessage 2');
+          console.log(`signature=${signature}`);
+        })
+        .catch(console.error);
+    }
+  }, [account, enableSignMsgAfterActivate, web3?.eth.personal]);
+
+  const handleDisconnect = useCallback(() => {
+    deactivate();
+  }, [deactivate]);
 
   const handleEstimateGas = useCallback(() => {
     web3?.eth.estimateGas(
@@ -650,7 +679,9 @@ const App = React.memo(() => {
       <View style={styles.group}>
         <Text style={styles.title}>1. 註冊或登錄以獲得地址</Text>
         <Button onPress={handleSignInUp}>SIGN IN / SIGN UP</Button>
+        <Button onPress={handleSignInUpAndSignMessage}>{`SIGN IN / SIGN UP\nAnd Sign custom message`}</Button>
         <Text style={styles.addrText}>{address}</Text>
+        <Button onPress={handleDisconnect}>Disconnect</Button>
       </View>
       <View style={styles.group}>
         <Text style={styles.title}>2. 估算 Gas Price (顯示在 console 中)</Text>
