@@ -1,7 +1,7 @@
 import { AbstractProvider } from 'web3-core';
 import { ConnectorUpdate } from '@web3-react/types';
 import { AbstractConnector } from '@web3-react/abstract-connector';
-import { AmisOptions } from '../../../core/src/client';
+import { AmisOptions } from '@qubic-js/core';
 
 export default class QubicConnector extends AbstractConnector {
   private client: any;
