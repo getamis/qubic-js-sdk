@@ -11,13 +11,13 @@
 
 ### React
 
-```
+```cli
 $ npm install @qubic-js/react
 ```
 
 ### Javascript
 
-```
+```cli
 $ npm install @qubic-js/browser
 ```
 
@@ -68,7 +68,7 @@ const web3 = new Web3(amis.getProvider());
 
 ## Run Example
 
-```
+```cli
 $ git clone git@github.com:getamis/qubic-js.git
 $ cd qubic-js
 $ yarn example
@@ -171,14 +171,14 @@ type Cost = {
 
 ### CostData
 
-```
+```ts
 type CostMap = {
-  blockNumber: number,
-  blockHash: string,
-  [Speed.FASTEST]: Cost,
-  [Speed.FAST]: Cost,
-  [Speed.AVERAGE]: Cost,
-}
+  blockNumber: number;
+  blockHash: string;
+  [Speed.FASTEST]: Cost;
+  [Speed.FAST]: Cost;
+  [Speed.AVERAGE]: Cost;
+};
 ```
 
 **_Params_**
