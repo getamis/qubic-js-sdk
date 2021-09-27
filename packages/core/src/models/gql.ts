@@ -8,8 +8,7 @@ const HTTP_METHOD = 'POST';
 export const gqlQuery = async <T = any>(query: string, cfg?: AuthConfig): Promise<T> => {
   const { apiKey, apiSecret } = cfg as AuthConfig;
 
-  // TEMP: remove query later
-  const FULL_GQL_URI = `${getGQLEndpoint()}?request-user=Lootex-3J0qh`;
+  const FULL_GQL_URI = getGQLEndpoint();
 
   const urlObj = new URL(FULL_GQL_URI);
   const requestURI = `${urlObj.pathname}${urlObj.search}`;
