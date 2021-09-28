@@ -318,7 +318,7 @@ const App = React.memo(() => {
       setEnableSignMsgAfterActivate(false);
 
       web3?.eth.personal
-        .sign('some custom msg', account || '', '')
+        .sign('some custom msg', account, '')
         .then(signature => {
           console.log('handleSignInUpAndSignMessage 2');
           console.log(`signature=${signature}`);
