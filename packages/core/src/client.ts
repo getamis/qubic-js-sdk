@@ -36,6 +36,8 @@ export class AMIS {
   public static initialize: (url: string) => void;
   public static authModalHandler?: () => void;
   public static requestModalHandler?: (payload: Payload) => void;
+  public static hideModal?: () => void;
+  private static isConnected = false; // only changes when options.autoHideWelcome
 
   public static sharedStore: Store;
   public static options?: AmisOptions;
@@ -53,7 +55,6 @@ export class AMIS {
   constructor(apiKey: string, apiSecret: string, network: Network | string, options: AmisOptions = {}) {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
-    AMIS.options = options;
     if (typeof network === 'string') {
       const parseNetwork = Number(network);
       if (!Object.values(Network).includes(parseNetwork)) {
@@ -80,9 +81,15 @@ export class AMIS {
         if (method === 'setAddress') {
           AMIS.sharedStore.setCurrentAddress(address);
           this.onAccountsChanged?.([address]);
+          if (options.autoHideWelcome && address && !AMIS.isConnected) {
+            // only auto hide popup when first time connect qubic
+            AMIS.hideModal?.();
+          }
+          AMIS.isConnected = !!address;
         } else if (method === 'clear') {
           AMIS.sharedStore.clear();
           this.onAccountsChanged?.([]);
+          AMIS.isConnected = false;
         }
       },
       false,
@@ -92,6 +99,7 @@ export class AMIS {
   }
 
   public deinitialize = (): void => {
+    AMIS.isConnected = false;
     this.engine.stop();
   };
 
