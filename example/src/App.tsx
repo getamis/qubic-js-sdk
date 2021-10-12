@@ -287,6 +287,7 @@ const CHAIN_ID = 4;
 const parsed = qs.parse(window.location.search);
 const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID, {
   autoHideWelcome: parsed.autoHideWelcome === 'true' || false,
+  enableIframe: parsed.enableIframe === 'true' || false,
 });
 
 const App = React.memo(() => {
