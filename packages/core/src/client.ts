@@ -16,6 +16,7 @@ type ProviderOptions = any;
 export interface AmisOptions {
   /** hide welcome screen after sign in success */
   autoHideWelcome?: boolean;
+  enableIframe?: boolean;
 }
 
 // for sign in
@@ -33,7 +34,7 @@ const addressResolver = (resolve: (value: string | PromiseLike<string>) => void)
 export class AMIS {
   public static currentClient: AMIS;
 
-  public static initialize: (url: string) => void;
+  public static initialize: (url: string, enableIframe?: boolean) => void;
   public static authModalHandler?: () => void;
   public static requestModalHandler?: (payload: Payload) => void;
   public static hideModal?: () => void;
@@ -70,6 +71,7 @@ export class AMIS {
         apiSecret,
         network,
       })}`,
+      options.enableIframe,
     );
 
     window.addEventListener(

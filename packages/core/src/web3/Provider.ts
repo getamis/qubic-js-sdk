@@ -95,6 +95,8 @@ export class Provider implements ProviderInterface {
     const { method, params } = payload;
 
     switch (method) {
+      case 'wallet_addEthereumChain':
+      case 'wallet_switchEthereumChain':
       case 'personal_sign':
       case 'eth_sign':
       case 'eth_signTypedData':
@@ -149,7 +151,7 @@ export class Provider implements ProviderInterface {
     this.engine = engine;
   };
 
-  private callRequest = async (payload: Payload): Promise<string> => {
+  private callRequest = async (payload: Payload): Promise<string | null> => {
     const { onCallRequest } = this.opts;
 
     const requestId = Provider.getRandomId();
@@ -157,15 +159,17 @@ export class Provider implements ProviderInterface {
     return new Promise((resolve, reject) => {
       const listener = (e: MessageEvent): void => {
         const { data } = e;
-        const { action, id, result, error } = data as { action: string; id: number; result: string; error?: Error };
+        const { action, id, result, error } = data as {
+          action: string;
+          id: number;
+          result: string | null;
+          error?: Error;
+        };
 
         if (requestId === id) {
           if (action === 'approve_request') {
-            if (!result) {
-              reject(new Error('Empty result'));
-              return;
-            }
-            const finalResult = result.startsWith('0x') ? result : `0x${result}`;
+            // result can be null, ex: eip-3085
+            const finalResult = result === null || result.startsWith('0x') ? result : `0x${result}`;
             resolve(finalResult);
           } else if (action === 'reject_request') {
             if (error) {

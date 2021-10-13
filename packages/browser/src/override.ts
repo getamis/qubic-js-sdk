@@ -27,7 +27,7 @@ const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as an
 let target: IFrame | PopupWindow;
 let modal: Modal;
 
-AMIS.initialize = url => {
+AMIS.initialize = (url, enableIframe = false) => {
   const { body } = document;
   if (inApp.isInApp) {
     const container = document.createElement('div');
@@ -52,7 +52,7 @@ AMIS.initialize = url => {
     modal.show();
     return;
   }
-  target = new PopupWindow(url);
+  target = enableIframe ? new IFrame(url) : new PopupWindow(url);
   body.appendChild(target.element);
 };
 

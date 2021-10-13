@@ -287,6 +287,7 @@ const CHAIN_ID = 4;
 const parsed = qs.parse(window.location.search);
 const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID, {
   autoHideWelcome: parsed.autoHideWelcome === 'true' || false,
+  enableIframe: parsed.enableIframe === 'true' || false,
 });
 
 const App = React.memo(() => {
@@ -674,6 +675,36 @@ const App = React.memo(() => {
     }
   }, [address, web3]);
 
+  const bindOperateEthereumChain = useCallback(
+    (method: 'wallet_addEthereumChain' | 'wallet_switchEthereumChain') => () => {
+      // eslint-disable-next-line no-alert
+      const answer = window.prompt(`What's you chain id?`);
+      if (answer === null) {
+        return;
+      }
+      const chainId = Number(answer);
+      (web3?.currentProvider as AbstractProvider).sendAsync(
+        {
+          jsonrpc: '2.0',
+          method,
+          params: [
+            {
+              chainId: `0x${chainId.toString(16)}`,
+            },
+          ],
+        },
+        (error, response) => {
+          if (error) {
+            console.error(error);
+          } else {
+            console.log(response?.result);
+          }
+        },
+      );
+    },
+    [web3?.currentProvider],
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.group}>
@@ -705,6 +736,12 @@ const App = React.memo(() => {
         <Button onPress={handleEthSign}>eth_sign</Button>
         <Button onPress={handleSignTypedDataV3}>eth_signTypedData_v3</Button>
         <Button onPress={handleSignTypedDataV4}>eth_signTypedData_v4</Button>
+      </View>
+
+      <View style={styles.group}>
+        <Text style={styles.title}>6. chain</Text>
+        <Button onPress={bindOperateEthereumChain('wallet_switchEthereumChain')}>wallet_switchEthereumChain</Button>
+        <Button onPress={bindOperateEthereumChain('wallet_addEthereumChain')}>wallet_addEthereumChain</Button>
       </View>
 
       {/* eslint-disable-next-line react/style-prop-object */}

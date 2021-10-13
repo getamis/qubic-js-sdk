@@ -33,6 +33,8 @@ import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID, {
   // optional, default: false, when value is true, the popup will hide automatically
   autoHideWelcome: true
+  // optional, default: false, when value is true, the show iframe instead of new window, credit card payment will failed with this option value true
+  enableIframe: true
 });
 const amis = qubicConnector.getClient();
 
@@ -84,16 +86,6 @@ $ yarn example
 
 不同於市面上其他替使用者保管私鑰的錢包，AMIS 錢包的使用者依然擁有完全的所有權，即便完整的私鑰不在使用者手中，但沒有使用者的簽名，任一方都無法將使用者的資產轉移。
 
-## 專注在開發應用
-
-### Gas Price 自動估算
-
-AMIS 會分析當前網路所需的 Gas Price，並將之分為三個等級 Fastest、Fast 和 Average，開發者只需要指定選用的等級，接下來 AMIS 會自動估算適合的 Gas Price
-
-### 多種虛擬貨幣支援
-
-(Phase 2) 支援 BTC、ETH、ERC-20 tokens 以及 Omni USDT 等多種資產
-
 ## 更高的安全性
 
 ### HTSS 階層式門檻簽章
@@ -114,45 +106,6 @@ enum Network {
   ROPSTEN,
   RINKEBY,
 }
-```
-
-### Speed
-
-```javascript
-enum Speed {
-  USER_SELECT, // not yet supported
-  FASTEST,
-  FAST,
-  AVERAGE,
-}
-```
-
-**USER_SELECT**
-
-錢包 UI 會顯示 Gas Price 與上鏈等候時間等資訊，讓用戶自行選擇速度或手動輸入 Gas Price
-
-**FASTEST / FAST / AVERAGE**
-
-開發者依需求指定上鏈速度
-
-**_Example_**
-
-設定所有交易的速度
-
-```javascript
-amis.setSpeed(Speed.FAST);
-```
-
-針對某個交易進行設定
-
-```javascript
-web3.eth.sendTransaction({
-  from: addr,
-  to: '0xE8fb587480B68A880f4B9C826CB8d708Ac709572',
-  gas: 21000,
-  gasPrice: AMIS.Speed.FAST, // automatically estimate gas price
-  value: web3.utils.toWei('0.001'),
-});
 ```
 
 ### Cost
