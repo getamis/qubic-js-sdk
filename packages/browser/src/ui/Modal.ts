@@ -4,7 +4,7 @@ import closeIcon from '../svg/close';
 
 const styles: Record<string, CSSInterpolation> = {
   container: {
-    position: 'absolute',
+    position: 'fixed',
     fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
     display: 'none',
     top: '0',
