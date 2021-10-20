@@ -79,7 +79,6 @@ export class AMIS {
       e => {
         const { data } = e;
         const { method, address } = data;
-
         if (method === 'setAddress') {
           AMIS.sharedStore.setCurrentAddress(address);
           this.onAccountsChanged?.([address]);
@@ -88,6 +87,8 @@ export class AMIS {
             AMIS.hideModal?.();
           }
           AMIS.isConnected = !!address;
+        } else if (method === 'setNetwork') {
+          this.onChainChanged?.(data.chainId);
         } else if (method === 'clear') {
           AMIS.sharedStore.clear();
           this.onAccountsChanged?.([]);
@@ -173,12 +174,23 @@ export class AMIS {
   public on = (
     event: 'accountsChanged' | 'chainChanged',
     handler: ((accounts: Array<string>) => void) | ((chainId: string) => void),
-  ): void => {
+  ): AMIS => {
     if (event === 'accountsChanged') {
       this.onAccountsChanged = handler as (accounts: Array<string>) => void;
     }
     if (event === 'chainChanged') {
       this.onChainChanged = handler as (chainId: string) => void;
     }
+    return this;
+  };
+
+  public removeListener = (event: 'accountsChanged' | 'chainChanged'): AMIS => {
+    if (event === 'accountsChanged') {
+      this.onAccountsChanged = undefined;
+    }
+    if (event === 'chainChanged') {
+      this.onChainChanged = undefined;
+    }
+    return this;
   };
 }

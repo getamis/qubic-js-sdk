@@ -1,7 +1,7 @@
 import { AbstractProvider } from 'web3-core';
 import { ConnectorUpdate } from '@web3-react/types';
 import { AbstractConnector } from '@web3-react/abstract-connector';
-import { AmisOptions } from '@qubic-js/core';
+import { AmisOptions, Network } from '@qubic-js/core';
 
 export default class QubicConnector extends AbstractConnector {
   private client: any;
@@ -13,12 +13,23 @@ export default class QubicConnector extends AbstractConnector {
   private options?: AmisOptions;
 
   constructor(apiKey: string, apiSecret: string, chainId: number | string, options?: AmisOptions) {
-    super({ supportedChainIds: [1, 4] }); // [mainnet, rinkeby]
+    super({ supportedChainIds: [Network.MAINNET, Network.RINKEBY, Network.POLYGON, Network.MUMBAI] }); // [mainnet, rinkeby]
 
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
     this.chainId = Number(chainId) || 1;
     this.options = options;
+
+    this.handleChainChanged = this.handleChainChanged.bind(this);
+    this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
+  }
+
+  private handleChainChanged(chainId: string): void {
+    this.emitUpdate({ chainId });
+  }
+
+  private handleAccountsChanged(accounts: string[]): void {
+    this.emitUpdate({ account: accounts.length === 0 ? null : accounts[0] });
   }
 
   public activate = async (): Promise<ConnectorUpdate> => {
@@ -32,19 +43,10 @@ export default class QubicConnector extends AbstractConnector {
       this.provider = this.client.getProvider();
     }
 
-    const address = await this.client.signIn();
-    const result = { provider: this.provider, chainId: this.chainId, account: address };
-    this.emitUpdate(result);
+    const account = await this.client.signIn();
 
-    // register accountsChanged events
-    this.client.on('accountsChanged', (accounts: Array<string>) => {
-      const newResult = { provider: this.provider, chainId: this.chainId, account: accounts[0] || null };
-      this.emitUpdate(newResult);
-    });
-
-    // TODO: register chainChanged events
-
-    return result;
+    this.client.on('chainChanged', this.handleChainChanged).on('accountsChanged', this.handleAccountsChanged);
+    return { provider: this.provider, chainId: this.chainId, account };
   };
 
   public getClient = (): any => {
@@ -68,6 +70,9 @@ export default class QubicConnector extends AbstractConnector {
   // DONT'T call `this.emitDeactivate` in deactivate
   public deactivate = (): void => {
     this.client.deinitialize();
+    this.client
+      .removeListener('chainChanged', this.handleChainChanged)
+      .removeListener('accountsChanged', this.handleAccountsChanged);
   };
 
   // https://github.com/NoahZinsmeister/web3-react/blob/v6/packages/portis-connector/src/index.ts#L126

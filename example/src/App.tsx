@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
   },
-  addrText: {
+  infoText: {
     color: '#fff',
     textAlign: 'center',
   },
@@ -292,8 +292,13 @@ const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID, {
 
 const App = React.memo(() => {
   const context = useWeb3React<Web3>();
-  const { account, activate, deactivate, library: web3 } = context;
+  const { account, activate, deactivate, library: web3, chainId } = context;
   const [address, setAddress] = useState<string>('');
+  const [network, setNetwork] = useState('');
+  useEffect(() => {
+    console.log('network', chainId);
+    setNetwork(chainId?.toString() || '');
+  }, [chainId]);
 
   useEffect(() => {
     console.log('account', account);
@@ -474,7 +479,7 @@ const App = React.memo(() => {
       .once('receipt', (receipt: TransactionReceipt) => {
         console.log(receipt);
       });
-  }, [account, address, web3]);
+  }, [account, web3]);
 
   const handleSignSign = useCallback(
     async (data, signer: () => Promise<string>) => {
@@ -487,7 +492,7 @@ const App = React.memo(() => {
         const signerAddress = web3?.eth.accounts.recover(data, signature);
         console.log(`signerAddress=${signerAddress}`);
       } catch (error) {
-        const { code, message, stack } = error;
+        const { code, message, stack } = error as any;
         console.error({
           code,
           message,
@@ -520,7 +525,6 @@ const App = React.memo(() => {
   }, [web3, account, handleSignSign]);
 
   const handleSignTypedDataV3 = useCallback(async () => {
-    const chainId = CHAIN_ID;
     const from = address;
     const msgParams = {
       types: {
@@ -590,10 +594,9 @@ const App = React.memo(() => {
     } else {
       console.log(`Failed to verify signer when comparing ${recoveredAddr} to ${from}`);
     }
-  }, [address, web3]);
+  }, [address, chainId, web3?.currentProvider]);
 
   const handleSignTypedDataV4 = useCallback(async () => {
-    const chainId = CHAIN_ID;
     const from = address;
     const msgParams = {
       domain: {
@@ -673,7 +676,7 @@ const App = React.memo(() => {
     } else {
       console.log(`Failed to verify signer when comparing ${recoveredAddr} to ${from}`);
     }
-  }, [address, web3]);
+  }, [address, chainId, web3?.currentProvider]);
 
   const bindOperateEthereumChain = useCallback(
     (method: 'wallet_addEthereumChain' | 'wallet_switchEthereumChain') => () => {
@@ -682,14 +685,14 @@ const App = React.memo(() => {
       if (answer === null) {
         return;
       }
-      const chainId = Number(answer);
+      const nextChainId = Number(answer);
       (web3?.currentProvider as AbstractProvider).sendAsync(
         {
           jsonrpc: '2.0',
           method,
           params: [
             {
-              chainId: `0x${chainId.toString(16)}`,
+              chainId: `0x${nextChainId.toString(16)}`,
             },
           ],
         },
@@ -711,7 +714,8 @@ const App = React.memo(() => {
         <Text style={styles.title}>1. 註冊或登錄以獲得地址</Text>
         <Button onPress={handleSignInUp}>SIGN IN / SIGN UP</Button>
         <Button onPress={handleSignInUpAndSignMessage}>{`SIGN IN / SIGN UP\nAnd Sign custom message`}</Button>
-        <Text style={styles.addrText}>{address}</Text>
+        {!!address && <Text style={styles.infoText}>address: {address}</Text>}
+        {!!network && <Text style={styles.infoText}>network: {network}</Text>}
         <Button onPress={handleDisconnect}>Disconnect</Button>
       </View>
       <View style={styles.group}>
