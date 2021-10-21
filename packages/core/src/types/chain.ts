@@ -109,8 +109,6 @@ export type IBasicTransaction = {
 };
 
 export type ITransaction = IBasicTransaction & {
-  // custom
-  needRelayer?: boolean;
   payment?: IPaymentRequest;
 };
 

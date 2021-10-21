@@ -18,7 +18,6 @@ export interface ProviderInterface {
 
 export interface ProviderOptions {
   rpcHost: string;
-  needRelayer: boolean;
   onCallRequest: (payload: Payload) => void;
 }
 
