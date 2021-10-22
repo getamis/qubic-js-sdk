@@ -17,14 +17,28 @@ export interface AmisOptions {
   enableIframe?: boolean;
 }
 
+interface SignInResult {
+  account: string;
+  chainId: number;
+}
+
 // for sign in
-const addressResolver = (resolve: (value: string | PromiseLike<string>) => void) => {
+const addressNetworkResolver = (resolve: (value: SignInResult | PromiseLike<SignInResult>) => void) => {
+  const value: SignInResult = {
+    account: '',
+    chainId: 0,
+  };
   return (e: MessageEvent) => {
     const { data } = e;
-    const { method, address } = data;
-
+    const { method } = data;
     if (method === 'setAddress') {
-      resolve(address);
+      value.account = data.address;
+    }
+    if (method === 'setNetwork') {
+      value.chainId = Number(data.chainId);
+    }
+    if (value.account && value.chainId) {
+      resolve(value);
     }
   };
 };
@@ -140,10 +154,16 @@ export class AMIS {
     return this.engine;
   };
 
-  public signIn = async (): Promise<string> => {
-    return new Promise((resolve, reject) => {
+  public signIn = async (): Promise<SignInResult> => {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
       if (globalEthereum?.isQubic) {
-        globalEthereum?.request?.({ method: 'eth_accounts' }).then((accounts: string[]) => resolve(accounts[0]));
+        const accounts = await globalEthereum?.request?.({ method: 'eth_accounts' });
+        const chainId = await globalEthereum?.request?.({ method: 'eth_chainId' });
+        resolve({
+          account: accounts[0],
+          chainId: Number(chainId),
+        });
         return;
       }
       if (!AMIS.authModalHandler) {
@@ -152,7 +172,7 @@ export class AMIS {
       }
 
       if (this.apiKey && this.apiSecret) {
-        window.addEventListener('message', addressResolver(resolve), false);
+        window.addEventListener('message', addressNetworkResolver(resolve), false);
 
         AMIS.authModalHandler();
       } else {
