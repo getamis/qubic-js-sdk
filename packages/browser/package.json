@@ -1,6 +1,6 @@
 {
   "name": "@qubic-js/browser",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "",
   "license": "Apache License 2.0",
   "source": "./src/index.ts",
@@ -16,7 +16,7 @@
     "@qubic-js/core": "*"
   },
   "devDependencies": {
-    "@qubic-js/core": "^0.2.3",
+    "@qubic-js/core": "^0.2.4",
     "@types/react": "^16.9.35",
     "copyfiles": "^2.4.1",
     "typescript": "^3.6.4"
