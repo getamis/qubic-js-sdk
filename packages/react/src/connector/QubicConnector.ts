@@ -43,8 +43,9 @@ export default class QubicConnector extends AbstractConnector {
       this.provider = this.client.getProvider();
     }
 
-    const account = await this.client.signIn();
+    const { account, chainId } = await this.client.signIn();
 
+    this.chainId = chainId;
     this.client.on('chainChanged', this.handleChainChanged).on('accountsChanged', this.handleAccountsChanged);
     return { provider: this.provider, chainId: this.chainId, account };
   };
