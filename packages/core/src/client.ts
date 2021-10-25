@@ -3,7 +3,7 @@ import Web3ProviderEngine from 'web3-provider-engine';
 // @ts-ignore
 import WebsocketProvider from 'web3-provider-engine/subproviders/websocket';
 
-import { Provider as Web3Provider } from './web3';
+import { Provider as Web3Provider, ProviderOptions } from './web3';
 import { Store } from './store';
 import { Network, Speed } from './enums';
 import { CostData, Payload } from './types';
@@ -11,25 +11,47 @@ import { NODE_URLS, getWalletUrl } from './constants/backend';
 import { estimateCosts } from './models';
 import { queryWithAuthConfig } from './utils';
 
-type ProviderOptions = any;
-
 export interface AmisOptions {
   /** hide welcome screen after sign in success */
   autoHideWelcome?: boolean;
   enableIframe?: boolean;
 }
 
+interface SignInResult {
+  account: string;
+  chainId: number;
+}
+
 // for sign in
-const addressResolver = (resolve: (value: string | PromiseLike<string>) => void) => {
+const addressNetworkResolver = (resolve: (value: SignInResult | PromiseLike<SignInResult>) => void) => {
+  const value: SignInResult = {
+    account: '',
+    chainId: 0,
+  };
   return (e: MessageEvent) => {
     const { data } = e;
-    const { method, address } = data;
-
+    const { method } = data;
     if (method === 'setAddress') {
-      resolve(address);
+      value.account = data.address;
+    }
+    if (method === 'setNetwork') {
+      value.chainId = Number(data.chainId);
+    }
+    if (value.account && value.chainId) {
+      resolve(value);
     }
   };
 };
+
+export interface QubicWebviewProvider extends AbstractProvider {
+  isQubic: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on(event: string, handler: (params: any) => void): AbstractProvider;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  removeListener(event: string, handler?: (params: any) => void): AbstractProvider;
+}
+
+const globalEthereum = window.ethereum;
 
 export class AMIS {
   public static currentClient: AMIS;
@@ -107,7 +129,7 @@ export class AMIS {
   };
 
   public getProvider = (options?: ProviderOptions): AbstractProvider => {
-    if ((window as any).ethereum?.isQubic) return (window as any).ethereum;
+    if (globalEthereum?.isQubic) return globalEthereum;
     if (this.engine) return this.engine;
     this.engine = new Web3ProviderEngine();
     this.engine.addProvider(
@@ -132,10 +154,16 @@ export class AMIS {
     return this.engine;
   };
 
-  public signIn = async (): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      if ((window as any).ethereum?.isQubic) {
-        (window as any).ethereum.request({ method: 'eth_accounts' }).then((accounts: string[]) => resolve(accounts[0]));
+  public signIn = async (): Promise<SignInResult> => {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      if (globalEthereum?.isQubic) {
+        const accounts = await globalEthereum?.request?.({ method: 'eth_accounts' });
+        const chainId = await globalEthereum?.request?.({ method: 'eth_chainId' });
+        resolve({
+          account: accounts[0],
+          chainId: Number(chainId),
+        });
         return;
       }
       if (!AMIS.authModalHandler) {
@@ -144,7 +172,7 @@ export class AMIS {
       }
 
       if (this.apiKey && this.apiSecret) {
-        window.addEventListener('message', addressResolver(resolve), false);
+        window.addEventListener('message', addressNetworkResolver(resolve), false);
 
         AMIS.authModalHandler();
       } else {
@@ -174,7 +202,12 @@ export class AMIS {
   public on = (
     event: 'accountsChanged' | 'chainChanged',
     handler: ((accounts: Array<string>) => void) | ((chainId: string) => void),
-  ): AMIS => {
+  ): AMIS | QubicWebviewProvider => {
+    if (globalEthereum?.isQubic) {
+      globalEthereum.on(event, handler);
+      return globalEthereum;
+    }
+
     if (event === 'accountsChanged') {
       this.onAccountsChanged = handler as (accounts: Array<string>) => void;
     }
@@ -184,7 +217,15 @@ export class AMIS {
     return this;
   };
 
-  public removeListener = (event: 'accountsChanged' | 'chainChanged'): AMIS => {
+  public removeListener = (
+    event: 'accountsChanged' | 'chainChanged',
+    handler?: ((accounts: Array<string>) => void) | ((chainId: string) => void),
+  ): AMIS | QubicWebviewProvider => {
+    if (globalEthereum?.isQubic) {
+      globalEthereum.removeListener(event, handler);
+      return globalEthereum;
+    }
+
     if (event === 'accountsChanged') {
       this.onAccountsChanged = undefined;
     }

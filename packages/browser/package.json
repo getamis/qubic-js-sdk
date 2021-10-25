@@ -10,8 +10,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "prepublishOnly": "yarn build"
+    "build": "tsc -p tsconfig.build.json"
   },
   "peerDependencies": {
     "@qubic-js/core": "*"
