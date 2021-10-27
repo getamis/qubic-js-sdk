@@ -70,6 +70,9 @@ export class AMIS {
   public network: Network = Network.MAINNET;
   public speed?: Speed;
 
+  private skipRealLoginNextTime = false;
+  private addressNetworkResolverRef: (e: MessageEvent) => void;
+
   private engine!: Web3ProviderEngine & { isQubic?: boolean };
 
   private onAccountsChanged?: (accounts: Array<string>) => void;
@@ -110,7 +113,9 @@ export class AMIS {
           }
           AMIS.isConnected = !!address;
         } else if (method === 'setNetwork') {
-          this.onChainChanged?.(data.chainId);
+          const { chainId } = data;
+          AMIS.sharedStore.setCurrentNetwork(chainId);
+          this.onChainChanged?.(chainId);
         } else if (method === 'clear') {
           AMIS.sharedStore.clear();
           this.onAccountsChanged?.([]);
@@ -121,6 +126,8 @@ export class AMIS {
     );
 
     AMIS.currentClient = this;
+
+    this.addressNetworkResolverRef = () => null;
   }
 
   public deinitialize = (): void => {
@@ -154,7 +161,7 @@ export class AMIS {
     return this.engine;
   };
 
-  public signIn = async (): Promise<SignInResult> => {
+  public signIn = async (): Promise<SignInResult | void> => {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       if (globalEthereum?.isQubic) {
@@ -172,9 +179,47 @@ export class AMIS {
       }
 
       if (this.apiKey && this.apiSecret) {
-        window.addEventListener('message', addressNetworkResolver(resolve), false);
+        // remove existed login success handler, and bind a new one below.
+        window.removeEventListener('message', this.addressNetworkResolverRef);
 
+        // For default Qubic login process.
+        // Wrap a function to set up skipRealLoginNextTime to true to switch the resolve method to line 201.
+        this.addressNetworkResolverRef = addressNetworkResolver((value: SignInResult | PromiseLike<SignInResult>) => {
+          this.skipRealLoginNextTime = true;
+          resolve(value);
+        });
+
+        window.addEventListener('message', this.addressNetworkResolverRef, false);
+
+        // Raise the auth page on Qubic wallet.
+        // After login successfully, it will trigger addressNetworkResolver.
+        // The resolver will return account and chain id to activate connector.
         AMIS.authModalHandler();
+
+        // We can not control Qubic login status after deactivate, so that we switch resolve method to this one.
+        // The resolver will return account and chain id to activate connector.
+        const provider = this.getProvider();
+        if (provider && this.skipRealLoginNextTime) {
+          provider.sendAsync(
+            { jsonrpc: '2.0', params: [], method: 'eth_accounts' },
+            (accountError, accountResponse) => {
+              if (accountError) {
+                reject(new Error('No account by provider'));
+                return;
+              }
+              provider.sendAsync({ jsonrpc: '2.0', params: [], method: 'eth_chainId' }, (chainError, chainResponse) => {
+                if (chainError) {
+                  reject(new Error('No chain id by provider'));
+                  return;
+                }
+                resolve({
+                  account: accountResponse?.result?.[0] || '',
+                  chainId: Number(chainResponse?.result),
+                });
+              });
+            },
+          );
+        }
       } else {
         reject(new Error('SDK not initialized or incorrect API key and secrets'));
       }

@@ -132,6 +132,14 @@ export class Provider implements ProviderInterface {
           end(e);
         }
         break;
+      case 'eth_chainId':
+        try {
+          const network = this.network();
+          end(null, network);
+        } catch (e) {
+          end(e);
+        }
+        break;
       case 'eth_blockNumber':
         // fixed issue https://github.com/MetaMask/eth-block-tracker/pull/42
         // web-provider-engine has dependency eth-block-tracer@^4.4.2
@@ -200,5 +208,11 @@ export class Provider implements ProviderInterface {
     const address = AMIS.sharedStore.getCurrentAddress();
     if (!address) return [];
     return [address];
+  };
+
+  public network = (): string => {
+    const network = AMIS.sharedStore.getCurrentNetwork();
+    if (!network) throw new Error('No Network');
+    return network;
   };
 }
