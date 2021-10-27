@@ -1,6 +1,7 @@
 import { Store, Address } from '@qubic-js/core';
 
 const QUBIC_CURRENT_ADDRESS = 'QUBIC_CURRENT_ADDRESS';
+const QUBIC_CURRENT_NETWORK = 'QUBIC_CURRENT_NETWORK';
 const QUBIC_ADDRESSES = 'QUBIC_ADDRESSES';
 
 export class BrowserStore implements Store {
@@ -22,6 +23,14 @@ export class BrowserStore implements Store {
 
   public setCurrentAddress = (address: string | null | undefined): void => {
     this.updateItem(QUBIC_CURRENT_ADDRESS, address);
+  };
+
+  public getCurrentNetwork = (): string | null => {
+    return this.getItem(QUBIC_CURRENT_NETWORK);
+  };
+
+  public setCurrentNetwork = (network: string | null | undefined): void => {
+    this.updateItem(QUBIC_CURRENT_NETWORK, network);
   };
 
   public getAddresses = (): Address[] | null => {

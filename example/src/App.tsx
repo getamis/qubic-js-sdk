@@ -347,11 +347,11 @@ const App = React.memo(() => {
         value: '0x9184e72a',
         data: '0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675',
       },
-      (error, gas) => {
+      (_, gas) => {
         console.log(`gas=${gas}`);
       },
     );
-  }, [Boolean(web3)]);
+  }, [web3?.eth]);
 
   const handleEstimateCosts = useCallback(async () => {
     const amis = qubicConnector.getClient();
@@ -372,8 +372,8 @@ const App = React.memo(() => {
     };
 
     web3?.eth
-      .sendTransaction(tx, (error, hash) => {
-        if (error) console.error(error);
+      .sendTransaction(tx, (sendError, hash) => {
+        if (sendError) console.error(sendError);
         else console.log('tx hash:', hash);
       })
       .once('transactionHash', hash => {
@@ -405,8 +405,8 @@ const App = React.memo(() => {
     };
 
     web3?.eth
-      .sendTransaction(tx, (error, hash) => {
-        if (error) console.error(error);
+      .sendTransaction(tx, (getERCError, hash) => {
+        if (getERCError) console.error(getERCError);
         else console.log('tx hash:', hash);
       })
       .once('transactionHash', hash => {
@@ -444,8 +444,8 @@ const App = React.memo(() => {
         value: 0,
         gas: 100000,
       })
-      .on('error', (error: Error): void => {
-        console.error(error);
+      .on('error', (contractError: Error): void => {
+        console.error(contractError);
       })
       .once('transactionHash', (hash: string) => {
         console.log(hash);
@@ -470,8 +470,8 @@ const App = React.memo(() => {
         value: 0,
         gas: 100000,
       })
-      .on('error', (error: Error): void => {
-        console.error(error);
+      .on('error', (approveError: Error): void => {
+        console.error(approveError);
       })
       .once('transactionHash', (hash: string) => {
         console.log(hash);
@@ -491,8 +491,8 @@ const App = React.memo(() => {
         // The signer should always be the proxy owner
         const signerAddress = web3?.eth.accounts.recover(data, signature);
         console.log(`signerAddress=${signerAddress}`);
-      } catch (error) {
-        const { code, message, stack } = error as any;
+      } catch (err) {
+        const { code, message, stack } = err as any;
         console.error({
           code,
           message,
@@ -572,9 +572,9 @@ const App = React.memo(() => {
             method: 'eth_signTypedData_v3',
             params: [from, JSON.stringify(msgParams)],
           },
-          (error, response) => {
-            if (error) {
-              reject(error);
+          (ethSignTypedDataError, response) => {
+            if (ethSignTypedDataError) {
+              reject(ethSignTypedDataError);
             } else {
               resolve(response?.result);
             }
@@ -654,9 +654,9 @@ const App = React.memo(() => {
             method: 'eth_signTypedData_v4',
             params: [from, JSON.stringify(msgParams)],
           },
-          (error, response) => {
-            if (error) {
-              reject(error);
+          (ethSignTypedDataV4Error, response) => {
+            if (ethSignTypedDataV4Error) {
+              reject(ethSignTypedDataV4Error);
             } else {
               resolve(response?.result);
             }
@@ -696,9 +696,9 @@ const App = React.memo(() => {
             },
           ],
         },
-        (error, response) => {
-          if (error) {
-            console.error(error);
+        (bindOperateEthereumChainError, response) => {
+          if (bindOperateEthereumChainError) {
+            console.error(bindOperateEthereumChainError);
           } else {
             console.log(response?.result);
           }
