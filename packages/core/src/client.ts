@@ -55,7 +55,7 @@ export class AMIS {
   public static currentClient: AMIS;
 
   public static initialize: (url: string, enableIframe?: boolean) => void;
-  public static authModalHandler?: () => void;
+  public static authModalHandler?: (chainId: number) => void;
   public static requestModalHandler?: (payload: Payload) => void;
   public static hideModal?: () => void;
   private static isConnected = false; // only changes when options.autoHideWelcome
@@ -195,7 +195,7 @@ export class AMIS {
         // Raise the auth page on Qubic wallet.
         // After login successfully, it will trigger addressNetworkResolver.
         // The resolver will return account and chain id to activate connector.
-        AMIS.authModalHandler();
+        AMIS.authModalHandler(this.network);
 
         // We can not control Qubic login status after deactivate, so that we switch resolve method to this one.
         // The resolver will return account and chain id to activate connector.

@@ -1,5 +1,7 @@
 class IFrame {
   public element: HTMLIFrameElement;
+  private task: { action: string; payload?: Record<string, any> } | null = null;
+  private isReady = false;
 
   constructor(url: string) {
     const iframe = document.createElement('iframe');
@@ -27,12 +29,23 @@ class IFrame {
         if (action === 'hideIframe') {
           this.hide();
         }
+        if (action === 'ready') {
+          this.isReady = true;
+          this.executeTask();
+        }
       },
       false,
     );
 
     this.element = iframe;
   }
+
+  private executeTask = () => {
+    if (this.task) {
+      this.element.contentWindow?.postMessage(this.task, '*');
+      this.task = null;
+    }
+  };
 
   public show = (): void => {
     setTimeout(() => {
@@ -46,7 +59,10 @@ class IFrame {
   };
 
   public open = (action: string, payload?: { [key: string]: any }): void => {
-    this.element.contentWindow?.postMessage({ action, payload }, '*');
+    this.task = { action, payload };
+    if (this.element.contentWindow && this.isReady) {
+      this.executeTask();
+    }
     this.show();
   };
 }
