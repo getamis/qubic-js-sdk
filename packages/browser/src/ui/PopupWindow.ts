@@ -37,6 +37,7 @@ class PopupWindow {
         const { action } = data;
 
         if (action === 'hideIframe') {
+          // popup of web need to reinitialized, so set isReady false
           this.isReady = false;
           this.hide();
         }
