@@ -56,12 +56,19 @@ AMIS.initialize = (url, enableIframe = false) => {
   body.appendChild(target.element);
 };
 
-AMIS.authModalHandler = () => {
+AMIS.authModalHandler = chainId => {
   if (inApp.isInApp) {
     modal.show();
     return;
   }
-  target?.open('auth');
+  target?.open('auth', {
+    method: 'wallet_switchEthereumChain',
+    params: [
+      {
+        chainId: `0x${chainId.toString(16)}`,
+      },
+    ],
+  });
 };
 
 AMIS.requestModalHandler = (payload: Payload) => {
