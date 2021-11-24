@@ -121,6 +121,7 @@ export default class Modal {
 
     const rootDiv = document.createElement('div');
     rootDiv.className = css([styles.container, styles.containerHide]);
+
     rootDiv.onclick = (event: MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
@@ -130,6 +131,9 @@ export default class Modal {
 
     const paperDiv = document.createElement('div');
     paperDiv.className = css(styles.paper);
+    paperDiv.onclick = (event: MouseEvent) => {
+      event.stopPropagation();
+    };
     rootDiv.appendChild(paperDiv);
 
     const headerDiv = document.createElement('div');
