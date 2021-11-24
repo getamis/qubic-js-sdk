@@ -25,8 +25,6 @@ export const getGQLEndpoint = (devDomain?: string): string => getBackendUrl(DEFA
 
 const endpoints = (path: string, devUrl?: string) => `${getWalletUrl(devUrl)}${path}`;
 
-export const getSendRequltUrl = (devUrl?: string): string => endpoints('/send/result', devUrl);
-
 export const getThirdPartyCardUrl = (devUrl?: string): string => endpoints('/thirdparty/tappay/creditcard', devUrl);
 
 export const NODE_URLS = {
@@ -47,4 +45,14 @@ export const FORWARDER_ADDRESSES = {
 
 export const getForwarderContract = (network: Network = 1): string => {
   return FORWARDER_ADDRESSES[network];
+};
+
+export const getEnvApiKey = (): string => {
+  // @ts-ignore
+  return process.env.APP_MANIFEST?.extra?.API_KEY;
+};
+
+export const getEnvApiSecret = (): string => {
+  // @ts-ignore
+  return process.env.APP_MANIFEST?.extra?.API_SECRET;
 };
