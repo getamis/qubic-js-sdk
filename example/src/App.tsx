@@ -10,6 +10,7 @@ import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { QubicConnector } from '@qubic-js/react';
 import qs from 'query-string';
+import { getEnvApiKey, getEnvApiSecret } from '@qubic-js/core';
 
 const erc20Abi = [
   {
@@ -279,9 +280,8 @@ const Button = React.memo<{ children: string; onPress: () => void }>(({ children
   </View>
 ));
 
-// Lootex API data:
-const API_KEY = 'a857a616-21ed-4d9e-9aff-2091993bff73';
-const API_SECRET = 'DnAYwfFMCGzdMNMMdTCeLWifJbGYgZFP';
+const API_KEY = getEnvApiKey();
+const API_SECRET = getEnvApiSecret();
 const CHAIN_ID = 4;
 
 const parsed = qs.parse(window.location.search);
