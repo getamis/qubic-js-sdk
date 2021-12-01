@@ -1,33 +1,31 @@
 import { BridgeEvent, Bridge } from '@qubic-js/core';
 import { JsonRpcMiddleware } from 'json-rpc-engine';
-import { BrowserStore } from '../utils/BrowserStore';
-
-const sharedStore = new BrowserStore();
 
 const createCacheMiddleware = (bridge: Bridge): JsonRpcMiddleware<unknown, unknown> => {
+  let cacheAddresses: string[] = [];
+  let cacheNetwork = '';
+
   bridge.on(BridgeEvent.accountsChanged, addresses => {
-    sharedStore.setCurrentAddress(addresses[0]);
+    cacheAddresses = addresses;
   });
 
   bridge.on(BridgeEvent.chainChanged, chainId => {
-    sharedStore.setCurrentNetwork(chainId);
+    cacheNetwork = chainId;
   });
 
   bridge.on(BridgeEvent.clear, () => {
-    sharedStore.clear();
+    cacheAddresses = [];
+    cacheNetwork = '';
   });
 
   return (req, res, next, end) => {
-    const currentAddress = sharedStore.getCurrentAddress();
-    const currentNetwork = sharedStore.getCurrentNetwork();
-
-    if (req.method === 'eth_accounts' && currentAddress) {
-      res.result = [currentAddress];
+    if (req.method === 'eth_accounts' && cacheAddresses.length > 0) {
+      res.result = cacheAddresses;
       end();
       return;
     }
-    if (req.method === 'eth_chainId' && currentNetwork) {
-      res.result = currentNetwork;
+    if (req.method === 'eth_chainId' && cacheNetwork) {
+      res.result = cacheNetwork;
       end();
       return;
     }

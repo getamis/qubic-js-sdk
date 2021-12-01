@@ -702,6 +702,12 @@ const App = React.memo(() => {
     [web3?.currentProvider],
   );
 
+  const handleGetAccounts = useCallback(() => {
+    web3?.eth.getAccounts().then(accounts => {
+      console.log({ accounts });
+    });
+  }, [web3?.eth]);
+
   return (
     <View style={styles.container}>
       <View style={styles.group}>
@@ -741,6 +747,10 @@ const App = React.memo(() => {
         <Button onPress={bindOperateEthereumChain('wallet_addEthereumChain')}>wallet_addEthereumChain</Button>
       </View>
 
+      <View style={styles.group}>
+        <Text style={styles.title}>7. web3.eth</Text>
+        <Button onPress={handleGetAccounts}>Get Accounts</Button>
+      </View>
       {/* eslint-disable-next-line react/style-prop-object */}
       <StatusBar style="auto" />
     </View>
