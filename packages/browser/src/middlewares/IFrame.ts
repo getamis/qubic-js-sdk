@@ -1,4 +1,4 @@
-import { BridgeEvent, Messenger } from '@qubic-js/core';
+import { BridgeEvent, Messenger, Network, getWalletUrl, queryWithAuthConfig } from '@qubic-js/core';
 import { JsonRpcMiddleware, createAsyncMiddleware } from 'json-rpc-engine';
 import { css, CSSInterpolation } from '@emotion/css';
 
@@ -19,18 +19,27 @@ const styles: Record<string, CSSInterpolation> = {
 };
 
 class IFrame implements Messenger {
-  private element: HTMLIFrameElement;
-  private isReady = false;
   public bridge: BrowserBridge;
+
+  private apiKey: string;
+  private apiSecret: string;
+  private chainId: Network;
+  private isReady = false;
+
+  private element: HTMLIFrameElement;
   public isIframeAppended = false;
 
-  constructor(url: string) {
+  constructor(apiKey: string, apiSecret: string, chainId: number) {
+    this.apiKey = apiKey;
+    this.apiSecret = apiSecret;
+    this.chainId = chainId;
+
     const iframe = document.createElement('iframe');
     iframe.width = '100%';
     iframe.height = '100%';
     iframe.frameBorder = '0';
     iframe.className = css(styles.container);
-    iframe.src = url;
+    iframe.src = this.getUrl();
     this.element = iframe;
 
     this.bridge = new BrowserBridge({
@@ -50,7 +59,19 @@ class IFrame implements Messenger {
     this.bridge.on(BridgeEvent.hide, () => {
       this.hide();
     });
+    this.bridge.on(BridgeEvent.chainChanged, nextChainId => {
+      this.chainId = Number(nextChainId);
+    });
   }
+
+  private getUrl = (): string => {
+    const url = `${getWalletUrl()}?${queryWithAuthConfig({
+      apiKey: this.apiKey,
+      apiSecret: this.apiSecret,
+      network: this.chainId,
+    })}`;
+    return url;
+  };
 
   private show = (): void => {
     if (!this.isIframeAppended) {
@@ -71,22 +92,19 @@ class IFrame implements Messenger {
     const { bridge, isReady, show } = this;
     return new Promise(resolve => {
       if (isReady) {
+        // iframe might be invisible but still in the background
+        // which means isReady === true, but not show
+        show();
         resolve();
         return;
       }
-
-      function onReady() {
-        resolve();
-        bridge.removeListener('ready', onReady);
-      }
-      bridge.on(BridgeEvent.ready, onReady);
+      bridge.once(BridgeEvent.ready, resolve);
       show();
     });
   };
 
   public createPrepareBridgeMiddleware = (): JsonRpcMiddleware<unknown, unknown> =>
     createAsyncMiddleware(async (req, res, next) => {
-      this.show();
       await this.waitUntilReady();
       next();
     });

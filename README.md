@@ -125,7 +125,7 @@ constructor(apiKey: string, apiSecret: string, network: Network, options): Qubic
 - `apiSecret`: 在 AMIS 後台申請 `apiSecret`
 - `network`: 目前提供 `MAINNET`、`RINKEBY`、 `POLYGON` 和 `MUMBAI`
 - options
-  - enableIframe: `true` 時，會使用 iframe 顯示，其他狀況是打開新視
+  - enableIframe: `true` 時，會使用 iframe 顯示，其他狀況是打開新視窗
 
 **_Return_**
 

@@ -1,4 +1,4 @@
-import { BaseProvider, getWalletUrl, queryWithAuthConfig } from '@qubic-js/core';
+import { BaseProvider } from '@qubic-js/core';
 
 import createCacheMiddleware from './middlewares/cacheMiddleware';
 import IFrame from './middlewares/IFrame';
@@ -13,15 +13,12 @@ export class BrowserProvider extends BaseProvider {
   public hide: () => void;
 
   constructor(apiKey: string, apiSecret: string, chainId: number, options?: BrowserProviderOptions) {
-    const url = `${getWalletUrl()}?${queryWithAuthConfig({
-      apiKey,
-      apiSecret,
-      network: chainId,
-    })}`;
     const { hide, bridge, createPrepareBridgeMiddleware } = options?.enableIframe
-      ? new IFrame(url)
-      : new PopupWindow(url);
+      ? new IFrame(apiKey, apiSecret, chainId)
+      : new PopupWindow(apiKey, apiSecret, chainId);
+
     super({
+      network: chainId,
       bridge,
       middlewares: [createCacheMiddleware(bridge), createPrepareBridgeMiddleware()],
     });

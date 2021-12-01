@@ -715,7 +715,6 @@ const App = React.memo(() => {
       <View style={styles.group}>
         <Text style={styles.title}>2. 估算 Gas Price (顯示在 console 中)</Text>
         <Button onPress={handleEstimateGas}>Estimate Gas</Button>
-        {/* <Button onPress={handleEstimateCosts}>Estimate Costs</Button> */}
       </View>
       <View style={styles.group}>
         <Text style={styles.title}>3. ETH 交易，須先有 ETH</Text>

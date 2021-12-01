@@ -1,21 +1,29 @@
 import { createAsyncMiddleware, JsonRpcMiddleware } from 'json-rpc-engine';
 import InApp from 'detect-inapp';
-import { BridgeEvent, Messenger } from '@qubic-js/core';
+import { BridgeEvent, Messenger, Network, getWalletUrl, queryWithAuthConfig } from '@qubic-js/core';
 
 import { t } from '../translation';
 import BrowserBridge from '../utils/BrowserBridge';
 import Modal from '../ui/Modal';
 import inAppWarningModal from '../ui/inAppWarningModal';
 
+const DETECT_IF_POPUP_WINDOW_CLOSED_INTERVAL_MS = 500;
+
 class PopupWindow implements Messenger {
-  private proxy: Window | null = null;
-  private newWindowReminderModal: Modal;
-  private url: string;
-  private isReady = false;
   public bridge: BrowserBridge;
 
-  constructor(url: string) {
-    this.url = url;
+  private apiKey: string;
+  private apiSecret: string;
+  private chainId: Network;
+  private isReady = false;
+
+  private proxy: Window | null = null;
+  private newWindowReminderModal: Modal;
+
+  constructor(apiKey: string, apiSecret: string, chainId: number) {
+    this.apiKey = apiKey;
+    this.apiSecret = apiSecret;
+    this.chainId = chainId;
 
     const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
 
@@ -58,7 +66,19 @@ class PopupWindow implements Messenger {
     this.bridge.on(BridgeEvent.hide, () => {
       this.hide();
     });
+    this.bridge.on(BridgeEvent.chainChanged, nextChainId => {
+      this.chainId = Number(nextChainId);
+    });
   }
+
+  private getUrl = (): string => {
+    const url = `${getWalletUrl()}?${queryWithAuthConfig({
+      apiKey: this.apiKey,
+      apiSecret: this.apiSecret,
+      network: this.chainId,
+    })}`;
+    return url;
+  };
 
   private detectCloseEventTimer = 0;
 
@@ -79,7 +99,7 @@ class PopupWindow implements Messenger {
             '*',
           );
         }
-      }, 500);
+      }, DETECT_IF_POPUP_WINDOW_CLOSED_INTERVAL_MS);
     }
   };
 
@@ -87,7 +107,7 @@ class PopupWindow implements Messenger {
     if (!this.proxy || this.proxy.closed) {
       const target = 'qubic-wallet';
       const windowFeatures = 'location=no,resizable=yes,scrollbars=yes,status=yes,height=680,width=350';
-      const proxy = window.open(this.url, target, windowFeatures);
+      const proxy = window.open(this.getUrl(), target, windowFeatures);
       this.detectPopupWindowCloseEvent(proxy);
       this.proxy = proxy;
       return proxy;
@@ -125,11 +145,7 @@ class PopupWindow implements Messenger {
         return;
       }
 
-      function onReady() {
-        resolve();
-        bridge.removeListener('ready', onReady);
-      }
-      bridge.addListener('ready', onReady);
+      bridge.once(BridgeEvent.ready, resolve);
       show();
     });
   };

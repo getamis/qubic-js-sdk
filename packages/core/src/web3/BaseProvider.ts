@@ -1,13 +1,16 @@
 import { ethErrors } from 'eth-rpc-errors';
 import EventEmitter from 'events';
 import { JsonRpcResponse, JsonRpcSuccess, JsonRpcEngine, getUniqueId, JsonRpcMiddleware } from 'json-rpc-engine';
-import createInfuraMiddleware from 'eth-json-rpc-infura';
+import { createMultiInfuraMiddleware } from '../middlewares/multiInfuraMiddleware';
 import { INFURA_NETWORK_KEY } from '../constants/backend';
+import { Network } from '../enums';
+
 import { BridgeEvent } from '../types/bridge';
 import { createWalletMiddleware } from '../middlewares/walletMiddleware';
 import { Bridge, Request, SendAsync } from '../types';
 
 interface BaseProviderOptions {
+  network: Network;
   bridge: Bridge;
   middlewares: Array<JsonRpcMiddleware<unknown, unknown>>;
 }
@@ -21,7 +24,7 @@ export class BaseProvider extends EventEmitter {
 
   constructor(options: BaseProviderOptions) {
     super();
-    const { bridge, middlewares } = options;
+    const { bridge, middlewares, network } = options;
 
     this.engine = new JsonRpcEngine();
     middlewares.forEach(middleware => {
@@ -29,10 +32,13 @@ export class BaseProvider extends EventEmitter {
     });
     this.engine.push(createWalletMiddleware(bridge.send.bind(bridge)));
     this.engine.push(
-      createInfuraMiddleware({
-        network: 'rinkeby',
-        projectId: INFURA_NETWORK_KEY,
-      }),
+      createMultiInfuraMiddleware(
+        {
+          initNetwork: network,
+          projectId: INFURA_NETWORK_KEY,
+        },
+        bridge,
+      ),
     );
 
     bridge.on(BridgeEvent.chainChanged, (chainId: string) => {
