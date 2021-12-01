@@ -15,7 +15,6 @@ export const createWalletMiddleware = (send: Bridge['send']): JsonRpcMiddleware<
       case 'eth_signTypedData_v3':
       case 'eth_signTypedData_v4':
       case 'eth_signTransaction':
-      case 'eth_sendRawTransaction':
       case 'eth_sendTransaction':
         try {
           res.result = await send(req);
