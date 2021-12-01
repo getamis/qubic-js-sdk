@@ -27,13 +27,7 @@ const endpoints = (path: string, devUrl?: string) => `${getWalletUrl(devUrl)}${p
 
 export const getThirdPartyCardUrl = (devUrl?: string): string => endpoints('/thirdparty/tappay/creditcard', devUrl);
 
-export const NODE_URLS = {
-  [Network.MAINNET]: 'wss://mainnet.infura.io/ws/v3/34813e03032144f691039e83a1461972',
-  [Network.ROPSTEN]: 'wss://ropsten.infura.io/ws/v3/34813e03032144f691039e83a1461972',
-  [Network.RINKEBY]: 'wss://rinkeby.infura.io/ws/v3/34813e03032144f691039e83a1461972',
-  [Network.POLYGON]: 'wss://polygon-mainnet.infura.io/ws/v3/34813e03032144f691039e83a1461972',
-  [Network.MUMBAI]: 'wss://polygon-mumbai.infura.io/ws/v3/34813e03032144f691039e83a1461972',
-};
+export const INFURA_NETWORK_KEY = '34813e03032144f691039e83a1461972';
 
 export const FORWARDER_ADDRESSES = {
   [Network.MAINNET]: '0xd53bde9fe0d32874c6fbd76508b7e551ebdfa672',

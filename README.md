@@ -36,7 +36,6 @@ const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID, {
   // optional, default: false, when value is true, the show iframe instead of new window, credit card payment will failed with this option value true
   enableIframe: true
 });
-const amis = qubicConnector.getClient();
 
 export default () => {
   const context = useWeb3React<Web3>();
@@ -60,12 +59,11 @@ export default () => {
 
 ```javascript
 import Web3 from 'web3';
-import AMIS from '@qubic-js/browser';
+import QubicProvider from '@qubic-js/browser';
 
-const amis = new AMIS(API_KEY, API_SECRET, Network.RINKEBY);
-amis.setSpeed(Speed.FAST);
+const provider = new QubicProvider(API_KEY, API_SECRET, Network.RINKEBY, enableIframe);
 
-const web3 = new Web3(amis.getProvider());
+const web3 = new Web3(provider);
 ```
 
 ## Run Example
@@ -105,100 +103,83 @@ enum Network {
   MAINNET,
   ROPSTEN,
   RINKEBY,
+  POLYGON,
+  MUMBAI
 }
 ```
-
-### Cost
-
-```javascript
-type Cost = {
-  gasPrice: string,
-  wait: number,
-};
-```
-
-**_Params_**
-
-- `gasPrice`: 估計所需 gas 價格，單位為 `wei`
-- `wait`: 等待上鏈時間，單位為 `分鐘`
-
-### CostData
-
-```ts
-type CostMap = {
-  blockNumber: number;
-  blockHash: string;
-  [Speed.FASTEST]: Cost;
-  [Speed.FAST]: Cost;
-  [Speed.AVERAGE]: Cost;
-};
-```
-
-**_Params_**
-
-- `blockNumber`: 基於該區塊高度去估計所需 `gasPrice`
-- `blockHash`: 基於該區塊去估計所需之 `gasPrice`
 
 ## Initializer
 
 ### constructor
 
 ```javascript
-constructor(apiKey: string, apiSecret: string, network: Network): AMIS
+// import QubicProvider from '@qubic-js/browser';
+constructor(apiKey: string, apiSecret: string, network: Network, options): QubicProvider
 ```
 
-初始化 AMIS 錢包客戶端
+初始化 Qubic 錢包客戶端
 
 **_Params_**
 
 - `apiKey`: 在 AMIS 後台申請 `apiKey`
 - `apiSecret`: 在 AMIS 後台申請 `apiSecret`
-- `network`: 目前提供 `MAINNET`、`ROPSTEN` 和 `RINKEBY`
+- `network`: 目前提供 `MAINNET`、`RINKEBY`、 `POLYGON` 和 `MUMBAI`
+- options
+  - enableIframe: `true` 時，會使用 iframe 顯示，其他狀況是打開新視
 
 **_Return_**
 
-可用於呼叫 amis methods 的物件
+Web3 Provider
 
 ## Methods - Basic
 
-串接 AMIS 錢包，包含內建的 Web UI
+串接 Qubic 錢包，包含內建的 Web UI
 
-### getProvider
-
-```javascript
-function getProvider(): AMISProvider
-```
-
-提供 web3 provider 支援，統一介面減少開發者串接成本，provider 實作會抽換 `signTransaction` 與 `sendTransaction` 等方法以支援 relayer 或 maicoin pay 功能
-
-**_Return_**
-
-回傳 AMIS 自訂的 web3 provider
-
-### signIn
+### eth_requestAccounts
 
 ```javascript
-function signIn(): void
+provider.request({ method: 'eth_requestAccounts' });
 ```
 
 開啟 Social Login 登入流程
 
-### estimateCosts
+### Provider structure
 
-```javascript
-function estimateCosts(): CostData
+```mermaid
+flowchart TB
+  subgraph QubicProvider
+    subgraph API
+      provider.method
+      provider.event
+    end
+    provider.method <--> Middlewares
+
+    subgraph Middlewares
+      cacheMiddleware --> prepareBridgeMiddleware
+      prepareBridgeMiddleware --> walletMiddleware
+      walletMiddleware --> infuraMiddleware
+    end
+    walletMiddleware <--> bridge.send
+
+    subgraph Bridge
+      bridge.emitEvent
+      bridge.send
+    end
+    bridge.emitEvent --> prepareBridgeMiddleware
+    bridge.emitEvent --> walletMiddleware
+    bridge.emitEvent --> provider.event
+
+  end
+
+  infuraMiddleware <--> infuraRpcNode
+
+  subgraph QubicWallet
+    iFrame
+    popupWindow
+    webview
+  end
+  QubicWallet --> bridge.emitEvent
+  QubicWallet <--> bridge.send
+  prepareBridgeMiddleware -.->|initialize| QubicWallet
+
 ```
-
-估算 `Fastest`、`Fast` 與 `Average` 等不同速度下所需的 `gasPrice` 與上鏈等待時間
-
-### setSpeed
-
-```javascript
-function setSpeed(speed: Speed): void
-```
-
-DApp 開發者設定每筆交易的上鏈速度，AMIS 會自動估算最合適的價格
-
-**_Params_**
-
-- `speed`: 上鏈速度，請參考 Speed
