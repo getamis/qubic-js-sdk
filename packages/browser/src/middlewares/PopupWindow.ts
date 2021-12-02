@@ -1,6 +1,13 @@
 import { createAsyncMiddleware, JsonRpcMiddleware } from 'json-rpc-engine';
 import InApp from 'detect-inapp';
-import { BridgeEvent, Messenger, Network, getWalletUrl, queryWithAuthConfig } from '@qubic-js/core';
+import {
+  BridgeEvent,
+  Messenger,
+  Network,
+  getWalletUrl,
+  queryWithAuthConfig,
+  WALLET_HANDLE_METHODS,
+} from '@qubic-js/core';
 
 import { t } from '../translation';
 import BrowserBridge from '../utils/BrowserBridge';
@@ -152,7 +159,9 @@ class PopupWindow implements Messenger {
 
   public createPrepareBridgeMiddleware = (): JsonRpcMiddleware<unknown, unknown> =>
     createAsyncMiddleware(async (req, res, next) => {
-      await this.waitUntilReady();
+      if (WALLET_HANDLE_METHODS.includes(req.method)) {
+        await this.waitUntilReady();
+      }
       next();
     });
 }

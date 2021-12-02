@@ -1,4 +1,11 @@
-import { BridgeEvent, Messenger, Network, getWalletUrl, queryWithAuthConfig } from '@qubic-js/core';
+import {
+  BridgeEvent,
+  Messenger,
+  Network,
+  getWalletUrl,
+  queryWithAuthConfig,
+  WALLET_HANDLE_METHODS,
+} from '@qubic-js/core';
 import { JsonRpcMiddleware, createAsyncMiddleware } from 'json-rpc-engine';
 import { css, CSSInterpolation } from '@emotion/css';
 
@@ -105,7 +112,9 @@ class IFrame implements Messenger {
 
   public createPrepareBridgeMiddleware = (): JsonRpcMiddleware<unknown, unknown> =>
     createAsyncMiddleware(async (req, res, next) => {
-      await this.waitUntilReady();
+      if (WALLET_HANDLE_METHODS.includes(req.method)) {
+        await this.waitUntilReady();
+      }
       next();
     });
 }
