@@ -17,3 +17,6 @@ junit.xml
 
 # Local Netlify folder
 .netlify
+
+.env
+.env.*
