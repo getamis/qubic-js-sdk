@@ -1,8 +1,8 @@
 import { ethErrors } from 'eth-rpc-errors';
 import EventEmitter from 'events';
 import { JsonRpcResponse, JsonRpcSuccess, JsonRpcEngine, getUniqueId, JsonRpcMiddleware } from 'json-rpc-engine';
+import { getInfuraNetworkKey } from '../constants/backend';
 import { createMultiInfuraMiddleware } from '../middlewares/multiInfuraMiddleware';
-import { INFURA_NETWORK_KEY } from '../constants/backend';
 import { Network } from '../enums';
 
 import { BridgeEvent } from '../types/bridge';
@@ -35,7 +35,7 @@ export class BaseProvider extends EventEmitter {
       createMultiInfuraMiddleware(
         {
           initNetwork: network,
-          projectId: INFURA_NETWORK_KEY,
+          projectId: getInfuraNetworkKey(),
         },
         bridge,
       ),
