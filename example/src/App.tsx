@@ -10,6 +10,7 @@ import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { QubicConnector } from '@qubic-js/react';
 import qs from 'query-string';
+import { getEnvApiKey, getEnvApiSecret } from '@qubic-js/core';
 
 const erc20Abi = [
   {
@@ -279,9 +280,8 @@ const Button = React.memo<{ children: string; onPress: () => void }>(({ children
   </View>
 ));
 
-// Lootex API data:
-const API_KEY = 'a857a616-21ed-4d9e-9aff-2091993bff73';
-const API_SECRET = 'DnAYwfFMCGzdMNMMdTCeLWifJbGYgZFP';
+const API_KEY = getEnvApiKey();
+const API_SECRET = getEnvApiSecret();
 const CHAIN_ID = 4;
 
 const parsed = qs.parse(window.location.search);
@@ -320,18 +320,31 @@ const App = React.memo(() => {
   }, [activate]);
 
   useEffect(() => {
-    if (enableSignMsgAfterActivate && account) {
+    const currentProvider = web3?.currentProvider as AbstractProvider | undefined;
+    if (enableSignMsgAfterActivate && account && currentProvider?.request) {
       setEnableSignMsgAfterActivate(false);
 
-      web3?.eth.personal
-        .sign('some custom msg', account, '')
+      currentProvider
+        .request({
+          jsonrpc: '2.0',
+          method: 'qubic_login',
+          params: [
+            {
+              name: 'OneOffs',
+              url: 'https://nft.oneoffs.art',
+              permissions: [],
+              nonce: '163849628497268',
+              service: 'qubee-creator',
+            },
+          ],
+        })
         .then(signature => {
           console.log('handleSignInUpAndSignMessage 2');
           console.log(`signature=${signature}`);
         })
         .catch(console.error);
     }
-  }, [account, enableSignMsgAfterActivate, web3?.eth.personal]);
+  }, [account, enableSignMsgAfterActivate, web3?.currentProvider]);
 
   const handleDisconnect = useCallback(() => {
     deactivate();
@@ -352,12 +365,6 @@ const App = React.memo(() => {
       },
     );
   }, [web3?.eth]);
-
-  const handleEstimateCosts = useCallback(async () => {
-    const amis = qubicConnector.getClient();
-    const result = await amis?.estimateCosts();
-    console.log('estimated costs', result);
-  }, []);
 
   const handleSend = useCallback(async () => {
     const tx = {
@@ -708,6 +715,12 @@ const App = React.memo(() => {
     [web3?.currentProvider],
   );
 
+  const handleGetAccounts = useCallback(() => {
+    web3?.eth.getAccounts().then(accounts => {
+      console.log({ accounts });
+    });
+  }, [web3?.eth]);
+
   return (
     <View style={styles.container}>
       <View style={styles.group}>
@@ -721,7 +734,6 @@ const App = React.memo(() => {
       <View style={styles.group}>
         <Text style={styles.title}>2. 估算 Gas Price (顯示在 console 中)</Text>
         <Button onPress={handleEstimateGas}>Estimate Gas</Button>
-        <Button onPress={handleEstimateCosts}>Estimate Costs</Button>
       </View>
       <View style={styles.group}>
         <Text style={styles.title}>3. ETH 交易，須先有 ETH</Text>
@@ -748,6 +760,10 @@ const App = React.memo(() => {
         <Button onPress={bindOperateEthereumChain('wallet_addEthereumChain')}>wallet_addEthereumChain</Button>
       </View>
 
+      <View style={styles.group}>
+        <Text style={styles.title}>7. web3.eth</Text>
+        <Button onPress={handleGetAccounts}>Get Accounts</Button>
+      </View>
       {/* eslint-disable-next-line react/style-prop-object */}
       <StatusBar style="auto" />
     </View>

@@ -1,2 +1,1 @@
-export * from './Provider';
-export * from './tx';
+export * from './BaseProvider';
