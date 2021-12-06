@@ -8,7 +8,7 @@
   "name": "qubic-js-sdk",
   "scripts": {
     "example": "yarn --cwd ./example web",
-    "build:example": "cd example && expo build:web",
+    "build:example": "node ./example/scripts/createEnvFile && cd example && expo build:web",
     "build": "lerna run build",
     "prepublishOnly": "yarn run build",
     "prerelease": "lerna run clean",

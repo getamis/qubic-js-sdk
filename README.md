@@ -30,7 +30,11 @@ import Web3 from 'web3';
 import { QubicConnector } from '@qubic-js/react';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 
-const qubicConnector = new QubicConnector(API_KEY, API_SECRET, CHAIN_ID, {
+const qubicConnector = new QubicConnector( {
+  apiKey: API_KEY,
+  apiSecret: API_SECRET,
+  chainId: CHAIN_ID,
+  infuraProjectId: INFURA_PROJECT_ID,
   // optional, default: false, when value is true, the popup will hide automatically
   autoHideWelcome: true
   // optional, default: false, when value is true, the show iframe instead of new window, credit card payment will failed with this option value true
@@ -61,7 +65,13 @@ export default () => {
 import Web3 from 'web3';
 import QubicProvider from '@qubic-js/browser';
 
-const provider = new QubicProvider(API_KEY, API_SECRET, Network.RINKEBY, enableIframe);
+const provider = new QubicProvider({
+  apiKey: API_KEY,
+  apiSecret: API_SECRET,
+  chainId: Network.RINKEBY,
+  infuraProjectId: INFURA_PROJECT_ID,
+  enableIframe: true,
+});
 
 const web3 = new Web3(provider);
 ```

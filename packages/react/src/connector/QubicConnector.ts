@@ -4,6 +4,10 @@ import { AbstractConnector } from '@web3-react/abstract-connector';
 import { Network } from '@qubic-js/core';
 
 interface QubicConnectorOptions {
+  apiKey: string;
+  apiSecret: string;
+  chainId: number;
+  infuraProjectId: string;
   /** hide welcome screen after sign in success */
   autoHideWelcome?: boolean;
   enableIframe?: boolean;
@@ -13,8 +17,10 @@ export default class QubicConnector extends AbstractConnector {
   private provider: BrowserProvider;
   private options?: QubicConnectorOptions;
 
-  constructor(apiKey: string, apiSecret: string, chainId: number, options?: QubicConnectorOptions) {
+  constructor(options: QubicConnectorOptions) {
     super({ supportedChainIds: [Network.MAINNET, Network.RINKEBY, Network.POLYGON, Network.MUMBAI] }); // [mainnet, rinkeby]
+
+    const { apiKey, apiSecret, chainId, infuraProjectId } = options;
 
     if (!this.supportedChainIds?.includes(chainId)) {
       throw new Error(`chainId: ${chainId} does not supported`);
@@ -24,7 +30,11 @@ export default class QubicConnector extends AbstractConnector {
 
     this.handleChainChanged = this.handleChainChanged.bind(this);
     this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
-    this.provider = new BrowserProvider(apiKey, apiSecret, chainId, {
+    this.provider = new BrowserProvider({
+      apiKey,
+      apiSecret,
+      chainId,
+      infuraProjectId,
       enableIframe: options?.enableIframe,
     });
   }
