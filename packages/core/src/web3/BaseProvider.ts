@@ -2,7 +2,6 @@ import { ethErrors } from 'eth-rpc-errors';
 import EventEmitter from 'events';
 import { JsonRpcResponse, JsonRpcSuccess, JsonRpcEngine, getUniqueId, JsonRpcMiddleware } from 'json-rpc-engine';
 import { createMultiInfuraMiddleware } from '../middlewares/multiInfuraMiddleware';
-import { INFURA_NETWORK_KEY } from '../constants/backend';
 import { Network } from '../enums';
 
 import { BridgeEvent } from '../types/bridge';
@@ -10,6 +9,7 @@ import { createWalletMiddleware } from '../middlewares/walletMiddleware';
 import { Bridge, Request, SendAsync } from '../types';
 
 interface BaseProviderOptions {
+  infuraProjectId: string;
   network: Network;
   bridge: Bridge;
   middlewares: Array<JsonRpcMiddleware<unknown, unknown>>;
@@ -24,7 +24,7 @@ export class BaseProvider extends EventEmitter {
 
   constructor(options: BaseProviderOptions) {
     super();
-    const { bridge, middlewares, network } = options;
+    const { bridge, middlewares, network, infuraProjectId } = options;
 
     this.engine = new JsonRpcEngine();
     middlewares.forEach(middleware => {
@@ -35,7 +35,7 @@ export class BaseProvider extends EventEmitter {
       createMultiInfuraMiddleware(
         {
           initNetwork: network,
-          projectId: INFURA_NETWORK_KEY,
+          projectId: infuraProjectId,
         },
         bridge,
       ),

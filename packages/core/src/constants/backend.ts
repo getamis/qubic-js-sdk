@@ -27,8 +27,6 @@ const endpoints = (path: string, devUrl?: string) => `${getWalletUrl(devUrl)}${p
 
 export const getThirdPartyCardUrl = (devUrl?: string): string => endpoints('/thirdparty/tappay/creditcard', devUrl);
 
-export const INFURA_NETWORK_KEY = '34813e03032144f691039e83a1461972';
-
 // https://infura.io/docs/ethereum#section/Choose-a-Network
 export const INFURA_NETWORK_ENDPOINTS: Record<Network, string> = {
   [Network.MAINNET]: 'mainnet',
@@ -60,14 +58,4 @@ export const FORWARDER_ADDRESSES: Record<Network, string> = {
 
 export const getForwarderContract = (network: Network = 1): string => {
   return FORWARDER_ADDRESSES[network];
-};
-
-export const getEnvApiKey = (): string => {
-  // @ts-ignore
-  return process.env.APP_MANIFEST?.extra?.API_KEY;
-};
-
-export const getEnvApiSecret = (): string => {
-  // @ts-ignore
-  return process.env.APP_MANIFEST?.extra?.API_SECRET;
 };
