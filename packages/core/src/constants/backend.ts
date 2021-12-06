@@ -59,18 +59,3 @@ export const FORWARDER_ADDRESSES: Record<Network, string> = {
 export const getForwarderContract = (network: Network = 1): string => {
   return FORWARDER_ADDRESSES[network];
 };
-
-export const getEnvApiKey = (): string => {
-  // @ts-ignore
-  return process.env.APP_MANIFEST?.extra?.API_KEY;
-};
-
-export const getEnvApiSecret = (): string => {
-  // @ts-ignore
-  return process.env.APP_MANIFEST?.extra?.API_SECRET;
-};
-
-export const getInfuraNetworkKey = (): string => {
-  // @ts-ignore
-  return process.env.APP_MANIFEST?.extra?.INFURA_NETWORK_KEY;
-};

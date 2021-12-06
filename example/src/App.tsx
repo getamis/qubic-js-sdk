@@ -10,7 +10,6 @@ import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { QubicConnector } from '@qubic-js/react';
 import qs from 'query-string';
-import { getEnvApiKey, getEnvApiSecret } from '@qubic-js/core';
 
 const erc20Abi = [
   {
@@ -280,12 +279,27 @@ const Button = React.memo<{ children: string; onPress: () => void }>(({ children
   </View>
 ));
 
-const API_KEY = getEnvApiKey();
-const API_SECRET = getEnvApiSecret();
-const CHAIN_ID = 4;
-
+const { API_KEY, API_SECRET } = (process.env.APP_MANIFEST as any)?.extra;
 const parsed = qs.parse(window.location.search);
-const qubicConnector = new QubicConnector(API_KEY, API_SECRET, parsed.chainId ? Number(parsed.chainId) : CHAIN_ID, {
+
+const infuraProjectId =
+  (parsed.infuraProjectId as string) ||
+  localStorage.getItem('INFURA_NETWORK_KEY') ||
+  // eslint-disable-next-line no-alert
+  window.prompt('Please enter you infura project id') ||
+  '';
+if (infuraProjectId) {
+  localStorage.setItem('INFURA_NETWORK_KEY', infuraProjectId);
+} else {
+  // eslint-disable-next-line no-alert
+  window.alert(`You can go to https://infura.io/ to apply a projectId`);
+}
+
+const qubicConnector = new QubicConnector({
+  apiKey: API_KEY,
+  apiSecret: API_SECRET,
+  chainId: Number(parsed.chainId) || 1,
+  infuraProjectId,
   autoHideWelcome: parsed.autoHideWelcome === 'true' || false,
   enableIframe: parsed.enableIframe === 'true' || false,
 });
@@ -724,6 +738,7 @@ const App = React.memo(() => {
   return (
     <View style={styles.container}>
       <View style={styles.group}>
+        <Text style={styles.infoText}>infura project id: {infuraProjectId}</Text>
         <Text style={styles.title}>1. 註冊或登錄以獲得地址</Text>
         <Button onPress={handleSignInUp}>SIGN IN / SIGN UP</Button>
         <Button onPress={handleSignInUpAndSignMessage}>{`SIGN IN / SIGN UP\nAnd Sign custom message`}</Button>
