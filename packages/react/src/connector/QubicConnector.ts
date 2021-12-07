@@ -42,63 +42,64 @@ export default class QubicConnector extends AbstractConnector {
     }
   }
 
-  public getProvider = async (): Promise<BrowserProvider> => {
-    return new Promise(resolve => {
-      if (this.provider) {
-        resolve(this.provider);
-        return;
-      }
+  public getProvider = async (): Promise<BrowserProvider | null> => {
+    if (this.provider) {
+      return this.provider;
+    }
 
+    try {
       // we don't want next.js run browser js code in server side rendering
       // so we use dynamic import here
-      import('@qubic-js/browser')
-        .then(dyIm => dyIm?.default ?? dyIm)
-        .then(DyImBrowserProvider => {
-          const { apiKey, apiSecret, chainId, infuraProjectId, enableIframe } = this.options;
-          this.provider = new DyImBrowserProvider({
-            apiKey,
-            apiSecret,
-            chainId,
-            infuraProjectId,
-            enableIframe,
-          });
-          resolve(this.provider);
-        });
-    });
+      const { default: DyImBrowserProvider } = await import('@qubic-js/browser');
+      const { apiKey, apiSecret, chainId, infuraProjectId, enableIframe } = this.options;
+      this.provider = new DyImBrowserProvider({
+        apiKey,
+        apiSecret,
+        chainId,
+        infuraProjectId,
+        enableIframe,
+      });
+      return this.provider;
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+      return null;
+    }
   };
 
   public activate = async (): Promise<ConnectorUpdate> => {
-    const provider = await this.getProvider();
+    const { provider } = this;
 
-    const accounts = (await provider.request?.({
+    const accounts = (await provider?.request?.({
       method: 'eth_requestAccounts',
     })) as string[];
 
-    const chainId = (await provider.request?.({
+    const chainId = (await provider?.request?.({
       method: 'eth_chainId',
     })) as string;
 
-    provider.on('chainChanged', this.handleChainChanged);
-    provider.on('accountsChanged', this.handleAccountsChanged);
+    provider?.on('chainChanged', this.handleChainChanged);
+    provider?.on('accountsChanged', this.handleAccountsChanged);
     if (this.options?.autoHideWelcome) {
-      provider.hide();
+      provider?.hide();
     }
     return { provider, chainId: Number(chainId), account: accounts[0] };
   };
 
   public getChainId = async (): Promise<number | string> => {
-    const provider = await this.getProvider();
+    const { provider } = this;
 
-    const chainId = (await provider.request?.({
+    const chainId = (await provider?.request?.({
       method: 'eth_chainId',
     })) as string;
     return chainId;
   };
 
   public async getAccount(): Promise<null | string> {
-    const provider = await this.getProvider();
+    const { provider } = this;
 
-    const accounts = (await provider.request?.({
+    const accounts = (await provider?.request?.({
       method: 'eth_accounts',
     })) as string[];
 
@@ -108,24 +109,19 @@ export default class QubicConnector extends AbstractConnector {
   // https://github.com/NoahZinsmeister/web3-react/blob/v6/packages/portis-connector/src/index.ts#L109
   // DONT'T call `this.emitDeactivate` in deactivate
   public deactivate = (): void => {
-    if (!this.provider) {
-      // no need to do any thing if provider is not exists
-      return;
-    }
+    const { provider } = this;
 
-    this.provider.off('chainChanged', this.handleChainChanged);
-    this.provider.off('accountsChanged', this.handleAccountsChanged);
+    provider?.off('chainChanged', this.handleChainChanged);
+    provider?.off('accountsChanged', this.handleAccountsChanged);
   };
 
   // https://github.com/NoahZinsmeister/web3-react/blob/v6/packages/portis-connector/src/index.ts#L126
   // call `this.emitDeactivate` in close
   public close = (): void => {
+    const { provider } = this;
+
     this.emitDeactivate();
-    if (!this.provider) {
-      // no need to do any thing if provider is not exists
-      return;
-    }
-    this.provider.off('chainChanged', this.handleChainChanged);
-    this.provider.off('accountsChanged', this.handleAccountsChanged);
+    provider?.off('chainChanged', this.handleChainChanged);
+    provider?.off('accountsChanged', this.handleAccountsChanged);
   };
 }
