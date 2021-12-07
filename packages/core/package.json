@@ -1,6 +1,6 @@
 {
   "name": "@qubic-js/core",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "",
   "license": "Apache License 2.0",
   "source": "./src/index.ts",
