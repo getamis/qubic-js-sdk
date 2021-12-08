@@ -14,13 +14,12 @@ interface QubicConnectorOptions {
 }
 
 export default class QubicConnector extends AbstractConnector {
-  private provider: BrowserProvider;
-  private options?: QubicConnectorOptions;
+  private provider?: BrowserProvider;
+  private options: QubicConnectorOptions;
 
   constructor(options: QubicConnectorOptions) {
     super({ supportedChainIds: [Network.MAINNET, Network.RINKEBY, Network.POLYGON, Network.MUMBAI] }); // [mainnet, rinkeby]
-
-    const { apiKey, apiSecret, chainId, infuraProjectId } = options;
+    const { chainId } = options;
 
     if (!this.supportedChainIds?.includes(chainId)) {
       throw new Error(`chainId: ${chainId} does not supported`);
@@ -30,13 +29,7 @@ export default class QubicConnector extends AbstractConnector {
 
     this.handleChainChanged = this.handleChainChanged.bind(this);
     this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
-    this.provider = new BrowserProvider({
-      apiKey,
-      apiSecret,
-      chainId,
-      infuraProjectId,
-      enableIframe: options?.enableIframe,
-    });
+    this.getProvider();
   }
 
   private handleChainChanged(chainId: string): void {
@@ -49,36 +42,64 @@ export default class QubicConnector extends AbstractConnector {
     }
   }
 
+  public getProvider = async (): Promise<BrowserProvider | null> => {
+    if (this.provider) {
+      return this.provider;
+    }
+
+    try {
+      // we don't want next.js run browser js code in server side rendering
+      // so we use dynamic import here
+      const { default: DyImBrowserProvider } = await import('@qubic-js/browser');
+      const { apiKey, apiSecret, chainId, infuraProjectId, enableIframe } = this.options;
+      this.provider = new DyImBrowserProvider({
+        apiKey,
+        apiSecret,
+        chainId,
+        infuraProjectId,
+        enableIframe,
+      });
+      return this.provider;
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+      return null;
+    }
+  };
+
   public activate = async (): Promise<ConnectorUpdate> => {
-    const accounts = (await this.provider?.request?.({
+    const { provider } = this;
+
+    const accounts = (await provider?.request?.({
       method: 'eth_requestAccounts',
     })) as string[];
 
-    const chainId = (await this.provider?.request?.({
+    const chainId = (await provider?.request?.({
       method: 'eth_chainId',
     })) as string;
 
-    this.provider.on('chainChanged', this.handleChainChanged);
-    this.provider.on('accountsChanged', this.handleAccountsChanged);
+    provider?.on('chainChanged', this.handleChainChanged);
+    provider?.on('accountsChanged', this.handleAccountsChanged);
     if (this.options?.autoHideWelcome) {
-      this.provider.hide();
+      provider?.hide();
     }
-    return { provider: this.provider, chainId: Number(chainId), account: accounts[0] };
-  };
-
-  public getProvider = async (): Promise<BrowserProvider | undefined> => {
-    return this.provider;
+    return { provider, chainId: Number(chainId), account: accounts[0] };
   };
 
   public getChainId = async (): Promise<number | string> => {
-    const chainId = (await this.provider?.request?.({
+    const { provider } = this;
+
+    const chainId = (await provider?.request?.({
       method: 'eth_chainId',
     })) as string;
     return chainId;
   };
 
   public async getAccount(): Promise<null | string> {
-    const accounts = (await this.provider?.request?.({
+    const { provider } = this;
+
+    const accounts = (await provider?.request?.({
       method: 'eth_accounts',
     })) as string[];
 
@@ -88,15 +109,19 @@ export default class QubicConnector extends AbstractConnector {
   // https://github.com/NoahZinsmeister/web3-react/blob/v6/packages/portis-connector/src/index.ts#L109
   // DONT'T call `this.emitDeactivate` in deactivate
   public deactivate = (): void => {
-    this.provider.off('chainChanged', this.handleChainChanged);
-    this.provider.off('accountsChanged', this.handleAccountsChanged);
+    const { provider } = this;
+
+    provider?.off('chainChanged', this.handleChainChanged);
+    provider?.off('accountsChanged', this.handleAccountsChanged);
   };
 
   // https://github.com/NoahZinsmeister/web3-react/blob/v6/packages/portis-connector/src/index.ts#L126
   // call `this.emitDeactivate` in close
   public close = (): void => {
+    const { provider } = this;
+
     this.emitDeactivate();
-    this.provider.off('chainChanged', this.handleChainChanged);
-    this.provider.off('accountsChanged', this.handleAccountsChanged);
+    provider?.off('chainChanged', this.handleChainChanged);
+    provider?.off('accountsChanged', this.handleAccountsChanged);
   };
 }
