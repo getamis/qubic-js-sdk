@@ -338,18 +338,26 @@ const App = React.memo(() => {
     if (enableSignMsgAfterActivate && account && currentProvider?.request) {
       setEnableSignMsgAfterActivate(false);
 
+      const from = address;
+
       currentProvider
         .request({
           jsonrpc: '2.0',
           method: 'qubic_login',
           params: [
-            {
+            from,
+            JSON.stringify({
               name: 'OneOffs',
               url: 'https://nft.oneoffs.art',
-              permissions: [],
+              permissions: [
+                'wallet.permission.access_email_address',
+                // 'wallet.permission.access_profile_image',
+                // 'wallet.permission.access_language_preference',
+                // 'wallet.permission.access_phone_number',
+              ],
               nonce: '163849628497268',
               service: 'qubee-creator',
-            },
+            }),
           ],
         })
         .then(signature => {
@@ -358,7 +366,7 @@ const App = React.memo(() => {
         })
         .catch(console.error);
     }
-  }, [account, enableSignMsgAfterActivate, web3?.currentProvider]);
+  }, [account, address, enableSignMsgAfterActivate, web3?.currentProvider]);
 
   const handleDisconnect = useCallback(() => {
     deactivate();
