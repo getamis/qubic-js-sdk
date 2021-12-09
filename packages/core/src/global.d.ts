@@ -12,11 +12,3 @@ declare module 'eth-json-rpc-infura' {
   function createInfuraMiddleware(opts: InfuraMiddlewareOptions): JsonRpcMiddleware<unknown, unknown>;
   export default createInfuraMiddleware;
 }
-
-declare global {
-  import { BaseProvider } from './web3/BaseProvider';
-
-  interface Window {
-    ethereum?: BaseProvider;
-  }
-}

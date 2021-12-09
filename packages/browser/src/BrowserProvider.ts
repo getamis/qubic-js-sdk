@@ -30,6 +30,16 @@ export class BrowserProvider extends BaseProvider {
       middlewares: [createCacheMiddleware(bridge), createPrepareBridgeMiddleware()],
     });
     this.hide = () => hide();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const globalEthereum = typeof window !== 'undefined' ? (window as any).ethereum : undefined;
+
+    // when dapp browser open dapp which use qubic-sdk
+    // it will use window.ethereum as default provider
+    if (globalEthereum && globalEthereum?.isQubic) {
+      globalEthereum.hide = () => null;
+      return globalEthereum;
+    }
   }
 }
 
