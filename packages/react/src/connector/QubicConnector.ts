@@ -111,8 +111,8 @@ export default class QubicConnector extends AbstractConnector {
   public deactivate = (): void => {
     const { provider } = this;
 
-    provider?.off('chainChanged', this.handleChainChanged);
-    provider?.off('accountsChanged', this.handleAccountsChanged);
+    provider?.removeListener('chainChanged', this.handleChainChanged);
+    provider?.removeListener('accountsChanged', this.handleAccountsChanged);
   };
 
   // https://github.com/NoahZinsmeister/web3-react/blob/v6/packages/portis-connector/src/index.ts#L126
@@ -121,7 +121,7 @@ export default class QubicConnector extends AbstractConnector {
     const { provider } = this;
 
     this.emitDeactivate();
-    provider?.off('chainChanged', this.handleChainChanged);
-    provider?.off('accountsChanged', this.handleAccountsChanged);
+    provider?.removeListener('chainChanged', this.handleChainChanged);
+    provider?.removeListener('accountsChanged', this.handleAccountsChanged);
   };
 }

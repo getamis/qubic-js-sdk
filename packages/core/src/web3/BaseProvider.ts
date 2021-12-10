@@ -17,6 +17,7 @@ interface BaseProviderOptions {
 
 export class BaseProvider extends EventEmitter {
   private engine?: JsonRpcEngine;
+  public isQubic = true;
 
   static isJsonRpcSuccess<T>(rpc: JsonRpcResponse<T>): rpc is JsonRpcSuccess<T> {
     return (rpc as JsonRpcSuccess<T>).result !== undefined;
