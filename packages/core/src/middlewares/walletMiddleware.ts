@@ -1,3 +1,4 @@
+import { ethErrors } from 'eth-rpc-errors';
 import { createAsyncMiddleware, JsonRpcMiddleware } from 'json-rpc-engine';
 import { Bridge } from '../types';
 
@@ -24,7 +25,9 @@ export const createWalletMiddleware = (send: Bridge['send']): JsonRpcMiddleware<
         res.result = await send(req);
       } catch (error) {
         if (error instanceof Error) {
-          res.error = new Error(error.message);
+          res.error = error;
+        } else {
+          res.error = ethErrors.rpc.internal('Unsupported error');
         }
       }
     } else {

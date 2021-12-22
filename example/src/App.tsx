@@ -11,6 +11,8 @@ import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { QubicConnector } from '@qubic-js/react';
 import qs from 'query-string';
 
+const INFURA_PROJECT_ID = '9aa3d95b3bc440fa88ea12eaa4456161';
+
 const erc20Abi = [
   {
     constant: true,
@@ -282,24 +284,11 @@ const Button = React.memo<{ children: string; onPress: () => void }>(({ children
 const { API_KEY, API_SECRET } = (process.env.APP_MANIFEST as any)?.extra;
 const parsed = qs.parse(window.location.search);
 
-const infuraProjectId =
-  (parsed.infuraProjectId as string) ||
-  localStorage.getItem('INFURA_NETWORK_KEY') ||
-  // eslint-disable-next-line no-alert
-  window.prompt('Please enter you infura project id') ||
-  '';
-if (infuraProjectId) {
-  localStorage.setItem('INFURA_NETWORK_KEY', infuraProjectId);
-} else {
-  // eslint-disable-next-line no-alert
-  window.alert(`You can go to https://infura.io/ to apply a projectId`);
-}
-
 const qubicConnector = new QubicConnector({
   apiKey: API_KEY,
   apiSecret: API_SECRET,
   chainId: Number(parsed.chainId) || 1,
-  infuraProjectId,
+  infuraProjectId: INFURA_PROJECT_ID,
   autoHideWelcome: parsed.autoHideWelcome === 'true' || false,
   enableIframe: parsed.enableIframe === 'true' || false,
 });
@@ -743,10 +732,28 @@ const App = React.memo(() => {
     });
   }, [web3?.eth]);
 
+  const handleCustomRpcRequest = useCallback(() => {
+    // eslint-disable-next-line no-alert
+    const answer = window.prompt('paste json rpc request');
+    try {
+      if (answer) {
+        const rpcJson = JSON.parse(answer);
+        (web3?.currentProvider as AbstractProvider).sendAsync(rpcJson, (customRpcError, response) => {
+          if (customRpcError) {
+            throw customRpcError;
+          } else {
+            console.log(response?.result);
+          }
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }, [web3?.currentProvider]);
+
   return (
     <View style={styles.container}>
       <View style={styles.group}>
-        <Text style={styles.infoText}>infura project id: {infuraProjectId}</Text>
         <Text style={styles.title}>1. 註冊或登錄以獲得地址</Text>
         <Button onPress={handleSignInUp}>SIGN IN / SIGN UP</Button>
         <Button onPress={handleSignInUpAndSignMessage}>{`SIGN IN / SIGN UP\nAnd Sign custom message`}</Button>
@@ -787,6 +794,12 @@ const App = React.memo(() => {
         <Text style={styles.title}>7. web3.eth</Text>
         <Button onPress={handleGetAccounts}>Get Accounts</Button>
       </View>
+
+      <View style={styles.group}>
+        <Text style={styles.title}>8. Custom rpc request</Text>
+        <Button onPress={handleCustomRpcRequest}>Send</Button>
+      </View>
+
       {/* eslint-disable-next-line react/style-prop-object */}
       <StatusBar style="auto" />
     </View>
