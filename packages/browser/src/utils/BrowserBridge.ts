@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { JsonRpcRequest, JsonRpcId, getUniqueId } from 'json-rpc-engine';
 import { Bridge, BridgeOptions, BridgeEvent, BridgeCallback, PostMessage } from '@qubic-js/core';
-import { ethErrors } from 'eth-rpc-errors';
+import { ethErrors, EthereumRpcError } from 'eth-rpc-errors';
 
 export default class BrowserBridge extends EventEmitter implements Bridge {
   private callbacks: Map<JsonRpcId, BridgeCallback>;
@@ -21,7 +21,7 @@ export default class BrowserBridge extends EventEmitter implements Bridge {
           this.emit(BridgeEvent.clear);
 
           this.callbacks.forEach(callback => {
-            callback(undefined, ethErrors.provider.userRejectedRequest());
+            callback(ethErrors.provider.userRejectedRequest(), undefined);
           });
           this.callbacks.clear();
           return;
@@ -48,7 +48,7 @@ export default class BrowserBridge extends EventEmitter implements Bridge {
           this.emit(BridgeEvent.hide);
 
           this.callbacks.forEach(callback => {
-            callback(undefined, ethErrors.provider.userRejectedRequest());
+            callback(ethErrors.provider.userRejectedRequest(), undefined);
           });
           this.callbacks.clear();
 
@@ -72,7 +72,8 @@ export default class BrowserBridge extends EventEmitter implements Bridge {
           const callback = this.callbacks.get(id);
           if (callback) {
             // Then resolve/reject the send promise
-            callback(error, undefined);
+            const { code, message, data } = error;
+            callback(new EthereumRpcError(code, message, data), undefined);
             this.callbacks.delete(id);
           }
         }

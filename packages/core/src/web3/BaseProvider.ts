@@ -70,6 +70,7 @@ export class BaseProvider extends EventEmitter {
         (error, response) => {
           if (error) {
             reject(error);
+            return;
           }
           if (!response || !BaseProvider.isJsonRpcSuccess(response)) {
             reject(ethErrors.provider.unauthorized());
