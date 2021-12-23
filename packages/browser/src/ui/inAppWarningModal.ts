@@ -31,9 +31,12 @@ container.appendChild(messageP);
 const inAppWarningModal = new Modal({
   children: container,
   description: isIOS ? t('in-app-hint-ios') : t('in-app-hint'),
-  confirmText: t('copyLink'),
+  confirmText: t('copy-link'),
   onConfirm: () => {
-    navigator.clipboard.writeText(link);
+    navigator.clipboard.writeText(link).catch(() => {
+      // eslint-disable-next-line no-alert
+      window.alert('Failed! Please copy it manually');
+    });
   },
 });
 
