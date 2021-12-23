@@ -335,7 +335,8 @@ const App = React.memo(() => {
 
   useEffect(() => {
     const currentProvider = web3?.currentProvider as AbstractProvider | undefined;
-    if (enableSignMsgAfterActivate && account && currentProvider?.request) {
+
+    if (enableSignMsgAfterActivate && address && currentProvider?.request) {
       setEnableSignMsgAfterActivate(false);
 
       const from = address;
@@ -366,7 +367,7 @@ const App = React.memo(() => {
         })
         .catch(console.error);
     }
-  }, [account, address, enableSignMsgAfterActivate, web3?.currentProvider]);
+  }, [address, enableSignMsgAfterActivate, web3?.currentProvider]);
 
   const handleDisconnect = useCallback(() => {
     deactivate();
