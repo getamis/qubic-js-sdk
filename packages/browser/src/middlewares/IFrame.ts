@@ -106,13 +106,16 @@ class IFrame implements Messenger {
     this.bridge.postMessage({ action: 'hideIframeDone' }, '*');
   };
 
-  private waitUntilReady = (): Promise<void> => {
+  private waitUntilReady = (method: string): Promise<void> => {
     const { bridge, isReady, show } = this;
     return new Promise(resolve => {
       if (isReady) {
         // iframe might be invisible but still in the background
         // which means isReady === true, but not show
-        show();
+        // qubic_issueIdentityTicket can get response without showing
+        if (method !== 'qubic_issueIdentityTicket') {
+          show();
+        }
         resolve();
         return;
       }
@@ -124,7 +127,7 @@ class IFrame implements Messenger {
   public createPrepareBridgeMiddleware = (): JsonRpcMiddleware<unknown, unknown> =>
     createAsyncMiddleware(async (req, res, next) => {
       if (WALLET_HANDLE_METHODS.includes(req.method)) {
-        await this.waitUntilReady();
+        await this.waitUntilReady(req.method);
       }
       next();
     });

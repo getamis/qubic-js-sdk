@@ -752,12 +752,39 @@ const App = React.memo(() => {
     }
   }, [web3?.currentProvider]);
 
+  const handleQubicIdentityToken = useCallback(() => {
+    // eslint-disable-next-line no-alert
+    try {
+      (web3?.currentProvider as AbstractProvider).sendAsync(
+        {
+          jsonrpc: '2.0',
+          method: 'qubic_issueIdentityTicket',
+          params: [],
+        },
+        (customRpcError, response) => {
+          if (customRpcError) {
+            throw customRpcError;
+          } else {
+            const [ticket, expiredAt] = response?.result || [];
+            console.log({
+              ticket,
+              expiredAt,
+            });
+          }
+        },
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  }, [web3?.currentProvider]);
+
   return (
     <View style={styles.container}>
       <View style={styles.group}>
         <Text style={styles.title}>1. 註冊或登錄以獲得地址</Text>
         <Button onPress={handleSignInUp}>SIGN IN / SIGN UP</Button>
         <Button onPress={handleSignInUpAndSignMessage}>{`SIGN IN / SIGN UP\nAnd Sign custom message`}</Button>
+        <Button onPress={handleQubicIdentityToken}>qubic_issueIdentityTicket</Button>
         {!!address && <Text style={styles.infoText}>address: {address}</Text>}
         {!!network && <Text style={styles.infoText}>network: {network}</Text>}
         <Button onPress={handleDisconnect}>Disconnect</Button>
@@ -798,6 +825,7 @@ const App = React.memo(() => {
 
       <View style={styles.group}>
         <Text style={styles.title}>8. Custom rpc request</Text>
+
         <Button onPress={handleCustomRpcRequest}>Send</Button>
       </View>
 
