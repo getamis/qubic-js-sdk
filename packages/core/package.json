@@ -1,6 +1,6 @@
 {
   "name": "@qubic-js/core",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "",
   "license": "Apache License 2.0",
   "source": "./src/index.ts",
@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "crypto-js": "^3.3.0",
-    "eth-json-rpc-infura": "^5.1.0",
+    "@qubic-js/eth-json-rpc-infura": "^5.1.2",
     "eth-rpc-errors": "^4.0.2",
     "json-rpc-engine": "^6.1.0",
     "query-string": "^6.13.6",

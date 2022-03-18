@@ -4366,6 +4366,16 @@
     native-url "^0.2.6"
     schema-utils "^2.6.5"
 
+"@qubic-js/eth-json-rpc-infura@^5.1.2":
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/@qubic-js/eth-json-rpc-infura/-/eth-json-rpc-infura-5.1.2.tgz#e581061c28275882d0202077595b6cd99a257f86"
+  integrity sha512-sLxrPX0Bvqk0K1YAl2Ykta/JzE3eGEwpGOV6kWXeZdr5qVQ8tm/5P4cHbii7Zyk1rd+ZdZGCNogIpytDUns5Ow==
+  dependencies:
+    eth-json-rpc-middleware "^6.0.0"
+    eth-rpc-errors "^3.0.0"
+    json-rpc-engine "^5.3.0"
+    node-fetch "^2.6.1"
+
 "@react-native-community/cli-debugger-ui@^4.13.1":
   version "4.13.1"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli-debugger-ui/-/cli-debugger-ui-4.13.1.tgz#07de6d4dab80ec49231de1f1fbf658b4ad39b32c"
@@ -9211,16 +9221,6 @@ eth-ens-namehash@2.0.8:
   dependencies:
     idna-uts46-hx "^2.3.1"
     js-sha3 "^0.5.7"
-
-eth-json-rpc-infura@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/eth-json-rpc-infura/-/eth-json-rpc-infura-5.1.0.tgz#e6da7dc47402ce64c54e7018170d89433c4e8fb6"
-  integrity sha512-THzLye3PHUSGn1EXMhg6WTLW9uim7LQZKeKaeYsS9+wOBcamRiCQVGHa6D2/4P0oS0vSaxsBnU/J6qvn0MPdow==
-  dependencies:
-    eth-json-rpc-middleware "^6.0.0"
-    eth-rpc-errors "^3.0.0"
-    json-rpc-engine "^5.3.0"
-    node-fetch "^2.6.0"
 
 eth-json-rpc-middleware@^6.0.0:
   version "6.0.0"
