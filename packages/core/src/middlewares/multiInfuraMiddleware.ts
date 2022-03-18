@@ -1,4 +1,4 @@
-import createInfuraMiddleware from 'eth-json-rpc-infura';
+import createInfuraMiddleware from '@qubic-js/eth-json-rpc-infura';
 import { JsonRpcMiddleware } from 'json-rpc-engine';
 import { INFURA_NETWORK_ENDPOINTS } from '../constants/backend';
 import { Network } from '../enums';

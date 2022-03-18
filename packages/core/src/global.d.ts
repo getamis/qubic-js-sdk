@@ -1,4 +1,4 @@
-declare module 'eth-json-rpc-infura' {
+declare module '@qubic-js/eth-json-rpc-infura' {
   import { JsonRpcMiddleware } from 'json-rpc-engine';
 
   export interface InfuraMiddlewareOptions {
