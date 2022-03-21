@@ -13,8 +13,8 @@
     "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "crypto-js": "^3.3.0",
     "@qubic-js/eth-json-rpc-infura": "^5.1.2",
+    "crypto-js": "^3.3.0",
     "eth-rpc-errors": "^4.0.2",
     "json-rpc-engine": "^6.1.0",
     "query-string": "^6.13.6",
