@@ -29,6 +29,7 @@ $ npm install @qubic-js/browser
 ```cli
 $ git clone git@github.com:getamis/qubic-js.git
 $ cd qubic-js
+$ yarn
 $ yarn example
 ```
 
@@ -112,27 +113,29 @@ provider.request({ method: 'eth_requestAccounts' });
 In Qubic, it's possible to execute a transaction by Qubic's relayer instead of user's wallet.
 
 For Dapp developers, to integrate with Qubic's meta-transaction infrastructure, you have to
+
 1. Follow Qubic's meta-transaction standard
 2. Submit your Dapp's contract address to Qubic's whitelist.
 
 ## List of Solidity contract methods accpeted by Qubic
 
 The `mint` functions for ERC721 below are supported.
+
 ```solidity
 // 0x40c10f19 => mint(address,uint256)
 function mint(address to, uint256 numberOfTokensOrTokenId);
 
-// 0x6a627842 => mint(address) 
+// 0x6a627842 => mint(address)
 function mint(address to);
 ```
 
-The two functions below can be supported as well if the `onERC721Received` is invoked when transfering tokens. 
+The two functions below can be supported as well if the `onERC721Received` is invoked when transfering tokens.
 
 ```solidity
-// 0x1249c58b => mint() 
+// 0x1249c58b => mint()
 function mint();
 
-// 0xa0712d68 => mint(uint256) 
+// 0xa0712d68 => mint(uint256)
 function mint(uint256 numberOfTokensOrTokenId);
 ```
 

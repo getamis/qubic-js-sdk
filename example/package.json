@@ -1,11 +1,7 @@
 {
   "name": "qubic-js-example",
   "version": "0.1.0",
-  "private": true,
   "dependencies": {
-    "@qubic-js/browser": "*",
-    "@qubic-js/core": "*",
-    "@qubic-js/react": "*",
     "@types/node": "^17.0.29",
     "@types/react": "^18.0.8",
     "@types/react-dom": "^18.0.0",
@@ -13,7 +9,6 @@
     "@web3-react/core": "^6.1.9",
     "dotenv": "^8.2.0",
     "eth-sig-util": "^3.0.1",
-    "jest-expo": "^44.0.1",
     "query-string": "^7.0.1",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
@@ -28,14 +23,13 @@
   },
   "scripts": {
     "start": "GENERATE_SOURCEMAP=false react-app-rewired start",
-    "build": "react-app-rewired build",
+    "build": "GENERATE_SOURCEMAP=false react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
     ]
   },
   "browserslist": {
@@ -54,7 +48,6 @@
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.1.1",
     "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.4.1",
     "crypto-browserify": "^3.12.0",
     "https-browserify": "^1.0.0",
     "os-browserify": "^0.3.0",

@@ -6,7 +6,7 @@ import { createGlobalStyle } from 'styled-components';
 import { normalize } from 'styled-normalize';
 import App from './App';
 
-const GlobalStyle = createGlobalStyle`
+const GlobalStyle: any = createGlobalStyle`
   ${normalize}
   * {
     color: #fff;

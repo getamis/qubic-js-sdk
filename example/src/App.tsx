@@ -6,15 +6,17 @@ import { AbstractProvider, TransactionReceipt } from 'web3-core';
 import { useWeb3React } from '@web3-react/core';
 // eslint-disable-next-line camelcase
 import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
+// import { QubicConnector } from '../../packages/react';
 import { QubicConnector } from '@qubic-js/react';
 import qs from 'query-string';
-const INFURA_PROJECT_ID = '9aa3d95b3bc440fa88ea12eaa4456161';
 
-const { REACT_APP_API_KEY, REACT_APP_API_SECRET } = process.env as any;
+const { REACT_APP_API_KEY, REACT_APP_API_SECRET, REACT_APP_INFURA_NETWORK_KEY } = process.env as any;
+
+const INFURA_PROJECT_ID = REACT_APP_INFURA_NETWORK_KEY;
 
 const parsed = qs.parse(window.location.search);
 
-export const erc20Abi = [
+const erc20Abi = [
   {
     constant: true,
     inputs: [],
