@@ -1,19 +1,20 @@
-/* eslint-disable no-console */
 import React, { useCallback, useState, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import styled from 'styled-components';
 import Web3 from 'web3';
 import Web3Utils, { AbiItem, toChecksumAddress } from 'web3-utils';
 import { AbstractProvider, TransactionReceipt } from 'web3-core';
-import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
+import { useWeb3React } from '@web3-react/core';
 // eslint-disable-next-line camelcase
 import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { QubicConnector } from '@qubic-js/react';
 import qs from 'query-string';
-
 const INFURA_PROJECT_ID = '9aa3d95b3bc440fa88ea12eaa4456161';
 
-const erc20Abi = [
+const { REACT_APP_API_KEY, REACT_APP_API_SECRET } = process.env as any;
+
+const parsed = qs.parse(window.location.search);
+
+export const erc20Abi = [
   {
     constant: true,
     inputs: [],
@@ -236,68 +237,22 @@ const erc20Abi = [
   },
 ] as AbiItem[];
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#3e4b64',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-  },
-  padding: {
-    padding: 8,
-  },
-  button: {
-    backgroundColor: 'rgba(20, 0, 0, 0.2)',
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  group: {
-    paddingBottom: 16,
-    width: 300,
-  },
-  title: {
-    flex: 1,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  btnText: {
-    color: '#fff',
-    textAlign: 'center',
-  },
-  infoText: {
-    color: '#fff',
-    textAlign: 'center',
-  },
-});
-
-const Button = React.memo<{ children: string; onPress: () => void }>(({ children, onPress }) => (
-  <View style={styles.padding}>
-    <TouchableOpacity style={styles.button} onPress={onPress}>
-      <Text style={styles.btnText}>{children}</Text>
-    </TouchableOpacity>
-  </View>
-));
-
-const { API_KEY, API_SECRET } = (process.env.APP_MANIFEST as any)?.extra;
-const parsed = qs.parse(window.location.search);
-
 const qubicConnector = new QubicConnector({
-  apiKey: API_KEY,
-  apiSecret: API_SECRET,
+  apiKey: REACT_APP_API_KEY,
+  apiSecret: REACT_APP_API_SECRET,
   chainId: Number(parsed.chainId) || 1,
   infuraProjectId: INFURA_PROJECT_ID,
   autoHideWelcome: parsed.autoHideWelcome === 'true' || false,
   enableIframe: parsed.enableIframe === 'true' || false,
 });
 
-const App = React.memo(() => {
+function App() {
   const context = useWeb3React<Web3>();
   const { account, activate, deactivate, library: web3, chainId } = context;
+  const [enableSignMsgAfterActivate, setEnableSignMsgAfterActivate] = useState(false);
   const [address, setAddress] = useState<string>('');
   const [network, setNetwork] = useState('');
+
   useEffect(() => {
     console.log('network', chainId);
     setNetwork(chainId?.toString() || '');
@@ -307,20 +262,6 @@ const App = React.memo(() => {
     console.log('account', account);
     setAddress(account || '');
   }, [account]);
-
-  const handleSignInUp = useCallback(() => {
-    activate(qubicConnector, (e: Error): void => {
-      console.error(e);
-    });
-  }, [activate]);
-
-  const [enableSignMsgAfterActivate, setEnableSignMsgAfterActivate] = useState(false);
-  const handleSignInUpAndSignMessage = useCallback(async () => {
-    setEnableSignMsgAfterActivate(true);
-    await activate(qubicConnector, (e: Error): void => {
-      console.error(e);
-    });
-  }, [activate]);
 
   useEffect(() => {
     const currentProvider = web3?.currentProvider as AbstractProvider | undefined;
@@ -357,6 +298,19 @@ const App = React.memo(() => {
         .catch(console.error);
     }
   }, [address, enableSignMsgAfterActivate, web3?.currentProvider]);
+
+  const handleSignInUp = useCallback(() => {
+    activate(qubicConnector, (e: Error): void => {
+      console.error(e);
+    });
+  }, [activate]);
+
+  const handleSignInUpAndSignMessage = useCallback(async () => {
+    setEnableSignMsgAfterActivate(true);
+    await activate(qubicConnector, (e: Error): void => {
+      console.error(e);
+    });
+  }, [activate]);
 
   const handleDisconnect = useCallback(() => {
     deactivate();
@@ -501,7 +455,7 @@ const App = React.memo(() => {
   }, [account, web3]);
 
   const handleSignSign = useCallback(
-    async (data, signer: () => Promise<string>) => {
+    async (data: string, signer: () => Promise<string>) => {
       try {
         const signature = await signer();
         // const signature = await web3.eth.personal.sign(data, addr, 'xxxxxx');
@@ -686,10 +640,11 @@ const App = React.memo(() => {
 
     const signature = (await ethSignTypedDataV4()) || '';
 
-    const recoveredAddr = await recoverTypedSignature_v4({
+    const recoveredAddr = recoverTypedSignature_v4({
       data: msgParams as any,
       sig: signature,
     });
+
     if (toChecksumAddress(recoveredAddr) === toChecksumAddress(from)) {
       console.log(`Successfully verified signer as ${recoveredAddr}`);
     } else {
@@ -779,73 +734,96 @@ const App = React.memo(() => {
   }, [web3?.currentProvider]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.group}>
-        <Text style={styles.title}>1. 註冊或登錄以獲得地址</Text>
-        <Button onPress={handleSignInUp}>SIGN IN / SIGN UP</Button>
-        <Button onPress={handleSignInUpAndSignMessage}>{`SIGN IN / SIGN UP\nAnd Sign custom message`}</Button>
-        <Button onPress={handleQubicIdentityToken}>qubic_issueIdentityTicket</Button>
-        {!!address && <Text style={styles.infoText}>address: {address}</Text>}
-        {!!network && <Text style={styles.infoText}>network: {network}</Text>}
-        <Button onPress={handleDisconnect}>Disconnect</Button>
-      </View>
-      <View style={styles.group}>
-        <Text style={styles.title}>2. 估算 Gas Price (顯示在 console 中)</Text>
-        <Button onPress={handleEstimateGas}>Estimate Gas</Button>
-      </View>
-      <View style={styles.group}>
-        <Text style={styles.title}>3. ETH 交易，須先有 ETH</Text>
-        <Button onPress={handleSend}>Send Transaction</Button>
-      </View>
-      <View style={styles.group}>
-        <Text style={styles.title}>4. ERC-20 交易</Text>
-        <Button onPress={handleGetERC20}>Get Test ERC-20 Token</Button>
-        <Button onPress={handleSendERC20}>Send Test ERC-20 Token</Button>
-        <Button onPress={handleApproveERC20}>Approve Test ERC-20 Token</Button>
-      </View>
-      <View style={styles.group}>
-        <Text style={styles.title}>5. 簽名</Text>
-        <Button onPress={handlePersonalSign}>personal_sign</Button>
-        <Button onPress={handlePersonalSignUnknownEncoding}>personal_sign_unknown_encoding</Button>
-        <Button onPress={handleEthSign}>eth_sign</Button>
-        <Button onPress={handleSignTypedDataV3}>eth_signTypedData_v3</Button>
-        <Button onPress={handleSignTypedDataV4}>eth_signTypedData_v4</Button>
-      </View>
-
-      <View style={styles.group}>
-        <Text style={styles.title}>6. chain</Text>
-        <Button onPress={bindOperateEthereumChain('wallet_switchEthereumChain')}>wallet_switchEthereumChain</Button>
-        <Button onPress={bindOperateEthereumChain('wallet_addEthereumChain')}>wallet_addEthereumChain</Button>
-      </View>
-
-      <View style={styles.group}>
-        <Text style={styles.title}>7. web3.eth</Text>
-        <Button onPress={handleGetAccounts}>Get Accounts</Button>
-      </View>
-
-      <View style={styles.group}>
-        <Text style={styles.title}>8. Custom rpc request</Text>
-
-        <Button onPress={handleCustomRpcRequest}>Send</Button>
-      </View>
-
-      {/* eslint-disable-next-line react/style-prop-object */}
-      <StatusBar style="auto" />
-    </View>
+    <Container>
+      <Wrapper>
+        <Group>
+          <Title>1. 註冊或登錄以獲得地址</Title>
+          <Button onClick={handleSignInUp}>SIGN IN / SIGN UP</Button>
+          <Button onClick={handleSignInUpAndSignMessage}>{`SIGN IN / SIGN UP\nAnd Sign custom message`}</Button>
+          <Button onClick={handleQubicIdentityToken}>qubic_issueIdentityTicket</Button>
+          {!!address && <InfoText>address: {address}</InfoText>}
+          {!!network && <InfoText>network: {network}</InfoText>}
+          <Button onClick={handleDisconnect}>Disconnect</Button>
+        </Group>
+        <Group>
+          <Title>2. 估算 Gas Price (顯示在 console 中)</Title>
+          <Button onClick={handleEstimateGas}>Estimate Gas</Button>
+        </Group>
+        <Group>
+          <Title>3. ETH 交易，須先有 ETH</Title>
+          <Button onClick={handleSend}>Send Transaction</Button>
+        </Group>
+        <Group>
+          <Title>4. ERC-20 交易</Title>
+          <Button onClick={handleGetERC20}>Get Test ERC-20 Token</Button>
+          <Button onClick={handleSendERC20}>Send Test ERC-20 Token</Button>
+          <Button onClick={handleApproveERC20}>Approve Test ERC-20 Token</Button>
+        </Group>
+        <Group>
+          <Title>5. 簽名</Title>
+          <Button onClick={handlePersonalSign}>personal_sign</Button>
+          <Button onClick={handlePersonalSignUnknownEncoding}>personal_sign_unknown_encoding</Button>
+          <Button onClick={handleEthSign}>eth_sign</Button>
+          <Button onClick={handleSignTypedDataV3}>eth_signTypedData_v3</Button>
+          <Button onClick={handleSignTypedDataV4}>eth_signTypedData_v4</Button>
+        </Group>
+        <Group>
+          <Title>6. chain</Title>
+          <Button onClick={bindOperateEthereumChain('wallet_switchEthereumChain')}>wallet_switchEthereumChain</Button>
+          <Button onClick={bindOperateEthereumChain('wallet_addEthereumChain')}>wallet_addEthereumChain</Button>
+        </Group>
+        <Group>
+          <Title>7. web3.eth</Title>
+          <Button onClick={handleGetAccounts}>Get Accounts</Button>
+        </Group>
+        <Group>
+          <Title>8. Custom rpc request</Title>
+          <Button onClick={handleCustomRpcRequest}>Send</Button>
+        </Group>
+      </Wrapper>
+    </Container>
   );
-});
+}
 
-export default React.memo(() => {
-  const library = (provider: any): Web3 => {
-    console.log({
-      'provider.isQubic': provider.isQubic,
-    });
-    return new Web3(provider);
-  };
+export default React.memo(App);
 
-  return (
-    <Web3ReactProvider getLibrary={library}>
-      <App />
-    </Web3ReactProvider>
-  );
-});
+const Container = styled.div`
+  display: flex;
+  height: auto;
+  min-height: 100vh;
+  padding: 40px 40px 0;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Wrapper = styled.div`
+  width: 100%;
+  width: 300px;
+`;
+
+const Button = styled.button`
+  width: 100%;
+  background-color: rgba(20, 0, 0, 0.2);
+  height: 42px;
+  font-size: 12px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  margin-bottom: 20px;
+`;
+
+const Group = styled.div`
+  padding-bottom: 16px;
+`;
+
+const Title = styled.h3`
+  font-size: 14px;
+  font-weight: bold;
+`;
+
+const InfoText = styled.span`
+  display: block;
+  word-break: break-all;
+  color: #fff;
+  margin-bottom: 20px;
+`;
