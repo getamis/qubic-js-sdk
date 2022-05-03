@@ -1,14 +1,13 @@
 {
   "workspaces": {
     "packages": [
-      "packages/**",
-      "example"
+      "packages/**"
     ]
   },
   "name": "qubic-js-sdk",
   "scripts": {
     "build": "lerna run build",
-    "build:example": "yarn build && yarn --cwd ./example build",
+    "build:example": "yarn build && yarn --cwd ./example && yarn --cwd ./example build",
     "example": "yarn --cwd ./example start",
     "prepublishOnly": "yarn run build",
     "prerelease": "lerna run clean",
