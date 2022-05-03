@@ -11,7 +11,7 @@ module.exports = config => {
 
   config.module.rules.push({
     test: /\.(js|ts|tsx)$/,
-    include: /(packages|example)\/.+/,
+    include: /packages\/.+/,
     exclude: /node_modules/,
     use: 'babel-loader',
   });
