@@ -4,36 +4,27 @@
 
 [https://qubic-js-sdk-example.netlify.app/](https://qubic-js-sdk-example.netlify.app/)
 
-# Getting started
+## Getting started
 
-## Request an API key
+### Request an API key
 
 Please [contact us](mailto:hello@qubic.app) or fill [this form](https://forms.gle/jYyw4ibn1VwG1w4X9).
 
-## Installation
+### Installation
 
-### React
-
-```shell
-$ npm install @qubic-js/react
-```
-
-### Javascript
+#### React
 
 ```shell
-$ npm install @qubic-js/browser
+npm install @qubic-js/react
 ```
 
-## Run Example
+#### Javascript
 
-```cli
-$ git clone git@github.com:getamis/qubic-js.git
-$ cd qubic-js
-$ yarn
-$ yarn example
+```shell
+npm install @qubic-js/browser
 ```
 
-## Usage
+### Usage
 
 ```javascript
 enum Network {
@@ -45,7 +36,7 @@ enum Network {
 }
 ```
 
-### React
+#### React
 
 ```javascript
 import Web3 from 'web3';
@@ -83,7 +74,7 @@ export default () => {
 }
 ```
 
-### Javascript
+#### Javascript
 
 ```javascript
 import Web3 from 'web3';
@@ -100,9 +91,9 @@ const provider = new QubicProvider({
 const web3 = new Web3(provider);
 ```
 
-## RPC APIs
+#### RPC APIs
 
-### eth_requestAccounts
+##### eth_requestAccounts
 
 Requests that the user provides an account to login. Returns a Promise that resolves to an array of a single Ethereum address string. If the user denies the request, the Promise will reject with a 4001 error.
 
@@ -110,7 +101,16 @@ Requests that the user provides an account to login. Returns a Promise that reso
 provider.request({ method: 'eth_requestAccounts' });
 ```
 
-# Meta-transaction Standard
+## Run Example
+
+```cli
+git clone git@github.com:getamis/qubic-js.git
+cd qubic-js && yarn
+cd example && yarn
+yarn example
+```
+
+## Meta-transaction Standard
 
 In Qubic, it's possible to execute a transaction by Qubic's relayer instead of user's wallet.
 
@@ -131,7 +131,7 @@ function mint(address to, uint256 numberOfTokensOrTokenId);
 function mint(address to);
 ```
 
-The two functions below can be supported as well if the `onERC721Received` is invoked when transfering tokens.
+The two functions below can be supported as well if the `onERC721Received` is invoked when transferring tokens.
 
 ```solidity
 // 0x1249c58b => mint()
@@ -143,4 +143,45 @@ function mint(uint256 numberOfTokensOrTokenId);
 
 ```solidity
 function onERC721Received(address operator, address from, uint256 tokenId, bytes data) returns (bytes4)
+```
+
+### Provider structure
+
+```mermaid
+flowchart TB
+  subgraph QubicProvider
+    subgraph API
+      provider.method
+      provider.event
+    end
+    provider.method <--> Middlewares
+
+    subgraph Middlewares
+      cacheMiddleware --> prepareBridgeMiddleware
+      prepareBridgeMiddleware --> walletMiddleware
+      walletMiddleware --> infuraMiddleware
+    end
+    walletMiddleware <--> bridge.send
+
+    subgraph Bridge
+      bridge.emitEvent
+      bridge.send
+    end
+    bridge.emitEvent --> prepareBridgeMiddleware
+    bridge.emitEvent --> walletMiddleware
+    bridge.emitEvent --> provider.event
+
+  end
+
+  infuraMiddleware <--> infuraRpcNode
+
+  subgraph QubicWallet
+    iFrame
+    popupWindow
+    webview
+  end
+  QubicWallet --> bridge.emitEvent
+  QubicWallet <--> bridge.send
+  prepareBridgeMiddleware -.->|initialize| QubicWallet
+
 ```
