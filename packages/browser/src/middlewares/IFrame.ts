@@ -1,13 +1,6 @@
 import InApp from 'detect-inapp';
 import { JsonRpcMiddleware, createAsyncMiddleware } from 'json-rpc-engine';
-import {
-  BridgeEvent,
-  Messenger,
-  Network,
-  getWalletUrl,
-  queryWithAuthConfig,
-  WALLET_HANDLE_METHODS,
-} from '@qubic-js/core';
+import { BridgeEvent, Messenger, Network, queryWithAuthConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
 import { css, CSSInterpolation } from '@emotion/css';
 
 import BrowserBridge from '../utils/BrowserBridge';
@@ -32,17 +25,20 @@ class IFrame implements Messenger {
 
   private apiKey: string;
   private apiSecret: string;
+  private walletUrl: string;
   private chainId: Network;
   private isReady = false;
 
   private element: HTMLIFrameElement;
   public isIframeAppended = false;
 
-  constructor(apiKey: string, apiSecret: string, chainId: number) {
+  constructor(apiKey: string, apiSecret: string, chainId: number, walletUrl: string) {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
     this.chainId = chainId;
+    this.walletUrl = walletUrl;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
 
     const { body } = document;
@@ -83,7 +79,7 @@ class IFrame implements Messenger {
   }
 
   private getUrl = (): string => {
-    const url = `${getWalletUrl()}?${queryWithAuthConfig({
+    const url = `${this.walletUrl}?${queryWithAuthConfig({
       apiKey: this.apiKey,
       apiSecret: this.apiSecret,
       network: this.chainId,

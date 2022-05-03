@@ -1,4 +1,4 @@
-import { BaseProvider } from '@qubic-js/core';
+import { BaseProvider, WALLET_URL } from '@qubic-js/core';
 
 import createCacheMiddleware from './middlewares/cacheMiddleware';
 import IFrame from './middlewares/IFrame';
@@ -8,6 +8,7 @@ interface BrowserProviderOptions {
   apiKey: string;
   apiSecret: string;
   chainId: number;
+  walletUrl?: string; // optional, it not provided use production wallet url
   infuraProjectId: string;
   enableIframe?: boolean;
 }
@@ -17,11 +18,11 @@ export class BrowserProvider extends BaseProvider {
   public hide: () => void;
 
   constructor(options: BrowserProviderOptions) {
-    const { apiKey, apiSecret, chainId, infuraProjectId, enableIframe = false } = options;
+    const { apiKey, apiSecret, chainId, infuraProjectId, enableIframe = false, walletUrl = WALLET_URL } = options;
 
     const { hide, bridge, createPrepareBridgeMiddleware } = enableIframe
-      ? new IFrame(apiKey, apiSecret, chainId)
-      : new PopupWindow(apiKey, apiSecret, chainId);
+      ? new IFrame(apiKey, apiSecret, chainId, walletUrl)
+      : new PopupWindow(apiKey, apiSecret, chainId, walletUrl);
 
     super({
       infuraProjectId,

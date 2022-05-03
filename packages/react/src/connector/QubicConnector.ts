@@ -7,10 +7,11 @@ interface QubicConnectorOptions {
   apiKey: string;
   apiSecret: string;
   chainId: number;
+  walletUrl?: string;
   infuraProjectId: string;
+  enableIframe?: boolean;
   /** hide welcome screen after sign in success */
   autoHideWelcome?: boolean;
-  enableIframe?: boolean;
 }
 
 export default class QubicConnector extends AbstractConnector {
@@ -51,11 +52,12 @@ export default class QubicConnector extends AbstractConnector {
       // we don't want next.js run browser js code in server side rendering
       // so we use dynamic import here
       const { default: DyImBrowserProvider } = await import('@qubic-js/browser');
-      const { apiKey, apiSecret, chainId, infuraProjectId, enableIframe } = this.options;
+      const { apiKey, apiSecret, chainId, walletUrl, infuraProjectId, enableIframe } = this.options;
       this.provider = new DyImBrowserProvider({
         apiKey,
         apiSecret,
         chainId,
+        walletUrl,
         infuraProjectId,
         enableIframe,
       });
