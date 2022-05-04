@@ -1,243 +1,21 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Web3 from 'web3';
-import Web3Utils, { AbiItem, toChecksumAddress } from 'web3-utils';
+import Web3Utils, { toChecksumAddress } from 'web3-utils';
 import { AbstractProvider, TransactionReceipt } from 'web3-core';
 import { useWeb3React } from '@web3-react/core';
 // eslint-disable-next-line camelcase
 import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
-// import { QubicConnector } from '../../packages/react';
 import { QubicConnector } from '@qubic-js/react';
 import qs from 'query-string';
+
+import { ERC20_ABI, ERC721_ABI } from './abi';
 
 const { REACT_APP_API_KEY, REACT_APP_API_SECRET, REACT_APP_INFURA_NETWORK_KEY } = process.env as any;
 
 const INFURA_PROJECT_ID = REACT_APP_INFURA_NETWORK_KEY;
 
 const parsed = qs.parse(window.location.search);
-
-const erc20Abi = [
-  {
-    constant: true,
-    inputs: [],
-    name: 'name',
-    outputs: [
-      {
-        name: '',
-        type: 'string',
-      },
-    ],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: false,
-    inputs: [
-      {
-        name: '_spender',
-        type: 'address',
-      },
-      {
-        name: '_value',
-        type: 'uint256',
-      },
-    ],
-    name: 'approve',
-    outputs: [
-      {
-        name: '',
-        type: 'bool',
-      },
-    ],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'totalSupply',
-    outputs: [
-      {
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: false,
-    inputs: [
-      {
-        name: '_from',
-        type: 'address',
-      },
-      {
-        name: '_to',
-        type: 'address',
-      },
-      {
-        name: '_value',
-        type: 'uint256',
-      },
-    ],
-    name: 'transferFrom',
-    outputs: [
-      {
-        name: '',
-        type: 'bool',
-      },
-    ],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'decimals',
-    outputs: [
-      {
-        name: '',
-        type: 'uint8',
-      },
-    ],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [
-      {
-        name: '_owner',
-        type: 'address',
-      },
-    ],
-    name: 'balanceOf',
-    outputs: [
-      {
-        name: 'balance',
-        type: 'uint256',
-      },
-    ],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'symbol',
-    outputs: [
-      {
-        name: '',
-        type: 'string',
-      },
-    ],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: false,
-    inputs: [
-      {
-        name: '_to',
-        type: 'address',
-      },
-      {
-        name: '_value',
-        type: 'uint256',
-      },
-    ],
-    name: 'transfer',
-    outputs: [
-      {
-        name: '',
-        type: 'bool',
-      },
-    ],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [
-      {
-        name: '_owner',
-        type: 'address',
-      },
-      {
-        name: '_spender',
-        type: 'address',
-      },
-    ],
-    name: 'allowance',
-    outputs: [
-      {
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    payable: true,
-    stateMutability: 'payable',
-    type: 'fallback',
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        name: 'owner',
-        type: 'address',
-      },
-      {
-        indexed: true,
-        name: 'spender',
-        type: 'address',
-      },
-      {
-        indexed: false,
-        name: 'value',
-        type: 'uint256',
-      },
-    ],
-    name: 'Approval',
-    type: 'event',
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        name: 'from',
-        type: 'address',
-      },
-      {
-        indexed: true,
-        name: 'to',
-        type: 'address',
-      },
-      {
-        indexed: false,
-        name: 'value',
-        type: 'uint256',
-      },
-    ],
-    name: 'Transfer',
-    type: 'event',
-  },
-] as AbiItem[];
 
 const qubicConnector = new QubicConnector({
   apiKey: REACT_APP_API_KEY,
@@ -403,7 +181,7 @@ function App() {
     if (!web3) return;
 
     const contractAddress = '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c'; // Xeenus
-    const xeenusContract = new web3.eth.Contract(erc20Abi, contractAddress);
+    const xeenusContract = new web3.eth.Contract(ERC20_ABI, contractAddress);
 
     const toAddress = '0xdd2c45b296C218779783c9AAF9f876391FA9aF53';
     // Calculate contract compatible value for approve with proper decimal points using BigNumber
@@ -437,7 +215,7 @@ function App() {
     const tokenAmountToApprove = Web3Utils.toBN(1);
     const amount = Web3Utils.toHex(tokenAmountToApprove.mul(Web3Utils.toBN(10).pow(tokenDecimals)));
     const contractAddress = '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c'; // Xeenus
-    const xeenusContract = new web3.eth.Contract(erc20Abi, contractAddress);
+    const xeenusContract = new web3.eth.Contract(ERC20_ABI, contractAddress);
     xeenusContract.methods
       .approve(spender, amount)
       .send({
@@ -560,7 +338,7 @@ function App() {
 
     const signature = (await ethSignTypedDataV3()) || '';
 
-    const recoveredAddr = await recoverTypedSignature({
+    const recoveredAddr = recoverTypedSignature({
       data: msgParams as any,
       sig: signature,
     });
@@ -735,6 +513,24 @@ function App() {
     }
   }, [web3?.currentProvider]);
 
+  const handleMint = useCallback(async () => {
+    if (!web3 || !account) return;
+    const contractAddress = '0xC730b891F4FF8b659ab4Fc8D362239907cb99c17';
+    const mineTestContract = new web3.eth.Contract(ERC721_ABI, contractAddress);
+    mineTestContract.methods
+      .mint(account)
+      .send({ from: account })
+      .on('error', (mintError: Error): void => {
+        console.error(mintError);
+      })
+      .once('transactionHash', (hash: string) => {
+        console.log(hash);
+      })
+      .once('receipt', (receipt: TransactionReceipt) => {
+        console.log(receipt);
+      });
+  }, [account, web3]);
+
   return (
     <Container>
       <Wrapper>
@@ -782,6 +578,10 @@ function App() {
           <Title>8. Custom rpc request</Title>
           <Button onClick={handleCustomRpcRequest}>Send</Button>
         </Group>
+        <Group>
+          <Title>9. Mint Via Credit Card</Title>
+          <Button onClick={handleMint}>Mint</Button>
+        </Group>
       </Wrapper>
     </Container>
   );
@@ -804,6 +604,7 @@ const Wrapper = styled.div`
 `;
 
 const Button = styled.button`
+  cursor: pointer;
   width: 100%;
   background-color: rgba(20, 0, 0, 0.2);
   height: 42px;
@@ -812,6 +613,9 @@ const Button = styled.button`
   justify-content: center;
   border-radius: 8px;
   margin-bottom: 20px;
+  &:hover {
+    opacity: 0.5;
+  }
 `;
 
 const Group = styled.div`
