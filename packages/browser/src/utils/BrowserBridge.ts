@@ -102,7 +102,9 @@ export default class BrowserBridge extends EventEmitter implements Bridge {
         if (error) {
           reject(error);
         } else {
-          resolve(response);
+          // TODO: should refactor hide, hideIframe flow
+          // wait for hideIframe done
+          setTimeout(() => resolve(response), 0);
         }
       });
     });
