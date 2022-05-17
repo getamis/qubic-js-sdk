@@ -514,49 +514,45 @@ function App() {
     }
   }, [web3?.currentProvider]);
 
+  const handleNftMint = useCallback(
+    (options: { targetNetwork: Network; contractAddress: string }) => {
+      if (!web3 || !account) return;
+      const { targetNetwork, contractAddress } = options;
+
+      if (chainId !== targetNetwork) {
+        window.alert(`Network should be chain id: ${targetNetwork}`);
+        return;
+      }
+      const mineTestContract = new web3.eth.Contract(ERC721_ABI, contractAddress);
+      mineTestContract.methods
+        .mint(account)
+        .send({ from: account })
+        .on('error', (mintError: Error): void => {
+          console.error(mintError);
+        })
+        .once('transactionHash', (hash: string) => {
+          console.log(hash);
+        })
+        .once('receipt', (receipt: TransactionReceipt) => {
+          console.log(receipt);
+        });
+    },
+    [account, chainId, web3],
+  );
+
   const handleRinkebyMint = useCallback(async () => {
-    if (!web3 || !account) return;
-    if (chainId !== Network.RINKEBY) {
-      window.alert('Network should be Rinkeby 4');
-      return;
-    }
-    const contractAddress = '0xC730b891F4FF8b659ab4Fc8D362239907cb99c17';
-    const mineTestContract = new web3.eth.Contract(ERC721_ABI, contractAddress);
-    mineTestContract.methods
-      .mint(account)
-      .send({ from: account })
-      .on('error', (mintError: Error): void => {
-        console.error(mintError);
-      })
-      .once('transactionHash', (hash: string) => {
-        console.log(hash);
-      })
-      .once('receipt', (receipt: TransactionReceipt) => {
-        console.log(receipt);
-      });
-  }, [account, chainId, web3]);
+    handleNftMint({
+      targetNetwork: Network.RINKEBY,
+      contractAddress: '0xC730b891F4FF8b659ab4Fc8D362239907cb99c17',
+    });
+  }, [handleNftMint]);
 
   const handleBscTestnetMint = useCallback(async () => {
-    if (!web3 || !account) return;
-    if (chainId !== Network.BSC_TESTNET) {
-      window.alert('Network should be BSC Testnet 97');
-      return;
-    }
-    const contractAddress = '0x0538563144E2E85A65CB6c8C245936F29604A361';
-    const mineTestContract = new web3.eth.Contract(ERC721_ABI, contractAddress);
-    mineTestContract.methods
-      .mint(account)
-      .send({ from: account })
-      .on('error', (mintError: Error): void => {
-        console.error(mintError);
-      })
-      .once('transactionHash', (hash: string) => {
-        console.log(hash);
-      })
-      .once('receipt', (receipt: TransactionReceipt) => {
-        console.log(receipt);
-      });
-  }, [account, chainId, web3]);
+    handleNftMint({
+      targetNetwork: Network.BSC_TESTNET,
+      contractAddress: '0x0538563144E2E85A65CB6c8C245936F29604A361',
+    });
+  }, [handleNftMint]);
 
   const handleTransfer721 = useCallback(async () => {
     if (!web3 || !account) return;
