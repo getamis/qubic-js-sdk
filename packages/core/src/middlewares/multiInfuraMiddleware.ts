@@ -3,11 +3,16 @@ import { JsonRpcMiddleware } from 'json-rpc-engine';
 import { INFURA_NETWORK_ENDPOINTS } from '../constants/backend';
 import { Network } from '../enums';
 import { Bridge, BridgeEvent } from '../types/bridge';
+import { createJsonRpcServerMiddleware } from '../utils/createJsonRpcServerMiddleware';
 
 interface MultiInfuraMiddlewareOptions {
   initNetwork: Network;
   projectId: string;
 }
+
+// infura doesn't support bsc, so we use json rpc server here
+const BSC_RPC_URL = 'https://bsc-dataseed1.binance.org';
+const BSC_TESTNET_RPC_URL = 'https://data-seed-prebsc-1-s1.binance.org:8545';
 
 export const createMultiInfuraMiddleware = (
   options: MultiInfuraMiddlewareOptions,
@@ -18,11 +23,14 @@ export const createMultiInfuraMiddleware = (
 
   function getCurrentMiddleware(): JsonRpcMiddleware<unknown, unknown> {
     const currentMiddleware =
-      infuraMiddlewares.get(currentNetwork) ||
-      createInfuraMiddleware({
-        network: INFURA_NETWORK_ENDPOINTS[currentNetwork],
-        projectId: options.projectId,
-      });
+      infuraMiddlewares.get(currentNetwork) || [Network.BSC, Network.BSC_TESTNET].includes(currentNetwork)
+        ? createJsonRpcServerMiddleware({
+            url: currentNetwork === Network.BSC ? BSC_RPC_URL : BSC_TESTNET_RPC_URL,
+          })
+        : createInfuraMiddleware({
+            network: INFURA_NETWORK_ENDPOINTS[currentNetwork],
+            projectId: options.projectId,
+          });
 
     infuraMiddlewares.set(currentNetwork, currentMiddleware);
 

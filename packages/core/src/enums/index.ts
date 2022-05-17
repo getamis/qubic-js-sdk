@@ -10,6 +10,8 @@ export enum Network {
   OPTIMISTIC_KOVAN = 69,
   ARBITRUM = 200,
   ARBITRUM_RINKEBY = 421611,
+  BSC = 59,
+  BSC_TESTNET = 97,
 }
 
 export enum Speed {

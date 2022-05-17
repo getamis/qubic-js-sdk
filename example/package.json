@@ -7,7 +7,6 @@
     "@types/react-dom": "^18.0.0",
     "@types/styled-components": "^5.1.25",
     "@web3-react/core": "^6.1.9",
-    "dotenv": "^8.2.0",
     "eth-sig-util": "^3.0.1",
     "query-string": "^7.0.1",
     "react": "^18.1.0",
@@ -22,7 +21,7 @@
     "webpack": "^5.72.0"
   },
   "scripts": {
-    "start": "GENERATE_SOURCEMAP=false react-app-rewired start",
+    "start": "GENERATE_SOURCEMAP=false dotenv -e ../.env react-app-rewired start",
     "build": "GENERATE_SOURCEMAP=false react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject"

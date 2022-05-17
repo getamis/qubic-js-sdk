@@ -10,6 +10,7 @@ import { QubicConnector } from '@qubic-js/react';
 import qs from 'query-string';
 
 import { ERC20_ABI, ERC721_ABI } from './abi';
+import { Network } from '@qubic-js/core';
 
 const { REACT_APP_API_KEY, REACT_APP_API_SECRET, REACT_APP_INFURA_NETWORK_KEY } = process.env as any;
 
@@ -513,12 +514,59 @@ function App() {
     }
   }, [web3?.currentProvider]);
 
-  const handleMint = useCallback(async () => {
+  const handleNftMint = useCallback(
+    (options: { targetNetwork: Network; contractAddress: string }) => {
+      if (!web3 || !account) return;
+      const { targetNetwork, contractAddress } = options;
+
+      if (chainId !== targetNetwork) {
+        window.alert(`Network should be chain id: ${targetNetwork}`);
+        return;
+      }
+      const mineTestContract = new web3.eth.Contract(ERC721_ABI, contractAddress);
+      mineTestContract.methods
+        .mint(account)
+        .send({ from: account })
+        .on('error', (mintError: Error): void => {
+          console.error(mintError);
+        })
+        .once('transactionHash', (hash: string) => {
+          console.log(hash);
+        })
+        .once('receipt', (receipt: TransactionReceipt) => {
+          console.log(receipt);
+        });
+    },
+    [account, chainId, web3],
+  );
+
+  const handleRinkebyMint = useCallback(async () => {
+    handleNftMint({
+      targetNetwork: Network.RINKEBY,
+      contractAddress: '0xC730b891F4FF8b659ab4Fc8D362239907cb99c17',
+    });
+  }, [handleNftMint]);
+
+  const handleBscTestnetMint = useCallback(async () => {
+    handleNftMint({
+      targetNetwork: Network.BSC_TESTNET,
+      contractAddress: '0x0538563144E2E85A65CB6c8C245936F29604A361',
+    });
+  }, [handleNftMint]);
+
+  const handleTransfer721 = useCallback(async () => {
     if (!web3 || !account) return;
-    const contractAddress = '0xC730b891F4FF8b659ab4Fc8D362239907cb99c17';
+
+    const contractAddress = window.prompt('NFT contract address');
+    if (!contractAddress) return;
+    const tokenId = window.prompt('NFT token id');
+    if (!tokenId) return;
+    const toAddress = window.prompt('To address');
+    if (!toAddress) return;
+
     const mineTestContract = new web3.eth.Contract(ERC721_ABI, contractAddress);
     mineTestContract.methods
-      .mint(account)
+      .safeTransferFrom(account, toAddress, tokenId)
       .send({ from: account })
       .on('error', (mintError: Error): void => {
         console.error(mintError);
@@ -579,8 +627,10 @@ function App() {
           <Button onClick={handleCustomRpcRequest}>Send</Button>
         </Group>
         <Group>
-          <Title>9. Mint Via Credit Card</Title>
-          <Button onClick={handleMint}>Mint</Button>
+          <Title>9. Smart Contract</Title>
+          <Button onClick={handleRinkebyMint}>Mint - rinkeby</Button>
+          <Button onClick={handleBscTestnetMint}>Mint - bsc testnet</Button>
+          <Button onClick={handleTransfer721}>Transfer721</Button>
         </Group>
       </Wrapper>
     </Container>

@@ -19,7 +19,16 @@ export default class QubicConnector extends AbstractConnector {
   private options: QubicConnectorOptions;
 
   constructor(options: QubicConnectorOptions) {
-    super({ supportedChainIds: [Network.MAINNET, Network.RINKEBY, Network.POLYGON, Network.MUMBAI] }); // [mainnet, rinkeby]
+    super({
+      supportedChainIds: [
+        Network.MAINNET,
+        Network.RINKEBY,
+        Network.POLYGON,
+        Network.MUMBAI,
+        Network.BSC,
+        Network.BSC_TESTNET,
+      ],
+    });
     const { chainId } = options;
 
     if (!this.supportedChainIds?.includes(chainId)) {
