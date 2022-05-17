@@ -15,4 +15,8 @@ export const INFURA_NETWORK_ENDPOINTS: Record<Network, string> = {
   [Network.OPTIMISTIC_KOVAN]: 'optimism-kovan',
   [Network.ARBITRUM]: 'arbitrum-mainnet',
   [Network.ARBITRUM_RINKEBY]: 'arbitrum-rinkeby',
+
+  // bsc does not support
+  [Network.BSC]: '',
+  [Network.BSC_TESTNET]: '',
 };

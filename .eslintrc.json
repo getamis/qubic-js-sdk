@@ -14,7 +14,7 @@
     "es6": true
   },
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "react-native"],
+  "plugins": ["@typescript-eslint"],
   "settings": {
     "import/resolver": {
       "node": {
@@ -63,7 +63,6 @@
     "react/require-default-props": 0,
     "react/default-props-match-prop-types": 0,
     "react/jsx-props-no-spreading": 0,
-    "react-native/no-unused-styles": 2,
     "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }]
   },
   "overrides": [
