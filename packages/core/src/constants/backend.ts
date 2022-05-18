@@ -1,4 +1,4 @@
-import { Network } from '../enums';
+import { Network } from '../types';
 
 export const WALLET_URL = 'https://wallet.qubic.app';
 
@@ -7,14 +7,14 @@ export const INFURA_NETWORK_ENDPOINTS: Record<Network, string> = {
   [Network.MAINNET]: 'mainnet',
   [Network.ROPSTEN]: 'ropsten',
   [Network.RINKEBY]: 'rinkeby',
-  [Network.KOVAN]: 'kovan',
-  [Network.GOERLI]: 'goerli',
+  // [Network.KOVAN]: 'kovan',
+  // [Network.GOERLI]: 'goerli',
   [Network.POLYGON]: 'polygon-mainnet',
   [Network.MUMBAI]: 'polygon-mumbai',
-  [Network.OPTIMISTIC]: 'optimism-mainnet',
-  [Network.OPTIMISTIC_KOVAN]: 'optimism-kovan',
-  [Network.ARBITRUM]: 'arbitrum-mainnet',
-  [Network.ARBITRUM_RINKEBY]: 'arbitrum-rinkeby',
+  // [Network.OPTIMISTIC]: 'optimism-mainnet',
+  // [Network.OPTIMISTIC_KOVAN]: 'optimism-kovan',
+  // [Network.ARBITRUM]: 'arbitrum-mainnet',
+  // [Network.ARBITRUM_RINKEBY]: 'arbitrum-rinkeby',
 
   // bsc does not support
   [Network.BSC]: '',
