@@ -1,9 +1,9 @@
 import createInfuraMiddleware from '@qubic-js/eth-json-rpc-infura';
 import { JsonRpcMiddleware } from 'json-rpc-engine';
 import { INFURA_NETWORK_ENDPOINTS } from '../constants/backend';
-import { Network } from '../enums';
+import { Network } from '../types';
 import { Bridge, BridgeEvent } from '../types/bridge';
-import { createJsonRpcServerMiddleware } from '../utils/createJsonRpcServerMiddleware';
+import { createJsonRpcServerMiddleware } from '../utils';
 
 interface MultiInfuraMiddlewareOptions {
   initNetwork: Network;

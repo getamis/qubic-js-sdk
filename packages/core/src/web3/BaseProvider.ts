@@ -1,12 +1,10 @@
 import { ethErrors } from 'eth-rpc-errors';
 import EventEmitter from 'events';
 import { JsonRpcResponse, JsonRpcSuccess, JsonRpcEngine, getUniqueId, JsonRpcMiddleware } from 'json-rpc-engine';
-import { createMultiInfuraMiddleware } from '../middlewares/multiInfuraMiddleware';
-import { Network } from '../enums';
 
-import { BridgeEvent } from '../types/bridge';
+import { createMultiInfuraMiddleware } from '../middlewares/multiInfuraMiddleware';
 import { createWalletMiddleware } from '../middlewares/walletMiddleware';
-import { Bridge, Request, SendAsync } from '../types';
+import { Bridge, Request, SendAsync, Network, BridgeEvent } from '../types';
 
 interface BaseProviderOptions {
   infuraProjectId: string;
