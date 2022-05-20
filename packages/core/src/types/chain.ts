@@ -16,7 +16,7 @@ export enum Network {
 
 export interface Token {
   address: string;
-  symbol: 'ETH' | 'MATIC' | 'BNB';
+  symbol: string;
   decimals: number;
 }
 

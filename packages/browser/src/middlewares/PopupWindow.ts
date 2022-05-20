@@ -1,6 +1,6 @@
 import { createAsyncMiddleware, JsonRpcMiddleware } from 'json-rpc-engine';
 import InApp from 'detect-inapp';
-import { BridgeEvent, Messenger, Network, queryWithAuthConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
+import { BridgeEvent, Messenger, Network, queryWithApiConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
 
 import { t } from '../translation';
 import BrowserBridge from '../utils/BrowserBridge';
@@ -74,7 +74,7 @@ class PopupWindow implements Messenger {
   }
 
   private getUrl = (): string => {
-    const url = `${this.walletUrl}?${queryWithAuthConfig({
+    const url = `${this.walletUrl}?${queryWithApiConfig({
       apiKey: this.apiKey,
       apiSecret: this.apiSecret,
       network: this.chainId,

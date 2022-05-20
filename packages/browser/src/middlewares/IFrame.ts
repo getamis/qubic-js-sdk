@@ -1,6 +1,6 @@
 import InApp from 'detect-inapp';
 import { JsonRpcMiddleware, createAsyncMiddleware } from 'json-rpc-engine';
-import { BridgeEvent, Messenger, Network, queryWithAuthConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
+import { BridgeEvent, Messenger, Network, queryWithApiConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
 import { css, CSSInterpolation } from '@emotion/css';
 
 import BrowserBridge from '../utils/BrowserBridge';
@@ -79,7 +79,7 @@ class IFrame implements Messenger {
   }
 
   private getUrl = (): string => {
-    const url = `${this.walletUrl}?${queryWithAuthConfig({
+    const url = `${this.walletUrl}?${queryWithApiConfig({
       apiKey: this.apiKey,
       apiSecret: this.apiSecret,
       network: this.chainId,

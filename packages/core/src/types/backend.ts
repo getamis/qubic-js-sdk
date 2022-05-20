@@ -1,7 +1,4 @@
-import { Network } from './chain';
-
-export type AuthConfig = {
+export interface ApiConfig {
   apiKey: string;
   apiSecret: string;
-  network: Network;
-};
+}
