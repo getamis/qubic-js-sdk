@@ -2,7 +2,7 @@ import { ethErrors } from 'eth-rpc-errors';
 import EventEmitter from 'events';
 import { JsonRpcResponse, JsonRpcSuccess, JsonRpcEngine, getUniqueId, JsonRpcMiddleware } from 'json-rpc-engine';
 
-import { createMultiInfuraMiddleware } from '../middlewares/multiInfuraMiddleware';
+import { createMultiInfuraMiddleware } from '../middlewares/multiJsonRpcServerMiddleware';
 import { createWalletMiddleware } from '../middlewares/walletMiddleware';
 import { Bridge, Request, SendAsync, Network, BridgeEvent } from '../types';
 
