@@ -4320,29 +4320,35 @@ dot-case@^3.0.4:
     no-case "^3.0.4"
     tslib "^2.0.3"
 
-dot-cli@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/dot-cli/-/dot-cli-0.2.0.tgz#dd7b093584488871cdef37bc7b060040edeebb8c"
-  integrity sha1-3XsJNYRIiHHN7ze8ewYAQO3uu4w=
+dotenv-cli@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/dotenv-cli/-/dotenv-cli-5.1.0.tgz#0d2942b089082da0157f9b26bd6c5c4dd51ef48e"
+  integrity sha512-NoEZAlKo9WVrG0b3i9mBxdD6INdDuGqdgR74t68t8084QcI077/1MnPerRW1odl+9uULhcdnQp2U0pYVppKHOA==
   dependencies:
-    dot "^1.0.3"
-    glob "^7.0.3"
-    minimist "^1.2.0"
-
-dot@^1.0.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/dot/-/dot-1.1.3.tgz#351360e00a748bce9a1f8f27c00c394a7e4e1e9f"
-  integrity sha512-/nt74Rm+PcfnirXGEdhZleTwGC2LMnuKTeeTIlI82xb5loBBoXNYzr2ezCroPSMtilK8EZIfcNZwOcHN+ib1Lg==
+    cross-spawn "^7.0.3"
+    dotenv "^16.0.0"
+    dotenv-expand "^8.0.1"
+    minimist "^1.2.5"
 
 dotenv-expand@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/dotenv-expand/-/dotenv-expand-5.1.0.tgz#3fbaf020bfd794884072ea26b1e9791d45a629f0"
   integrity sha512-YXQl1DSa4/PQyRfgrv6aoNjhasp/p4qs9FjJ4q4cQk+8m4r6k4ZSiEyytKG8f8W9gi8WsQtIObNmKd+tMzNTmA==
 
+dotenv-expand@^8.0.1:
+  version "8.0.3"
+  resolved "https://registry.yarnpkg.com/dotenv-expand/-/dotenv-expand-8.0.3.tgz#29016757455bcc748469c83a19b36aaf2b83dd6e"
+  integrity sha512-SErOMvge0ZUyWd5B0NXMQlDkN+8r+HhVUsxgOO7IoPDOdDRD2JjExpN6y3KnFR66jsJMwSn1pqIivhU5rcJiNg==
+
 dotenv@^10.0.0:
   version "10.0.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-10.0.0.tgz#3d4227b8fb95f81096cdd2b66653fb2c7085ba81"
   integrity sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==
+
+dotenv@^16.0.0:
+  version "16.0.1"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.0.1.tgz#8f8f9d94876c35dac989876a5d3a82a267fdce1d"
+  integrity sha512-1K6hR6wtk2FviQ4kEiSjFiH5rpzEVi8WW0x96aztHVMhEspNpc4DVOUTEHtEva5VThQ8IaBX1Pe4gSzpVVUsKQ==
 
 duplexer3@^0.1.4:
   version "0.1.4"
@@ -5432,18 +5438,6 @@ glob-to-regexp@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/glob-to-regexp/-/glob-to-regexp-0.4.1.tgz#c75297087c851b9a578bd217dd59a92f59fe546e"
   integrity sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==
-
-glob@^7.0.3:
-  version "7.2.3"
-  resolved "https://registry.yarnpkg.com/glob/-/glob-7.2.3.tgz#b8df0fb802bbfa8e89bd1d938b4e16578ed44f2b"
-  integrity sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==
-  dependencies:
-    fs.realpath "^1.0.0"
-    inflight "^1.0.4"
-    inherits "2"
-    minimatch "^3.1.1"
-    once "^1.3.0"
-    path-is-absolute "^1.0.0"
 
 glob@^7.1.1, glob@^7.1.2, glob@^7.1.3, glob@^7.1.4, glob@^7.1.6:
   version "7.2.0"
@@ -7238,7 +7232,7 @@ minimatch@3.0.4:
   dependencies:
     brace-expansion "^1.1.7"
 
-minimatch@^3.0.4, minimatch@^3.1.1, minimatch@^3.1.2:
+minimatch@^3.0.4, minimatch@^3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.2.tgz#19cd194bfd3e428f049a70817c038d89ab4be35b"
   integrity sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==
@@ -7252,7 +7246,7 @@ minimatch@^5.0.1:
   dependencies:
     brace-expansion "^2.0.1"
 
-minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.6:
+minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.5, minimist@^1.2.6:
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
   integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
