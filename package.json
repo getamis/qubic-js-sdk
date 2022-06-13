@@ -11,7 +11,7 @@
     "example": "yarn --cwd ./example start",
     "prepublishOnly": "yarn run build",
     "prerelease": "lerna run clean",
-    "release": "lerna publish",
+    "release": "lerna publish --force-publish",
     "test": "jest"
   },
   "engines": {
