@@ -1,1 +1,1 @@
-declare module 'detect-inapp';
+declare module '@qubic-js/detect-inapp';
