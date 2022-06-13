@@ -1,5 +1,5 @@
 import { createAsyncMiddleware, JsonRpcMiddleware } from 'json-rpc-engine';
-import InApp from 'detect-inapp';
+import InApp from '@qubic-js/detect-inapp';
 import { BridgeEvent, Messenger, Network, queryWithApiConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
 
 import { t } from '../translation';

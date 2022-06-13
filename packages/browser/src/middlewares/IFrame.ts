@@ -1,4 +1,4 @@
-import InApp from 'detect-inapp';
+import InApp from '@qubic-js/detect-inapp';
 import { JsonRpcMiddleware, createAsyncMiddleware } from 'json-rpc-engine';
 import { BridgeEvent, Messenger, Network, queryWithApiConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
 import { css, CSSInterpolation } from '@emotion/css';
@@ -40,6 +40,8 @@ class IFrame implements Messenger {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
+
+    window.alert(JSON.stringify(inApp));
 
     const { body } = document;
 
