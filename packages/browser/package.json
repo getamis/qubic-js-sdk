@@ -10,6 +10,8 @@
     "dist"
   ],
   "scripts": {
+    "prepublishOnly": "cp ../../../../README.md .",
+    "postpublish": "rm README.md",
     "build": "tsc -p tsconfig.build.json"
   },
   "peerDependencies": {
