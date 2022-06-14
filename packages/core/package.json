@@ -10,7 +10,7 @@
     "dist"
   ],
   "scripts": {
-    "prepublishOnly": "cp ../../../../README.md .",
+    "prepublishOnly": "cp ../../README.md .",
     "postpublish": "rm README.md",
     "build": "tsc -p tsconfig.build.json"
   },
@@ -30,5 +30,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "e516056bfe62df67d2b18ad585110333fb63fc62"
+  "gitHead": "9208e6ff8fdea0e67459353033468a41776fdd0f"
 }
