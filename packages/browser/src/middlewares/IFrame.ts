@@ -41,8 +41,6 @@ class IFrame implements Messenger {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
 
-    window.alert(JSON.stringify(inApp));
-
     const { body } = document;
 
     if (inApp.isInApp) {
