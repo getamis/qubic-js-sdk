@@ -1,3 +1,4 @@
-# AMIS Wallet SDK
+# Qubic Wallet SDK
 
-Please read [README.md](packages/core/README.md)
+Please read
+<https://getamis.github.io/qubic-js-sdk/>
