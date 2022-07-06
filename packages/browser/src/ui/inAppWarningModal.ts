@@ -31,12 +31,12 @@ export default function createInAppWarningModal(inAppHintLink?: string): Modal {
 
   return new Modal({
     children: container,
-    description: isIOS ? t('in-app-hint-ios') : t('in-app-hint'),
+    description: isIOS ? t('in-app-hint-ios') : t('in-app-hint-android'),
     confirmText: t('copy-link'),
     onConfirm: () => {
       navigator.clipboard.writeText(link).catch(() => {
         // eslint-disable-next-line no-alert
-        window.alert('Failed! Please copy it manually');
+        window.alert(isIOS ? t('copy-failed-ios') : t('copy-failed-android'));
       });
     },
   });
