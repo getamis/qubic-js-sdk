@@ -4,7 +4,7 @@ import createCacheMiddleware from './middlewares/cacheMiddleware';
 import IFrame from './middlewares/IFrame';
 import PopupWindow from './middlewares/PopupWindow';
 
-interface BrowserProviderOptions {
+export interface BrowserProviderOptions {
   apiKey: string;
   apiSecret: string;
   chainId: number;
