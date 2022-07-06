@@ -11,6 +11,7 @@ interface BrowserProviderOptions {
   walletUrl?: string; // optional, it not provided use production wallet url
   infuraProjectId: string;
   enableIframe?: boolean;
+  inAppHintLink?: string;
 }
 
 export class BrowserProvider extends BaseProvider {
@@ -18,11 +19,19 @@ export class BrowserProvider extends BaseProvider {
   public hide: () => void;
 
   constructor(options: BrowserProviderOptions) {
-    const { apiKey, apiSecret, chainId, infuraProjectId, enableIframe = false, walletUrl = WALLET_URL } = options;
+    const {
+      apiKey,
+      apiSecret,
+      chainId,
+      infuraProjectId,
+      enableIframe = false,
+      walletUrl = WALLET_URL,
+      inAppHintLink,
+    } = options;
 
     const { hide, bridge, createPrepareBridgeMiddleware } = enableIframe
-      ? new IFrame(apiKey, apiSecret, chainId, walletUrl)
-      : new PopupWindow(apiKey, apiSecret, chainId, walletUrl);
+      ? new IFrame(apiKey, apiSecret, chainId, walletUrl, inAppHintLink)
+      : new PopupWindow(apiKey, apiSecret, chainId, walletUrl, inAppHintLink);
 
     super({
       infuraProjectId,

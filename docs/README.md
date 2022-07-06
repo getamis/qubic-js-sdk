@@ -53,7 +53,9 @@ const qubicConnector = new QubicConnector( {
   // optional, default: false, when value is true, the show iframe instead of new window, credit card payment will failed with this option value true
   enableIframe: true
   // optional, default is `https://wallet.qubic.app/`
-  walletUrl: 'https://wallet.qubic.app/'
+  walletUrl: 'https://wallet.qubic.app/',
+  // optional, default is window.parent.location.href || window.location.href;
+  inAppHintLink: 'https://www.google.com',
 });
 
 export default () => {

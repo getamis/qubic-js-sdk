@@ -18,26 +18,26 @@ const styles: Record<string, CSSInterpolation> = {
 const isIOS =
   /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-const container = document.createElement('div');
-container.className = css(styles.container);
+export default function createInAppWarningModal(inAppHintLink?: string): Modal {
+  const container = document.createElement('div');
+  container.className = css(styles.container);
 
-const link = window.location.href;
+  const link = inAppHintLink || window.location.href;
 
-const messageP = document.createElement('p');
-messageP.className = css(styles.link);
-messageP.innerHTML = link;
-container.appendChild(messageP);
+  const messageP = document.createElement('p');
+  messageP.className = css(styles.link);
+  messageP.innerHTML = link;
+  container.appendChild(messageP);
 
-const inAppWarningModal = new Modal({
-  children: container,
-  description: isIOS ? t('in-app-hint-ios') : t('in-app-hint'),
-  confirmText: t('copy-link'),
-  onConfirm: () => {
-    navigator.clipboard.writeText(link).catch(() => {
-      // eslint-disable-next-line no-alert
-      window.alert('Failed! Please copy it manually');
-    });
-  },
-});
-
-export default inAppWarningModal;
+  return new Modal({
+    children: container,
+    description: isIOS ? t('in-app-hint-ios') : t('in-app-hint'),
+    confirmText: t('copy-link'),
+    onConfirm: () => {
+      navigator.clipboard.writeText(link).catch(() => {
+        // eslint-disable-next-line no-alert
+        window.alert('Failed! Please copy it manually');
+      });
+    },
+  });
+}

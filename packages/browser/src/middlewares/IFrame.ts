@@ -4,7 +4,7 @@ import { BridgeEvent, Messenger, Network, queryWithApiConfig, WALLET_HANDLE_METH
 import { css, CSSInterpolation } from '@emotion/css';
 
 import BrowserBridge from '../utils/BrowserBridge';
-import inAppWarningModal from '../ui/inAppWarningModal';
+import createInAppWarningModal from '../ui/inAppWarningModal';
 
 const styles: Record<string, CSSInterpolation> = {
   container: {
@@ -32,7 +32,7 @@ class IFrame implements Messenger {
   private element: HTMLIFrameElement;
   public isIframeAppended = false;
 
-  constructor(apiKey: string, apiSecret: string, chainId: number, walletUrl: string) {
+  constructor(apiKey: string, apiSecret: string, chainId: number, walletUrl: string, inAppHintLink?: string) {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
     this.chainId = chainId;
@@ -44,6 +44,7 @@ class IFrame implements Messenger {
     const { body } = document;
 
     if (inApp.isInApp) {
+      const inAppWarningModal = createInAppWarningModal(inAppHintLink);
       body.appendChild(inAppWarningModal.element);
       inAppWarningModal.show();
     }
