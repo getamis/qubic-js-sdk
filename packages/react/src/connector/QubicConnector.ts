@@ -3,7 +3,7 @@ import { ConnectorUpdate } from '@web3-react/types';
 import { AbstractConnector } from '@web3-react/abstract-connector';
 import { Network } from '@qubic-js/core';
 
-interface QubicConnectorOptions {
+export interface QubicConnectorOptions {
   apiKey: string;
   apiSecret: string;
   chainId: number;
