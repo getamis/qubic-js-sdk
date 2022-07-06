@@ -5,7 +5,7 @@ import { BridgeEvent, Messenger, Network, queryWithApiConfig, WALLET_HANDLE_METH
 import { t } from '../translation';
 import BrowserBridge from '../utils/BrowserBridge';
 import Modal from '../ui/Modal';
-import inAppWarningModal from '../ui/inAppWarningModal';
+import createInAppWarningModal from '../ui/inAppWarningModal';
 
 const DETECT_IF_POPUP_WINDOW_CLOSED_INTERVAL_MS = 500;
 
@@ -21,7 +21,7 @@ class PopupWindow implements Messenger {
   private proxy: Window | null = null;
   private newWindowReminderModal: Modal;
 
-  constructor(apiKey: string, apiSecret: string, chainId: number, walletUrl: string) {
+  constructor(apiKey: string, apiSecret: string, chainId: number, walletUrl: string, inAppHintLink?: string) {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
     this.chainId = chainId;
@@ -32,6 +32,7 @@ class PopupWindow implements Messenger {
     const { body } = document;
 
     if (inApp.isInApp) {
+      const inAppWarningModal = createInAppWarningModal(inAppHintLink);
       body.appendChild(inAppWarningModal.element);
       inAppWarningModal.show();
     }
