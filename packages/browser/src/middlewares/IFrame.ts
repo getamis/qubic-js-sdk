@@ -1,6 +1,13 @@
 import InApp from '@qubic-js/detect-inapp';
 import { JsonRpcMiddleware, createAsyncMiddleware } from 'json-rpc-engine';
-import { BridgeEvent, Messenger, Network, queryWithApiConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
+import {
+  BridgeEvent,
+  Messenger,
+  Network,
+  queryWithApiConfig,
+  WALLET_HANDLE_METHODS,
+  KEEP_HIDE_WALLET_HANDLE_METHODS,
+} from '@qubic-js/core';
 import { css, CSSInterpolation } from '@emotion/css';
 
 import BrowserBridge from '../utils/BrowserBridge';
@@ -103,11 +110,13 @@ class IFrame implements Messenger {
     this.bridge.postMessage({ action: 'hideIframeDone' }, '*');
   };
 
-  private waitUntilReady = (): Promise<void> => {
+  private waitUntilReady = (keepHide = false): Promise<void> => {
     const { bridge, isReady, show } = this;
     return new Promise(resolve => {
       if (isReady) {
-        show();
+        if (!keepHide) {
+          show();
+        }
         resolve();
         return;
       }
@@ -119,7 +128,7 @@ class IFrame implements Messenger {
   public createPrepareBridgeMiddleware = (): JsonRpcMiddleware<unknown, unknown> =>
     createAsyncMiddleware(async (req, res, next) => {
       if (WALLET_HANDLE_METHODS.includes(req.method)) {
-        await this.waitUntilReady();
+        await this.waitUntilReady(KEEP_HIDE_WALLET_HANDLE_METHODS.includes(req.method));
       }
       next();
     });

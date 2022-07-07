@@ -19,6 +19,8 @@ export const WALLET_HANDLE_METHODS = [
   'eth_sendTransaction',
 ];
 
+export const KEEP_HIDE_WALLET_HANDLE_METHODS = ['qubic_issueIdentityTicket'];
+
 export const createWalletMiddleware = (send: Bridge['send']): JsonRpcMiddleware<unknown, unknown> =>
   createAsyncMiddleware(async (req, res, next) => {
     if (WALLET_HANDLE_METHODS.includes(req.method)) {
