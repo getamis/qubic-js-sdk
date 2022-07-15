@@ -3,9 +3,8 @@
   "compilerOptions": {
     "declaration": true,
     "target": "es6",
-    "module": "commonjs"
+    "module": "commonjs",
+    "esModuleInterop": true
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }

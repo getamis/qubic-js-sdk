@@ -36,27 +36,41 @@ enum Network {
 }
 ```
 
-#### React
+#### Provider and Connector Options
 
 ```javascript
-import Web3 from 'web3';
-import { QubicConnector } from '@qubic-js/react';
-import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
-
-const qubicConnector = new QubicConnector( {
+const options {
   apiKey: API_KEY,
   apiSecret: API_SECRET,
   chainId: CHAIN_ID,
   infuraProjectId: INFURA_PROJECT_ID,
-  // optional, default: false, when value is true, the popup will hide automatically
-  autoHideWelcome: true
-  // optional, default: false, when value is true, the show iframe instead of new window, credit card payment will failed with this option value true
-  enableIframe: true
+
   // optional, default is `https://wallet.qubic.app/`
   walletUrl: 'https://wallet.qubic.app/',
+
+  // optional, default: false, when value is true, the show iframe instead of new window, credit card payment will failed with this option value true
+  enableIframe: true
+
   // optional, default is window.parent.location.href || window.location.href;
   inAppHintLink: 'https://www.google.com',
-});
+
+  // === QubicConnector Only options ===
+  // optional, default: false, when value is true, the popup will hide automatically
+  autoHideWelcome: true
+}
+```
+
+#### React
+
+```javascript
+import Web3 from 'web3';
+import QubicConnector from '@qubic-js/react';
+import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
+import options from './options'
+
+// please check Connector and Provider Options section
+// You should only new only once in your application
+const qubicConnector = new QubicConnector(options);
 
 export default () => {
   const context = useWeb3React<Web3>();
@@ -79,18 +93,15 @@ export default () => {
 #### Javascript
 
 ```javascript
-import Web3 from 'web3';
+import ethers from 'ethers';
 import QubicProvider from '@qubic-js/browser';
+import options from './options';
 
-const provider = new QubicProvider({
-  apiKey: API_KEY,
-  apiSecret: API_SECRET,
-  chainId: Network.RINKEBY,
-  infuraProjectId: INFURA_PROJECT_ID,
-  enableIframe: true,
-});
+// please check Connector and Provider Options section
+// You should only new only once in your application
+const qubicProvider = new QubicProvider(options);
 
-const web3 = new Web3(provider);
+const provider = new ethers.providers.Web3Provider(qubicProvider);
 ```
 
 #### RPC APIs
@@ -121,7 +132,7 @@ For Dapp developers, to integrate with Qubic's meta-transaction infrastructure, 
 1. Follow Qubic's meta-transaction standard
 2. Submit your Dapp's contract address to Qubic's whitelist.
 
-## List of Solidity contract methods accpeted by Qubic
+## List of Solidity contract methods accepted by Qubic
 
 The `mint` functions for ERC721 below are supported.
 

@@ -1,4 +1,3 @@
-import InApp from '@qubic-js/detect-inapp';
 import { JsonRpcMiddleware, createAsyncMiddleware } from 'json-rpc-engine';
 import {
   BridgeEvent,
@@ -11,7 +10,6 @@ import {
 import { css, CSSInterpolation } from '@emotion/css';
 
 import BrowserBridge from '../utils/BrowserBridge';
-import createInAppWarningModal from '../ui/inAppWarningModal';
 
 const styles: Record<string, CSSInterpolation> = {
   container: {
@@ -39,22 +37,11 @@ class IFrame implements Messenger {
   private element: HTMLIFrameElement;
   public isIframeAppended = false;
 
-  constructor(apiKey: string, apiSecret: string, chainId: number, walletUrl: string, inAppHintLink?: string) {
+  constructor(apiKey: string, apiSecret: string, chainId: number, walletUrl: string) {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
     this.chainId = chainId;
     this.walletUrl = walletUrl;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
-
-    const { body } = document;
-
-    if (inApp.isInApp) {
-      const inAppWarningModal = createInAppWarningModal(inAppHintLink);
-      body.appendChild(inAppWarningModal.element);
-      inAppWarningModal.show();
-    }
 
     const iframe = document.createElement('iframe');
     iframe.width = '100%';
