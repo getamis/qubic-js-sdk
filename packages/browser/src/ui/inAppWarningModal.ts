@@ -1,3 +1,4 @@
+import isUrl from 'is-url';
 import { css, CSSInterpolation } from '@emotion/css';
 import Modal from './Modal';
 import { t } from '../translation';
@@ -18,18 +19,32 @@ const styles: Record<string, CSSInterpolation> = {
 const isIOS =
   /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-export default function createInAppWarningModal(inAppHintLink?: string): Modal {
+export default function createInAppWarningModal(inAppHintLink?: string): {
+  modal: Modal;
+  setInAppHintLink: (value: string) => void;
+} {
   const container = document.createElement('div');
   container.className = css(styles.container);
 
-  const link = inAppHintLink || window.location.href;
+  const link = window.location.href;
 
   const messageP = document.createElement('p');
   messageP.className = css(styles.link);
   messageP.innerHTML = link;
   container.appendChild(messageP);
 
-  return new Modal({
+  function setInAppHintLink(value: string) {
+    if (value && !isUrl(value)) {
+      throw Error('inAppHintLink should be a url');
+    }
+    messageP.innerHTML = value;
+  }
+
+  if (inAppHintLink) {
+    setInAppHintLink(inAppHintLink);
+  }
+
+  const modal = new Modal({
     children: container,
     description: isIOS ? t('in-app-hint-ios') : t('in-app-hint-android'),
     confirmText: t('copy-link'),
@@ -40,4 +55,9 @@ export default function createInAppWarningModal(inAppHintLink?: string): Modal {
       });
     },
   });
+
+  return {
+    modal,
+    setInAppHintLink,
+  };
 }

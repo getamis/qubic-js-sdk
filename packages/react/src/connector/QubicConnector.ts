@@ -7,17 +7,20 @@ export interface QubicConnectorOptions {
   apiKey: string;
   apiSecret: string;
   chainId: number;
-  walletUrl?: string;
   infuraProjectId: string;
+  walletUrl?: string;
   enableIframe?: boolean;
+  inAppHintLink?: string;
   /** hide welcome screen after sign in success */
   autoHideWelcome?: boolean;
-  inAppHintLink?: string;
 }
+
+let isInitialized = false;
 
 export default class QubicConnector extends AbstractConnector {
   private provider?: BrowserProvider;
   private options: QubicConnectorOptions;
+  public setInAppHintLink: InstanceType<typeof BrowserProvider>['setInAppHintLink'];
 
   constructor(options: QubicConnectorOptions) {
     super({
@@ -30,6 +33,10 @@ export default class QubicConnector extends AbstractConnector {
         Network.BSC_TESTNET,
       ],
     });
+    if (isInitialized) {
+      throw Error(`You can only new QubicConnector() one time`);
+    }
+    isInitialized = true;
     const { chainId } = options;
 
     if (!this.supportedChainIds?.includes(chainId)) {
@@ -40,6 +47,7 @@ export default class QubicConnector extends AbstractConnector {
 
     this.handleChainChanged = this.handleChainChanged.bind(this);
     this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
+    this.setInAppHintLink = () => null;
     this.getProvider();
   }
 
@@ -61,9 +69,9 @@ export default class QubicConnector extends AbstractConnector {
     try {
       // we don't want next.js run browser js code in server side rendering
       // so we use dynamic import here
-      const { default: DyImBrowserProvider } = await import('@qubic-js/browser');
+      const { default: DynamicImportBrowserProvider } = await import('@qubic-js/browser');
       const { apiKey, apiSecret, chainId, walletUrl, infuraProjectId, enableIframe, inAppHintLink } = this.options;
-      this.provider = new DyImBrowserProvider({
+      this.provider = new DynamicImportBrowserProvider({
         apiKey,
         apiSecret,
         chainId,
@@ -72,6 +80,7 @@ export default class QubicConnector extends AbstractConnector {
         enableIframe,
         inAppHintLink,
       });
+      this.setInAppHintLink = this.provider.setInAppHintLink;
       return this.provider;
     } catch (error) {
       if (error instanceof Error) {

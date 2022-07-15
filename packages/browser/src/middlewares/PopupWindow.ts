@@ -1,11 +1,9 @@
 import { createAsyncMiddleware, JsonRpcMiddleware } from 'json-rpc-engine';
-import InApp from '@qubic-js/detect-inapp';
 import { BridgeEvent, Messenger, Network, queryWithApiConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
 
 import { t } from '../translation';
 import BrowserBridge from '../utils/BrowserBridge';
 import Modal from '../ui/Modal';
-import createInAppWarningModal from '../ui/inAppWarningModal';
 
 const DETECT_IF_POPUP_WINDOW_CLOSED_INTERVAL_MS = 500;
 
@@ -21,21 +19,11 @@ class PopupWindow implements Messenger {
   private proxy: Window | null = null;
   private newWindowReminderModal: Modal;
 
-  constructor(apiKey: string, apiSecret: string, chainId: number, walletUrl: string, inAppHintLink?: string) {
+  constructor(apiKey: string, apiSecret: string, chainId: number, walletUrl: string) {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
     this.chainId = chainId;
     this.walletUrl = walletUrl;
-
-    const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
-
-    const { body } = document;
-
-    if (inApp.isInApp) {
-      const inAppWarningModal = createInAppWarningModal(inAppHintLink);
-      body.appendChild(inAppWarningModal.element);
-      inAppWarningModal.show();
-    }
 
     this.newWindowReminderModal = new Modal({
       description: t('popup-window-hint'),
@@ -54,7 +42,7 @@ class PopupWindow implements Messenger {
       },
       hideWhenConfirm: true,
     });
-    body.appendChild(this.newWindowReminderModal.element);
+    document.body.appendChild(this.newWindowReminderModal.element);
 
     this.bridge = new BrowserBridge({
       postMessage: (message, targetOrigin, transfer) => {
