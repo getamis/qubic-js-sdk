@@ -69,9 +69,9 @@ export default class QubicConnector extends AbstractConnector {
     try {
       // we don't want next.js run browser js code in server side rendering
       // so we use dynamic import here
-      const { default: DyImBrowserProvider } = await import('@qubic-js/browser');
+      const { default: DynamicImportBrowserProvider } = await import('@qubic-js/browser');
       const { apiKey, apiSecret, chainId, walletUrl, infuraProjectId, enableIframe, inAppHintLink } = this.options;
-      this.provider = new DyImBrowserProvider({
+      this.provider = new DynamicImportBrowserProvider({
         apiKey,
         apiSecret,
         chainId,
