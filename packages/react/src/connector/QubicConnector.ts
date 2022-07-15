@@ -39,10 +39,6 @@ export default class QubicConnector extends AbstractConnector {
     isInitialized = true;
     const { chainId } = options;
 
-    if (!this.supportedChainIds?.includes(chainId)) {
-      throw new Error(`chainId: ${chainId} does not supported`);
-    }
-
     this.options = options;
 
     this.handleChainChanged = this.handleChainChanged.bind(this);
@@ -70,7 +66,22 @@ export default class QubicConnector extends AbstractConnector {
       // we don't want next.js run browser js code in server side rendering
       // so we use dynamic import here
       const { default: DynamicImportBrowserProvider } = await import('@qubic-js/browser');
-      const { apiKey, apiSecret, chainId, walletUrl, infuraProjectId, enableIframe, inAppHintLink } = this.options;
+      const {
+        apiKey,
+        apiSecret,
+        chainId: optionChainId,
+        walletUrl,
+        infuraProjectId,
+        enableIframe,
+        inAppHintLink,
+      } = this.options;
+
+      let chainId = optionChainId;
+      if (!this.supportedChainIds?.includes(optionChainId)) {
+        console.error(`chainId: ${optionChainId} does not supported, use mainnet instead`);
+        chainId = Network.MAINNET;
+      }
+
       this.provider = new DynamicImportBrowserProvider({
         apiKey,
         apiSecret,
