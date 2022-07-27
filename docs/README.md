@@ -40,10 +40,17 @@ enum Network {
 
 ```javascript
 const options {
-  apiKey: API_KEY,
-  apiSecret: API_SECRET,
-  chainId: CHAIN_ID,
+  // optional
   infuraProjectId: INFURA_PROJECT_ID,
+
+  // optional, you can contact us apply for higher rate limit
+  apiKey: API_KEY,
+
+  // optional, you can contact us apply for higher rate limit
+  apiSecret: API_SECRET,
+
+  // optional, default is mainnet 1
+  chainId: CHAIN_ID,
 
   // optional, default is `https://wallet.qubic.app/`
   walletUrl: 'https://wallet.qubic.app/',

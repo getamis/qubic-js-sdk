@@ -1,15 +1,16 @@
 import qs from 'query-string';
 
-import { ApiConfig, Network } from '../types';
+import { ApiConfig } from '../types';
 
-type Params = Record<string, string | number>;
+export const urlWithApiConfig = (url: string, config: ApiConfig): string => {
+  const { apiKey, apiSecret, chainId } = config;
 
-export const queryWithApiConfig = (config: ApiConfig & { network: Network }, params: Params = {}): string => {
-  const { apiKey, apiSecret, ...otherConfig } = config;
-  return qs.stringify({
-    ...params,
-    ...otherConfig,
-    k: btoa(apiKey),
-    s: btoa(apiSecret),
+  return qs.stringifyUrl({
+    url,
+    query: {
+      ...(chainId && { network: chainId }),
+      ...(apiKey && { k: btoa(apiKey) }),
+      ...(apiSecret && { s: btoa(apiSecret) }),
+    },
   });
 };

@@ -92,3 +92,5 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     networkType: 'bsc',
   },
 };
+
+export const DEFAULT_INFURA_PROJECT_ID = '9aa3d95b3bc440fa88ea12eaa4456161';

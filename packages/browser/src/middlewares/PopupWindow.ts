@@ -1,5 +1,5 @@
 import { createAsyncMiddleware, JsonRpcMiddleware } from 'json-rpc-engine';
-import { BridgeEvent, Messenger, Network, queryWithApiConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
+import { ApiConfig, BridgeEvent, Messenger, urlWithApiConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
 
 import { t } from '../translation';
 import BrowserBridge from '../utils/BrowserBridge';
@@ -10,20 +10,16 @@ const DETECT_IF_POPUP_WINDOW_CLOSED_INTERVAL_MS = 500;
 class PopupWindow implements Messenger {
   public bridge: BrowserBridge;
 
-  private apiKey: string;
-  private apiSecret: string;
-  private chainId: Network;
+  private apiConfig: ApiConfig;
   private walletUrl: string;
   private isReady = false;
 
   private proxy: Window | null = null;
   private newWindowReminderModal: Modal;
 
-  constructor(apiKey: string, apiSecret: string, chainId: number, walletUrl: string) {
-    this.apiKey = apiKey;
-    this.apiSecret = apiSecret;
-    this.chainId = chainId;
+  constructor(walletUrl: string, apiConfig: ApiConfig) {
     this.walletUrl = walletUrl;
+    this.apiConfig = apiConfig;
 
     this.newWindowReminderModal = new Modal({
       description: t('popup-window-hint'),
@@ -57,18 +53,10 @@ class PopupWindow implements Messenger {
     this.bridge.on(BridgeEvent.hide, () => {
       this.hide();
     });
-    this.bridge.on(BridgeEvent.chainChanged, nextChainId => {
-      this.chainId = Number(nextChainId);
-    });
   }
 
   private getUrl = (): string => {
-    const url = `${this.walletUrl}?${queryWithApiConfig({
-      apiKey: this.apiKey,
-      apiSecret: this.apiSecret,
-      network: this.chainId,
-    })}`;
-    return url;
+    return urlWithApiConfig(this.walletUrl, this.apiConfig);
   };
 
   private detectCloseEventTimer = 0;
