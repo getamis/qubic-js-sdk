@@ -4,10 +4,10 @@ import { AbstractConnector } from '@web3-react/abstract-connector';
 import { Network } from '@qubic-js/core';
 
 export interface QubicConnectorOptions {
-  apiKey: string;
-  apiSecret: string;
-  chainId: number;
-  infuraProjectId: string;
+  apiKey?: string;
+  apiSecret?: string;
+  chainId?: number;
+  infuraProjectId?: string;
   walletUrl?: string;
   enableIframe?: boolean;
   inAppHintLink?: string;
@@ -22,7 +22,7 @@ export default class QubicConnector extends AbstractConnector {
   private options: QubicConnectorOptions;
   public setInAppHintLink: InstanceType<typeof BrowserProvider>['setInAppHintLink'];
 
-  constructor(options: QubicConnectorOptions) {
+  constructor(options?: QubicConnectorOptions) {
     super({
       supportedChainIds: [
         Network.MAINNET,
@@ -37,9 +37,7 @@ export default class QubicConnector extends AbstractConnector {
       throw Error(`You can only new QubicConnector() one time`);
     }
     isInitialized = true;
-    const { chainId } = options;
-
-    this.options = options;
+    this.options = options || {};
 
     this.handleChainChanged = this.handleChainChanged.bind(this);
     this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
@@ -69,7 +67,7 @@ export default class QubicConnector extends AbstractConnector {
       const {
         apiKey,
         apiSecret,
-        chainId: optionChainId,
+        chainId: optionChainId = Network.MAINNET,
         walletUrl,
         infuraProjectId,
         enableIframe,

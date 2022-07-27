@@ -1,4 +1,4 @@
-import { BaseProvider, WALLET_URL } from '@qubic-js/core';
+import { BaseProvider, Network, WALLET_URL } from '@qubic-js/core';
 import InApp from '@qubic-js/detect-inapp';
 
 import createCacheMiddleware from './middlewares/cacheMiddleware';
@@ -7,10 +7,10 @@ import PopupWindow from './middlewares/PopupWindow';
 import createInAppWarningModal from './ui/inAppWarningModal';
 
 export interface BrowserProviderOptions {
-  apiKey: string;
-  apiSecret: string;
-  chainId: number;
-  infuraProjectId: string;
+  apiKey?: string;
+  apiSecret?: string;
+  chainId?: number;
+  infuraProjectId?: string;
   walletUrl?: string; // optional, it not provided use production wallet url
   enableIframe?: boolean;
   inAppHintLink?: string;
@@ -23,20 +23,25 @@ export class BrowserProvider extends BaseProvider {
   public hide: () => void;
   public setInAppHintLink: ReturnType<typeof createInAppWarningModal>['setInAppHintLink'];
 
-  constructor(options: BrowserProviderOptions) {
+  constructor(options?: BrowserProviderOptions) {
     const {
       apiKey,
       apiSecret,
-      chainId,
+      chainId = Network.MAINNET,
       infuraProjectId,
       enableIframe = false,
       walletUrl = WALLET_URL,
       inAppHintLink,
-    } = options;
+    } = options || {};
 
+    const apiConfig = {
+      apiKey,
+      apiSecret,
+      chainId,
+    };
     const { hide, bridge, createPrepareBridgeMiddleware } = enableIframe
-      ? new IFrame(apiKey, apiSecret, chainId, walletUrl)
-      : new PopupWindow(apiKey, apiSecret, chainId, walletUrl);
+      ? new IFrame(walletUrl, apiConfig)
+      : new PopupWindow(walletUrl, apiConfig);
 
     super({
       infuraProjectId,
