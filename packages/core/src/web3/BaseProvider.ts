@@ -1,6 +1,7 @@
 import { ethErrors } from 'eth-rpc-errors';
 import EventEmitter from 'events';
 import { JsonRpcResponse, JsonRpcSuccess, JsonRpcEngine, getUniqueId, JsonRpcMiddleware } from 'json-rpc-engine';
+
 import { DEFAULT_INFURA_PROJECT_ID } from '../constants/network';
 
 import { createMultiInfuraMiddleware } from '../middlewares/multiJsonRpcServerMiddleware';
@@ -51,33 +52,33 @@ export class BaseProvider extends EventEmitter {
 
   public sendAsync: SendAsync = (request, callback): void => {
     if (this.engine) {
-      this.engine.handle(request, callback);
+      this.engine.handle(
+        {
+          id: getUniqueId(),
+          jsonrpc: '2.0',
+          params: [],
+          ...request,
+        },
+        callback,
+      );
     } else {
       callback(ethErrors.provider.disconnected());
     }
   };
 
-  public request: Request = req => {
+  public request: Request = request => {
     return new Promise((resolve, reject) => {
-      this.sendAsync(
-        {
-          id: getUniqueId(),
-          jsonrpc: '2.0',
-          params: [],
-          ...req,
-        },
-        (error, response) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-          if (!response || !BaseProvider.isJsonRpcSuccess(response)) {
-            reject(ethErrors.provider.unauthorized());
-            return;
-          }
-          resolve(response.result);
-        },
-      );
+      this.sendAsync(request, (error, response) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        if (!response || !BaseProvider.isJsonRpcSuccess(response)) {
+          reject(ethErrors.provider.unauthorized());
+          return;
+        }
+        resolve(response.result);
+      });
     });
   };
 }
