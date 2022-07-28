@@ -10,6 +10,7 @@ export const WALLET_HANDLE_METHODS = [
   'eth_requestAccounts',
   'wallet_addEthereumChain',
   'wallet_switchEthereumChain',
+  'skip_preview_sign',
   'personal_sign',
   'eth_sign',
   'eth_signTypedData',

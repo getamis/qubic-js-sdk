@@ -5,9 +5,10 @@ import Web3Utils, { toChecksumAddress } from 'web3-utils';
 import { AbstractProvider, TransactionReceipt } from 'web3-core';
 import { useWeb3React } from '@web3-react/core';
 // eslint-disable-next-line camelcase
-import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
+import { recoverPersonalSignature, recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { QubicConnector } from '@qubic-js/react';
 import qs from 'query-string';
+import { v4 as uuidv4 } from 'uuid';
 
 import { ERC20_ABI, ERC721_ABI } from './abi';
 import { Network } from '@qubic-js/core';
@@ -257,6 +258,54 @@ function App() {
     },
     [web3],
   );
+
+  const handleSkipPreviewSign = useCallback(async () => {
+    const from = address;
+    const createdAt = Math.floor(new Date().getTime() / 1000);
+
+    const requestId = uuidv4();
+
+    const msgParams = {
+      requestId,
+      userAddress: address,
+      customData: '{"test":"hello?","messageA":[1,4,6],"messageB":500}',
+      webhookUrl: 'https://qubic-pass-demo.herokuapp.com/api/hook',
+      createdAt,
+    };
+
+    const toBeSigned = JSON.stringify(msgParams);
+
+    const payload = {
+      jsonrpc: '2.0',
+      method: 'qubic_skipPreviewSign',
+      params: [toBeSigned, account],
+    };
+
+    function qubicSignSkipPreview() {
+      return new Promise<string>((resolve, reject) => {
+        (web3?.currentProvider as AbstractProvider).sendAsync(payload, (skipPreviewSignError, response) => {
+          if (skipPreviewSignError) {
+            reject(skipPreviewSignError);
+          } else {
+            resolve(response?.result);
+          }
+        });
+      });
+    }
+
+    const signature = (await qubicSignSkipPreview()) || '';
+
+    const recoveredAddr = recoverPersonalSignature({
+      data: msgParams as any,
+      sig: signature,
+    });
+
+    if (toChecksumAddress(recoveredAddr) === toChecksumAddress(from)) {
+      console.log(`Successfully verified signer as ${recoveredAddr}`);
+    } else {
+      console.log(`Failed to verify signer when comparing ${recoveredAddr} to ${from}`);
+    }
+  }, [account, address, web3?.currentProvider]);
 
   const handlePersonalSign = useCallback(async () => {
     const data = `0x${Buffer.from('example message', 'utf8').toString('hex')}`;
@@ -608,6 +657,7 @@ function App() {
         </Group>
         <Group>
           <Title>5. 簽名</Title>
+          <Button onClick={handleSkipPreviewSign}>qubic_skipPreviewSign</Button>
           <Button onClick={handlePersonalSign}>personal_sign</Button>
           <Button onClick={handlePersonalSignUnknownEncoding}>personal_sign_unknown_encoding</Button>
           <Button onClick={handleEthSign}>eth_sign</Button>
