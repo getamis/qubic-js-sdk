@@ -130,6 +130,7 @@ export default class Modal {
       event.stopPropagation();
       this.hide();
       onCancel?.();
+      this.onShowCallbackCancel?.();
     };
 
     const paperDiv = document.createElement('div');
@@ -151,6 +152,7 @@ export default class Modal {
       event.stopPropagation();
       this.hide();
       onCancel?.();
+      this.onShowCallbackCancel?.();
     };
     headerDiv.appendChild(closeSpan);
 
