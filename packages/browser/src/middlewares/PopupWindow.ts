@@ -1,3 +1,4 @@
+import { ethErrors } from 'eth-rpc-errors';
 import { createAsyncMiddleware, JsonRpcMiddleware } from 'json-rpc-engine';
 import { ApiConfig, BridgeEvent, Messenger, urlWithApiConfig, WALLET_HANDLE_METHODS } from '@qubic-js/core';
 
@@ -46,7 +47,6 @@ class PopupWindow implements Messenger {
       },
       listenMessageFrom: window,
     });
-
     this.bridge.on(BridgeEvent.ready, () => {
       this.isReady = true;
     });
@@ -103,7 +103,7 @@ class PopupWindow implements Messenger {
     }
   };
 
-  private show = (): void => {
+  private show = (options: { onReminderModalCancel: () => void }): void => {
     if (this.proxy && !this.proxy.closed && this.isReady) {
       return;
     }
@@ -112,27 +112,38 @@ class PopupWindow implements Messenger {
 
     // if tryOpenWindow failed, we will show the confirm box, let user open popup manually
     if (!tryOpenWindow) {
-      this.newWindowReminderModal.show();
+      this.newWindowReminderModal.show({
+        onCancel: options.onReminderModalCancel,
+      });
     }
   };
 
   private waitUntilReady = (): Promise<void> => {
     const { bridge, proxy, isReady, show } = this;
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       if (proxy && !proxy.closed && isReady) {
         resolve();
         return;
       }
 
       bridge.once(BridgeEvent.ready, resolve);
-      show();
+      show({
+        onReminderModalCancel: () => {
+          bridge.removeListener(BridgeEvent.ready, resolve);
+          reject();
+        },
+      });
     });
   };
 
   public createPrepareBridgeMiddleware = (): JsonRpcMiddleware<unknown, unknown> =>
     createAsyncMiddleware(async (req, res, next) => {
       if (WALLET_HANDLE_METHODS.includes(req.method)) {
-        await this.waitUntilReady();
+        try {
+          await this.waitUntilReady();
+        } catch (error) {
+          res.error = ethErrors.provider.userRejectedRequest();
+        }
       }
       next();
     });

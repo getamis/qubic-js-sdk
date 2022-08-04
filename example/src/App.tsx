@@ -19,13 +19,15 @@ const INFURA_PROJECT_ID = REACT_APP_INFURA_NETWORK_KEY;
 
 const parsed = qs.parse(window.location.search);
 
+const enableIframe = parsed.enableIframe === 'true';
+
 const qubicConnector = new QubicConnector({
   apiKey: REACT_APP_API_KEY,
   apiSecret: REACT_APP_API_SECRET,
   chainId: Number(parsed.chainId) || 1,
   infuraProjectId: INFURA_PROJECT_ID,
   autoHideWelcome: parsed.autoHideWelcome === 'true' || false,
-  enableIframe: parsed.enableIframe === 'true' || false,
+  enableIframe,
   inAppHintLink: 'https://www.google.com',
 });
 
@@ -564,6 +566,35 @@ function App() {
     }
   }, [web3?.currentProvider]);
 
+  const handlePopupBlockedByBrowser = useCallback(async () => {
+    // eslint-disable-next-line no-alert
+    try {
+      // wait a little time to trigger browser block popup window
+      const ref = window.open(
+        'https://www.google.com',
+        '_blank',
+        'location=no,resizable=yes,scrollbars=yes,status=yes,height=100,width=100',
+      );
+      ref?.close();
+      (web3?.currentProvider as AbstractProvider).sendAsync(
+        {
+          jsonrpc: '2.0',
+          method: 'eth_requestAccounts',
+          params: [],
+        },
+        (customRpcError, response) => {
+          if (customRpcError) {
+            throw customRpcError;
+          } else {
+            console.log(response);
+          }
+        },
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  }, [web3?.currentProvider]);
+
   const handleNftMint = useCallback(
     (options: { targetNetwork: Network; contractAddress: string }) => {
       if (!web3 || !account) return;
@@ -683,6 +714,12 @@ function App() {
           <Button onClick={handleBscTestnetMint}>Mint - bsc testnet</Button>
           <Button onClick={handleTransfer721}>Transfer721</Button>
         </Group>
+        {!enableIframe && (
+          <Group>
+            <Title>10. Popup mode</Title>
+            <Button onClick={handlePopupBlockedByBrowser}>popup blocked by browser</Button>
+          </Group>
+        )}
       </Wrapper>
     </Container>
   );
