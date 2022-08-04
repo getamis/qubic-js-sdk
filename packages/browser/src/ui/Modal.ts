@@ -116,6 +116,9 @@ interface Props {
 export default class Modal {
   public element: HTMLDivElement;
 
+  private onShowCallbackConfirm?: () => void;
+  private onShowCallbackCancel?: () => void;
+
   constructor(props: Props) {
     const { description, onCancel, cancelText, onConfirm, confirmText, hideWhenConfirm, children } = props;
 
@@ -178,6 +181,7 @@ export default class Modal {
           event.stopPropagation();
           this.hide();
           onCancel();
+          this.onShowCallbackCancel?.();
         },
       });
 
@@ -195,6 +199,7 @@ export default class Modal {
             this.hide();
           }
           onConfirm();
+          this.onShowCallbackConfirm?.();
         },
       });
 
@@ -208,7 +213,9 @@ export default class Modal {
     this.element.className = css([styles.container, styles.containerHide]);
   };
 
-  public show = (): void => {
+  public show = (options?: { onConfirm?: () => void; onCancel?: () => void }): void => {
+    this.onShowCallbackCancel = options?.onCancel;
+    this.onShowCallbackConfirm = options?.onConfirm;
     setTimeout(() => {
       this.element.className = css([styles.container, styles.containerShow]);
     }, 500);
