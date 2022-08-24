@@ -32,8 +32,7 @@ function override(config, env) {
     ...config.plugins,
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
-    }),
-    new webpack.ProvidePlugin({
+      assert: ['assert', 'assert'],
       process: 'process/browser',
     }),
   ];
