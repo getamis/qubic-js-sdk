@@ -4,3 +4,4 @@ scripts/
 coverage/
 webpack-config/
 web-build/
+config-overrides.js
