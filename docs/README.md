@@ -6,10 +6,6 @@
 
 ## Getting started
 
-### Request an API key
-
-Please [contact us](mailto:hello@qubic.app) or fill [this form](https://forms.gle/jYyw4ibn1VwG1w4X9).
-
 ### Installation
 
 #### React
@@ -43,11 +39,11 @@ const options {
   // optional
   infuraProjectId: INFURA_PROJECT_ID,
 
-  // optional, you can contact us apply for higher rate limit
-  apiKey: API_KEY,
+  // optional, you can contact us to apply for higher rate limit
+  // apiKey: API_KEY,
 
-  // optional, you can contact us apply for higher rate limit
-  apiSecret: API_SECRET,
+  // optional, you can contact us to apply for higher rate limit
+  // apiSecret: API_SECRET,
 
   // optional, default is mainnet 1
   chainId: CHAIN_ID,
@@ -130,78 +126,6 @@ cd example && yarn
 yarn example
 ```
 
-## Meta-transaction Standard
+## Qubic Meta-transaction Standard
 
-In Qubic, it's possible to execute a transaction by Qubic's relayer instead of user's wallet.
-
-For Dapp developers, to integrate with Qubic's meta-transaction infrastructure, you have to
-
-1. Follow Qubic's meta-transaction standard
-2. Submit your Dapp's contract address to Qubic's whitelist.
-
-## List of Solidity contract methods accepted by Qubic
-
-The `mint` functions for ERC721 below are supported.
-
-```solidity
-// 0x40c10f19 => mint(address,uint256)
-function mint(address to, uint256 numberOfTokensOrTokenId);
-
-// 0x6a627842 => mint(address)
-function mint(address to);
-```
-
-The two functions below can be supported as well if the `onERC721Received` is invoked when transferring tokens.
-
-```solidity
-// 0x1249c58b => mint()
-function mint();
-
-// 0xa0712d68 => mint(uint256)
-function mint(uint256 numberOfTokensOrTokenId);
-```
-
-```solidity
-function onERC721Received(address operator, address from, uint256 tokenId, bytes data) returns (bytes4)
-```
-
-### Provider structure
-
-```mermaid
-flowchart TB
-  subgraph QubicProvider
-    subgraph API
-      provider.method
-      provider.event
-    end
-    provider.method <--> Middlewares
-
-    subgraph Middlewares
-      cacheMiddleware --> prepareBridgeMiddleware
-      prepareBridgeMiddleware --> walletMiddleware
-      walletMiddleware --> infuraMiddleware
-    end
-    walletMiddleware <--> bridge.send
-
-    subgraph Bridge
-      bridge.emitEvent
-      bridge.send
-    end
-    bridge.emitEvent --> prepareBridgeMiddleware
-    bridge.emitEvent --> walletMiddleware
-    bridge.emitEvent --> provider.event
-
-  end
-
-  infuraMiddleware <--> infuraRpcNode
-
-  subgraph QubicWallet
-    iFrame
-    popupWindow
-    webview
-  end
-  QubicWallet --> bridge.emitEvent
-  QubicWallet <--> bridge.send
-  prepareBridgeMiddleware -.->|initialize| QubicWallet
-
-```
+Coming
