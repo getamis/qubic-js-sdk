@@ -7,6 +7,7 @@
   "name": "qubic-js-sdk",
   "scripts": {
     "build": "lerna run build",
+    "docs": "docsify serve ./docs",
     "build:example": "yarn build && yarn --cwd ./example && yarn --cwd ./example build",
     "example": "yarn --cwd ./example start",
     "prepublishOnly": "yarn run build",
@@ -43,6 +44,7 @@
     ]
   },
   "dependencies": {
+    "docsify-cli": "^4.4.4",
     "lerna": "5.1.8"
   },
   "devDependencies": {

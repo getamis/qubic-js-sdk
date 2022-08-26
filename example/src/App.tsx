@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ERC20_ABI, ERC721_ABI } from './abi';
 import { Network } from '@qubic-js/core';
 
-const { REACT_APP_API_KEY, REACT_APP_API_SECRET, REACT_APP_INFURA_NETWORK_KEY } = process.env as any;
+const { REACT_APP_INFURA_NETWORK_KEY } = process.env as any;
 
 const INFURA_PROJECT_ID = REACT_APP_INFURA_NETWORK_KEY;
 
@@ -22,8 +22,6 @@ const parsed = qs.parse(window.location.search);
 const enableIframe = parsed.enableIframe === 'true';
 
 const qubicConnector = new QubicConnector({
-  apiKey: REACT_APP_API_KEY,
-  apiSecret: REACT_APP_API_SECRET,
   chainId: Number(parsed.chainId) || 1,
   infuraProjectId: INFURA_PROJECT_ID,
   autoHideWelcome: parsed.autoHideWelcome === 'true' || false,
