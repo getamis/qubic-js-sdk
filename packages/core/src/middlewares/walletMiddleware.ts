@@ -5,6 +5,7 @@ import { Bridge } from '../types';
 export const WALLET_HANDLE_METHODS = [
   'qubic_login',
   'qubic_skipPreviewSign',
+  'qubic_skipPreviewSignTypedData',
   'qubic_issueIdentityTicket',
   'eth_chainId',
   'eth_accounts',
