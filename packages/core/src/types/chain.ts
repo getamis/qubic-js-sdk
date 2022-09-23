@@ -1,9 +1,9 @@
 export enum Network {
   MAINNET = 1,
   ROPSTEN = 3,
-  RINKEBY = 4,
+  RINKEBY = 4, // deprecated
   // KOVAN = 42,
-  // GOERLI = 420,
+  GOERLI = 420,
   POLYGON = 137,
   MUMBAI = 80001,
   // OPTIMISTIC = 10,
@@ -24,7 +24,7 @@ export const ALL_NETWORKS_TYPES = ['ethereum', 'polygon', 'bsc'] as const;
 export type NetworkType = typeof ALL_NETWORKS_TYPES[number];
 
 export interface NetworkInfo {
-  name: 'mainnet' | 'ropsten' | 'rinkeby' | 'polygon' | 'mumbai' | 'bsc' | 'bscTestnet';
+  name: 'mainnet' | 'ropsten' | 'rinkeby' | 'goerli' | 'polygon' | 'mumbai' | 'bsc' | 'bscTestnet';
   chainId: Network;
   ensAddress: string;
   explorerUrl: string; // no last `/`

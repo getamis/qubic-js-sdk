@@ -8,7 +8,7 @@ export const INFURA_NETWORK_ENDPOINTS: Record<Network, string> = {
   [Network.ROPSTEN]: 'ropsten',
   [Network.RINKEBY]: 'rinkeby',
   // [Network.KOVAN]: 'kovan',
-  // [Network.GOERLI]: 'goerli',
+  [Network.GOERLI]: 'goerli',
   [Network.POLYGON]: 'polygon-mainnet',
   [Network.MUMBAI]: 'polygon-mumbai',
   // [Network.OPTIMISTIC]: 'optimism-mainnet',

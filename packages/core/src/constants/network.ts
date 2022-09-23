@@ -52,6 +52,16 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     networkType: 'ethereum',
   },
 
+  [Network.GOERLI]: {
+    name: 'goerli',
+    chainId: Network.GOERLI,
+    ensAddress: '0x112234455c3a32fd11230c42e7bccd4a84e02010',
+    explorerUrl: 'https://goerli.etherscan.io',
+    color: '#f6c343',
+    nativeToken: ETHEREUM_NATIVE_TOKEN,
+    networkType: 'ethereum',
+  },
+
   [Network.POLYGON]: {
     name: 'polygon',
     chainId: Network.POLYGON,

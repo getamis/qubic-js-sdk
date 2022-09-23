@@ -25,10 +25,11 @@ npm install @qubic-js/browser
 ```javascript
 enum Network {
   MAINNET,
-  ROPSTEN,
-  RINKEBY,
+  GOERLI,
   POLYGON,
-  MUMBAI
+  MUMBAI,
+  BSC,
+  BSC_TEST_NET
 }
 ```
 
