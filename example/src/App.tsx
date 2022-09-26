@@ -5,7 +5,7 @@ import Web3Utils, { toChecksumAddress } from 'web3-utils';
 import { AbstractProvider, TransactionReceipt } from 'web3-core';
 import { useWeb3React } from '@web3-react/core';
 // eslint-disable-next-line camelcase
-import { recoverPersonalSignature, recoverTypedSignature, recoverTypedSignature_v4, TypedMessage } from 'eth-sig-util';
+import { recoverPersonalSignature, recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { QubicConnector } from '@qubic-js/react';
 import qs from 'query-string';
 import { v4 as uuidv4 } from 'uuid';
@@ -310,7 +310,8 @@ function App() {
   const handleSkipPreviewSignTypedData = useCallback(async () => {
     const from = address;
 
-    const toBeSigned = `{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"}],\"ForwardRequest\":[{\"name\":\"from\",\"type\":\"address\"},{\"name\":\"to\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"gas\",\"type\":\"uint256\"},{\"name\":\"nonce\",\"type\":\"uint256\"},{\"name\":\"data\",\"type\":\"bytes\"}]},\"primaryType\":\"ForwardRequest\",\"domain\":{\"name\":\"GenericForwarderV2\",\"version\":\"0.0.1\",\"chainId\":\"0x4\",\"verifyingContract\":\"0xDA09Ac0B1edDc502D2ca5F851516d32657Cf32c8\",\"salt\":\"\"},\"message\":{\"data\":\"0xb88d4fde00000000000000000000000046196bc1c0ef858f2f4034ee7e6121823a94b9000000000000000000000000002cb03697c0eb0a5a3cf5f23051c961962bb3c912000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000435792217934f5704c9105561dbb1939a2373b680000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000006343dfab000000000000000000000000000000000000000000000000000000000000001ba5ca7b2e3df628a2814975546274f5d2fea14e7f89166f5fc55ba29281a3438d21ab25033a44d0bb7253c472f2c3223454dac57ec5cbbf10433805c74cda83000000000000000000000000000000000000000000000000000000000000000044bcbd92e00000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b00000000000000000000000000000000000000000000000000000000\",\"from\":\"0x46196Bc1C0Ef858f2F4034ee7e6121823A94B900\",\"gas\":\"152143\",\"nonce\":\"115792089237316195423570985008687907853269984665640564039457584007913129639935\",\"to\":\"0x9D75f848328b25df36873E41eC5d79a9b10316f6\",\"value\":\"0\"}}`;
+    const toBeSigned =
+      '{"types":{"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}],"ForwardRequest":[{"name":"from","type":"address"},{"name":"to","type":"address"},{"name":"value","type":"uint256"},{"name":"gas","type":"uint256"},{"name":"nonce","type":"uint256"},{"name":"data","type":"bytes"}]},"primaryType":"ForwardRequest","domain":{"name":"GenericForwarderV2","version":"0.0.1","chainId":"0x4","verifyingContract":"0xDA09Ac0B1edDc502D2ca5F851516d32657Cf32c8","salt":""},"message":{"data":"0xb88d4fde00000000000000000000000046196bc1c0ef858f2f4034ee7e6121823a94b9000000000000000000000000002cb03697c0eb0a5a3cf5f23051c961962bb3c912000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000435792217934f5704c9105561dbb1939a2373b680000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000006343dfab000000000000000000000000000000000000000000000000000000000000001ba5ca7b2e3df628a2814975546274f5d2fea14e7f89166f5fc55ba29281a3438d21ab25033a44d0bb7253c472f2c3223454dac57ec5cbbf10433805c74cda83000000000000000000000000000000000000000000000000000000000000000044bcbd92e00000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b00000000000000000000000000000000000000000000000000000000","from":"0x46196Bc1C0Ef858f2F4034ee7e6121823A94B900","gas":"152143","nonce":"115792089237316195423570985008687907853269984665640564039457584007913129639935","to":"0x9D75f848328b25df36873E41eC5d79a9b10316f6","value":"0"}}';
 
     const payload = {
       jsonrpc: '2.0',
@@ -658,9 +659,10 @@ function App() {
     [account, chainId, web3],
   );
 
-  const handleRinkebyMint = useCallback(async () => {
+  // TODO: should update contractAddress when new contract deploy
+  const handleGoerliMint = useCallback(async () => {
     handleNftMint({
-      targetNetwork: Network.RINKEBY,
+      targetNetwork: Network.GOERLI,
       contractAddress: '0xC730b891F4FF8b659ab4Fc8D362239907cb99c17',
     });
   }, [handleNftMint]);
@@ -748,7 +750,7 @@ function App() {
         </Group>
         <Group>
           <Title>9. Smart Contract</Title>
-          <Button onClick={handleRinkebyMint}>Mint - rinkeby</Button>
+          <Button onClick={handleGoerliMint}>Mint - goerli</Button>
           <Button onClick={handleBscTestnetMint}>Mint - bsc testnet</Button>
           <Button onClick={handleTransfer721}>Transfer721</Button>
         </Group>
