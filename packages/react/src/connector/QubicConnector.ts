@@ -26,6 +26,7 @@ export default class QubicConnector extends AbstractConnector {
     super({
       supportedChainIds: [
         Network.MAINNET,
+        Network.RINKEBY, // will be deprecated in the future
         Network.GOERLI,
         Network.POLYGON,
         Network.MUMBAI,

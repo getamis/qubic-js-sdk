@@ -2,8 +2,8 @@ export enum Network {
   MAINNET = 1,
   ROPSTEN = 3,
   RINKEBY = 4, // deprecated
+  GOERLI = 5,
   // KOVAN = 42,
-  GOERLI = 420,
   POLYGON = 137,
   MUMBAI = 80001,
   // OPTIMISTIC = 10,
