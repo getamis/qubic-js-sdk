@@ -28,7 +28,8 @@ export default class BrowserBridge extends EventEmitter implements Bridge {
         }
 
         if (method === 'setAddress') {
-          this.emit(BridgeEvent.accountsChanged, [event.data.address]);
+          const { address } = event.data;
+          this.emit(BridgeEvent.accountsChanged, address ? [address] : []);
           return;
         }
         if (method === 'setNetwork') {
