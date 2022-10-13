@@ -48,6 +48,15 @@ function App() {
 
   useEffect(() => {
     const currentProvider = web3?.currentProvider as AbstractProvider | undefined;
+    if (!currentProvider) return;
+    (currentProvider as any).on('accountsChanged', (accounts: string[]) => {
+      console.log('accountsChanged');
+      console.log(accounts);
+    });
+  }, [web3]);
+
+  useEffect(() => {
+    const currentProvider = web3?.currentProvider as AbstractProvider | undefined;
 
     if (enableSignMsgAfterActivate && address && currentProvider?.request) {
       setEnableSignMsgAfterActivate(false);
