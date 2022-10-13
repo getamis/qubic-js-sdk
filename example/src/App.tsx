@@ -50,8 +50,7 @@ function App() {
     const currentProvider = web3?.currentProvider as AbstractProvider | undefined;
     if (!currentProvider) return;
     (currentProvider as any).on('accountsChanged', (accounts: string[]) => {
-      console.log('accountsChanged');
-      console.log(accounts);
+      console.log('accountsChanged', accounts);
     });
   }, [web3]);
 
