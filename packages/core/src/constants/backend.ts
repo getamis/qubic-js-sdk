@@ -5,7 +5,7 @@ export const WALLET_URL = 'https://wallet.qubic.app';
 // https://infura.io/docs/ethereum#section/Choose-a-Network
 export const INFURA_NETWORK_ENDPOINTS: Record<Network, string> = {
   [Network.MAINNET]: 'mainnet',
-  [Network.ROPSTEN]: 'ropsten',
+  // [Network.ROPSTEN]: 'ropsten', // deprecated
   [Network.RINKEBY]: 'rinkeby',
   // [Network.KOVAN]: 'kovan',
   [Network.GOERLI]: 'goerli',
