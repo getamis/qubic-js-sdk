@@ -32,15 +32,16 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     networkType: 'ethereum',
   },
 
-  [Network.ROPSTEN]: {
-    name: 'ropsten',
-    chainId: Network.ROPSTEN,
-    ensAddress: '0x112234455c3a32fd11230c42e7bccd4a84e02010',
-    explorerUrl: 'https://ropsten.etherscan.io',
-    color: '#ff4a8d',
-    nativeToken: ETHEREUM_NATIVE_TOKEN,
-    networkType: 'ethereum',
-  },
+  // deprecated
+  // [Network.ROPSTEN]: {
+  //   name: 'ropsten',
+  //   chainId: Network.ROPSTEN,
+  //   ensAddress: '0x112234455c3a32fd11230c42e7bccd4a84e02010',
+  //   explorerUrl: 'https://ropsten.etherscan.io',
+  //   color: '#ff4a8d',
+  //   nativeToken: ETHEREUM_NATIVE_TOKEN,
+  //   networkType: 'ethereum',
+  // },
 
   [Network.RINKEBY]: {
     name: 'rinkeby',
