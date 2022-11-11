@@ -7,6 +7,7 @@ import { useWeb3React } from '@web3-react/core';
 // eslint-disable-next-line camelcase
 import { recoverPersonalSignature, recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { QubicConnector } from '@qubic-js/react';
+import { SignInProvider } from '@qubic-js/core';
 import qs from 'query-string';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -95,6 +96,16 @@ function App() {
       console.error(e);
     });
   }, [activate]);
+
+  const bindSignInUpWithSignInProvider = useCallback(
+    (signInProvider: SignInProvider) => () => {
+      qubicConnector.setSignInProvider(signInProvider);
+      activate(qubicConnector, (e: Error): void => {
+        console.error(e);
+      });
+    },
+    [activate],
+  );
 
   const handleSignInUpAndSignMessage = useCallback(async () => {
     setEnableSignMsgAfterActivate(true);
@@ -713,6 +724,11 @@ function App() {
         <Group>
           <Title>1. 註冊或登錄以獲得地址</Title>
           <Button onClick={handleSignInUp}>SIGN IN / SIGN UP</Button>
+
+          <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.GOOGLE)}>google</Button>
+          <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.FACEBOOK)}>facebook</Button>
+          <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.APPLE)}>apple</Button>
+
           <Button onClick={handleSignInUpAndSignMessage}>{`SIGN IN / SIGN UP\nAnd Sign custom message`}</Button>
           <Button onClick={handleQubicIdentityToken}>qubic_issueIdentityTicket</Button>
           {!!address && <InfoText>address: {address}</InfoText>}

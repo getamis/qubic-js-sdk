@@ -5,3 +5,4 @@ export * from './bridge';
 export * from './messenger';
 export * from './provider';
 export * from './backend';
+export * from './signInProvider';

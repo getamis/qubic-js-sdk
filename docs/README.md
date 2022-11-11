@@ -68,6 +68,7 @@ const options {
 
 ```javascript
 import Web3 from 'web3';
+import { SignInProvider } from '@qubic-js/core';
 import QubicConnector from '@qubic-js/react';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 import options from './options'
@@ -86,9 +87,19 @@ export default () => {
     });
   }, [activate]);
 
+  const handleGoogleSignIn = useCallback(async () => {
+    // will sign in Qubic wallet with Google
+    qubicConnector.setSignInProvider(SignInProvider.GOOGLE);
+    activate(qubicConnector, (e: Error): void => {
+      console.error(e);
+    });
+  }, [activate]);
+
+
   return (
     <Web3ReactProvider getLibrary={library}>
-      <App />
+      <button onClick={handleSignIn}>Qubic Wallet</button>
+      <button onClick={handleSignIn}>Qubic Wallet - Google </button>
     </Web3ReactProvider>
   );
 }
