@@ -6,6 +6,7 @@ import {
   WALLET_HANDLE_METHODS,
   KEEP_HIDE_WALLET_HANDLE_METHODS,
   ApiConfig,
+  SignInProvider,
 } from '@qubic-js/core';
 import { css, CSSInterpolation } from '@emotion/css';
 
@@ -30,6 +31,7 @@ class IFrame implements Messenger {
 
   private apiConfig: ApiConfig;
   private walletUrl: string;
+  private signInProvider?: SignInProvider;
   private isReady = false;
 
   private element: HTMLIFrameElement;
@@ -67,7 +69,13 @@ class IFrame implements Messenger {
   }
 
   private getUrl = (): string => {
-    return urlWithApiConfig(this.walletUrl, this.apiConfig);
+    return urlWithApiConfig(this.walletUrl, this.apiConfig, this.signInProvider);
+  };
+
+  public setSignInProvider = (value: SignInProvider): void => {
+    console.warn('IFrame auto sign in popup usually blocked by browser, you should consider enableIframe: false');
+    this.signInProvider = value;
+    this.element.src = this.getUrl();
   };
 
   private show = (): void => {

@@ -1,7 +1,7 @@
 import BrowserProvider from '@qubic-js/browser';
 import { ConnectorUpdate } from '@web3-react/types';
 import { AbstractConnector } from '@web3-react/abstract-connector';
-import { Network } from '@qubic-js/core';
+import { Network, SignInProvider } from '@qubic-js/core';
 
 export interface QubicConnectorOptions {
   apiKey?: string;
@@ -11,6 +11,7 @@ export interface QubicConnectorOptions {
   walletUrl?: string;
   enableIframe?: boolean;
   inAppHintLink?: string;
+  signInProvider?: SignInProvider;
   /** hide welcome screen after sign in success */
   autoHideWelcome?: boolean;
 }
@@ -44,6 +45,10 @@ export default class QubicConnector extends AbstractConnector {
     this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
     this.setInAppHintLink = () => null;
     this.getProvider();
+  }
+
+  public setSignInProvider(value: SignInProvider): void {
+    this.provider?.setSignInProvider(value);
   }
 
   private handleChainChanged(chainId: string): void {

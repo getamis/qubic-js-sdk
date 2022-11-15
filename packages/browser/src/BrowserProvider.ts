@@ -1,6 +1,5 @@
-import { BaseProvider, Network, WALLET_URL } from '@qubic-js/core';
+import { ApiConfig, BaseProvider, Network, WALLET_URL, SignInProvider } from '@qubic-js/core';
 import InApp from '@qubic-js/detect-inapp';
-
 import createCacheMiddleware from './middlewares/cacheMiddleware';
 import IFrame from './middlewares/IFrame';
 import PopupWindow from './middlewares/PopupWindow';
@@ -22,7 +21,7 @@ export class BrowserProvider extends BaseProvider {
   // for react-web3, when activate success, call provider.hide()
   public hide: () => void;
   public setInAppHintLink: ReturnType<typeof createInAppWarningModal>['setInAppHintLink'];
-
+  public setSignInProvider: (value: SignInProvider) => void;
   constructor(options?: BrowserProviderOptions) {
     const {
       apiKey,
@@ -34,14 +33,18 @@ export class BrowserProvider extends BaseProvider {
       inAppHintLink,
     } = options || {};
 
-    const apiConfig = {
+    const apiConfig: ApiConfig = {
       apiKey,
       apiSecret,
       chainId,
     };
-    const { hide, bridge, createPrepareBridgeMiddleware } = enableIframe
-      ? new IFrame(walletUrl, apiConfig)
-      : new PopupWindow(walletUrl, apiConfig);
+
+    const {
+      hide,
+      bridge,
+      createPrepareBridgeMiddleware,
+      setSignInProvider: originSetSignInProvider,
+    } = enableIframe ? new IFrame(walletUrl, apiConfig) : new PopupWindow(walletUrl, apiConfig);
 
     super({
       infuraProjectId,
@@ -50,6 +53,7 @@ export class BrowserProvider extends BaseProvider {
       middlewares: [createCacheMiddleware(bridge), createPrepareBridgeMiddleware()],
     });
 
+    this.setSignInProvider = originSetSignInProvider;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
 

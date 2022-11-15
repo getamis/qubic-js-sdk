@@ -1,8 +1,8 @@
 import qs from 'query-string';
 
-import { ApiConfig } from '../types';
+import { ApiConfig, SignInProvider } from '../types';
 
-export const urlWithApiConfig = (url: string, config: ApiConfig): string => {
+export const urlWithApiConfig = (url: string, config: ApiConfig, signInProvider?: SignInProvider): string => {
   const { apiKey, apiSecret, chainId } = config;
 
   return qs.stringifyUrl({
@@ -11,6 +11,7 @@ export const urlWithApiConfig = (url: string, config: ApiConfig): string => {
       ...(chainId && { network: chainId }),
       ...(apiKey && { k: btoa(apiKey) }),
       ...(apiSecret && { s: btoa(apiSecret) }),
+      ...(signInProvider && { provider: signInProvider }),
     },
   });
 };
