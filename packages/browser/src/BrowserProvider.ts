@@ -12,6 +12,7 @@ export interface BrowserProviderOptions {
   infuraProjectId?: string;
   walletUrl?: string; // optional, it not provided use production wallet url
   enableIframe?: boolean;
+  disableFastSignup?: boolean;
   inAppHintLink?: string;
 }
 
@@ -30,6 +31,7 @@ export class BrowserProvider extends BaseProvider {
       infuraProjectId,
       enableIframe = false,
       walletUrl = WALLET_URL,
+      disableFastSignup,
       inAppHintLink,
     } = options || {};
 
@@ -44,7 +46,9 @@ export class BrowserProvider extends BaseProvider {
       bridge,
       createPrepareBridgeMiddleware,
       setSignInProvider: originSetSignInProvider,
-    } = enableIframe ? new IFrame(walletUrl, apiConfig) : new PopupWindow(walletUrl, apiConfig);
+    } = enableIframe
+      ? new IFrame(walletUrl, apiConfig, disableFastSignup)
+      : new PopupWindow(walletUrl, apiConfig, disableFastSignup);
 
     super({
       infuraProjectId,
