@@ -12,6 +12,7 @@ export interface QubicConnectorOptions {
   enableIframe?: boolean;
   inAppHintLink?: string;
   signInProvider?: SignInProvider;
+  disableFastSignup?: boolean;
   /** hide welcome screen after sign in success */
   autoHideWelcome?: boolean;
 }
@@ -76,6 +77,7 @@ export default class QubicConnector extends AbstractConnector {
         walletUrl,
         infuraProjectId,
         enableIframe,
+        disableFastSignup,
         inAppHintLink,
       } = this.options;
 
@@ -92,6 +94,7 @@ export default class QubicConnector extends AbstractConnector {
         walletUrl,
         infuraProjectId,
         enableIframe,
+        disableFastSignup,
         inAppHintLink,
       });
       this.setInAppHintLink = this.provider.setInAppHintLink;

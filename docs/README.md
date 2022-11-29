@@ -61,6 +61,10 @@ const options {
   // === QubicConnector Only options ===
   // optional, default: false, when value is true, the popup will hide automatically
   autoHideWelcome: true
+
+  // optional, default: false, when value is true, signUp actions from sdk will
+  // create a account that will force password setting
+  disableFastSignup: true
 }
 ```
 

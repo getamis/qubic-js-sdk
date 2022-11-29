@@ -20,15 +20,17 @@ class PopupWindow implements Messenger {
 
   private apiConfig: ApiConfig;
   private walletUrl: string;
+  private disableFastSignup: boolean;
   private signInProvider?: SignInProvider;
   private isReady = false;
 
   private proxy: Window | null = null;
   private newWindowReminderModal: Modal;
 
-  constructor(walletUrl: string, apiConfig: ApiConfig) {
+  constructor(walletUrl: string, apiConfig: ApiConfig, disableFastSignup = false) {
     this.walletUrl = walletUrl;
     this.apiConfig = apiConfig;
+    this.disableFastSignup = disableFastSignup;
 
     this.newWindowReminderModal = new Modal({
       description: t('popup-window-hint'),
@@ -64,7 +66,7 @@ class PopupWindow implements Messenger {
   }
 
   private getUrl = (): string => {
-    return urlWithApiConfig(this.walletUrl, this.apiConfig, this.signInProvider);
+    return urlWithApiConfig(this.walletUrl, this.apiConfig, this.disableFastSignup, this.signInProvider);
   };
 
   public setSignInProvider = (value: SignInProvider): void => {
