@@ -50,9 +50,13 @@ function App() {
   useEffect(() => {
     const currentProvider = web3?.currentProvider as AbstractProvider | undefined;
     if (!currentProvider) return;
-    (currentProvider as any).on('accountsChanged', (accounts: string[]) => {
+    const onAccountsChanged = (accounts: string[]) => {
       console.log('accountsChanged', accounts);
-    });
+    };
+    (currentProvider as any).on('accountsChanged', onAccountsChanged);
+    return () => {
+      (currentProvider as any).off('accountsChanged', onAccountsChanged);
+    };
   }, [web3]);
 
   useEffect(() => {
