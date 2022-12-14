@@ -48,7 +48,11 @@ export default class QubicConnector extends AbstractConnector {
   }
 
   public setSignInProvider(value: SignInProvider): void {
-    this.provider?.setSignInProvider(value);
+    // if this is in dapp browser, we don't need to setSignInProvider
+    // setSignInProvider only works for web
+    if (this.provider?.setSignInProvider) {
+      this.provider.setSignInProvider(value);
+    }
   }
 
   private handleChainChanged(chainId: string): void {
