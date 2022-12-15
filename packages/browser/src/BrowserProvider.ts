@@ -1,6 +1,7 @@
 import { ApiConfig, BaseProvider, Network, WALLET_URL, SignInProvider } from '@qubic-js/core';
 import InApp from '@qubic-js/detect-inapp';
 import createCacheMiddleware from './middlewares/cacheMiddleware';
+import { createInAppBrowserMiddleware } from './middlewares/createInAppBrowserMiddleware';
 import IFrame from './middlewares/IFrame';
 import PopupWindow from './middlewares/PopupWindow';
 import createInAppWarningModal from './ui/inAppWarningModal';
@@ -50,22 +51,29 @@ export class BrowserProvider extends BaseProvider {
       ? new IFrame(walletUrl, apiConfig, disableFastSignup)
       : new PopupWindow(walletUrl, apiConfig, disableFastSignup);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
+    const { modal: inAppWarningModal, setInAppHintLink } = createInAppWarningModal(inAppHintLink);
+
+    if (inApp.isInApp) {
+      document.body.appendChild(inAppWarningModal.element);
+      inAppWarningModal.show();
+    }
+
     super({
       infuraProjectId,
       network: chainId,
       bridge,
-      middlewares: [createCacheMiddleware(bridge), createPrepareBridgeMiddleware()],
+      middlewares: [
+        createInAppBrowserMiddleware(true, inAppWarningModal.show),
+        createCacheMiddleware(bridge),
+        createPrepareBridgeMiddleware(),
+      ],
     });
 
     this.setSignInProvider = originSetSignInProvider;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
-
     if (inApp.isInApp) {
-      const { modal: inAppWarningModal, setInAppHintLink } = createInAppWarningModal(inAppHintLink);
       this.setInAppHintLink = setInAppHintLink;
-      document.body.appendChild(inAppWarningModal.element);
-      inAppWarningModal.show();
     } else {
       this.setInAppHintLink = () => null;
     }
