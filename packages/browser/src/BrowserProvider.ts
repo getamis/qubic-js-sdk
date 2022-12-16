@@ -52,27 +52,23 @@ export class BrowserProvider extends BaseProvider {
       : new PopupWindow(walletUrl, apiConfig, disableFastSignup);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
+    const { isInApp } = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
     const { modal: inAppWarningModal, setInAppHintLink } = createInAppWarningModal(inAppHintLink);
-
-    if (inApp.isInApp) {
-      document.body.appendChild(inAppWarningModal.element);
-      inAppWarningModal.show();
-    }
 
     super({
       infuraProjectId,
       network: chainId,
       bridge,
       middlewares: [
-        createInAppBrowserMiddleware(true, inAppWarningModal.show),
+        createInAppBrowserMiddleware(isInApp, inAppWarningModal.show),
         createCacheMiddleware(bridge),
         createPrepareBridgeMiddleware(),
       ],
     });
 
     this.setSignInProvider = originSetSignInProvider;
-    if (inApp.isInApp) {
+    if (isInApp) {
+      document.body.appendChild(inAppWarningModal.element);
       this.setInAppHintLink = setInAppHintLink;
     } else {
       this.setInAppHintLink = () => null;
