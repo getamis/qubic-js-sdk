@@ -92,14 +92,14 @@ const styles: Record<string, CSSInterpolation> = {
   },
   buttonCancel: {
     backgroundColor: 'white',
-    color: '#ff9500',
-    borderColor: '#ff9500',
+    color: '#2962ff',
+    borderColor: '#2962ff',
   },
 
   buttonPrimary: {
-    backgroundColor: '#ff9500',
+    backgroundColor: '#2962ff',
     color: 'white',
-    borderColor: '#ff9500',
+    borderColor: '#2962ff',
   },
 };
 
