@@ -26,7 +26,7 @@ export default function createInAppWarningModal(inAppHintLink?: string): {
   const container = document.createElement('div');
   container.className = css(styles.container);
 
-  const link = window.location.href;
+  let link = window.location.href;
 
   const messageP = document.createElement('p');
   messageP.className = css(styles.link);
@@ -37,6 +37,7 @@ export default function createInAppWarningModal(inAppHintLink?: string): {
     if (value && !isUrl(value)) {
       throw Error('inAppHintLink should be a url');
     }
+    link = value;
     messageP.innerHTML = value;
   }
 
