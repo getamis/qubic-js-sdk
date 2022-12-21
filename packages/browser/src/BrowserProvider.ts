@@ -69,6 +69,7 @@ export class BrowserProvider extends BaseProvider {
     this.setSignInProvider = originSetSignInProvider;
     if (isInApp) {
       document.body.appendChild(inAppWarningModal.element);
+      inAppWarningModal.show();
       this.setInAppHintLink = setInAppHintLink;
     } else {
       this.setInAppHintLink = () => null;
