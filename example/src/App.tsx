@@ -732,6 +732,7 @@ function App() {
           <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.GOOGLE)}>google</Button>
           <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.FACEBOOK)}>facebook</Button>
           <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.APPLE)}>apple</Button>
+          <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.YAHOO)}>yahoo</Button>
 
           <Button onClick={handleSignInUpAndSignMessage}>{`SIGN IN / SIGN UP\nAnd Sign custom message`}</Button>
           <Button onClick={handleQubicIdentityToken}>qubic_issueIdentityTicket</Button>
