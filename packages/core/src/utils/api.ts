@@ -2,6 +2,10 @@ import qs from 'query-string';
 
 import { ApiConfig, SignInProvider } from '../types';
 
+// we can't import ../../package.json it will caused monorepo wrong dep issue
+// so we use genversion to create version.js file
+import sdkVersion from './version';
+
 export const urlWithApiConfig = (
   url: string,
   config: ApiConfig,
@@ -14,6 +18,7 @@ export const urlWithApiConfig = (
     url,
     query: {
       disableFastSignup,
+      sdkVersion,
       ...(chainId && { network: chainId }),
       ...(apiKey && { k: btoa(apiKey) }),
       ...(apiSecret && { s: btoa(apiSecret) }),
