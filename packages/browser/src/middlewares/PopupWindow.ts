@@ -1,5 +1,4 @@
 import { createAsyncMiddleware, JsonRpcMiddleware } from 'json-rpc-engine';
-import InApp from 'detect-inapp';
 import {
   BridgeEvent,
   Messenger,
@@ -12,7 +11,6 @@ import {
 import { t } from '../translation';
 import BrowserBridge from '../utils/BrowserBridge';
 import Modal from '../ui/Modal';
-import inAppWarningModal from '../ui/inAppWarningModal';
 
 const DETECT_IF_POPUP_WINDOW_CLOSED_INTERVAL_MS = 500;
 
@@ -32,14 +30,7 @@ class PopupWindow implements Messenger {
     this.apiSecret = apiSecret;
     this.chainId = chainId;
 
-    const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
-
     const { body } = document;
-
-    if (inApp.isInApp) {
-      body.appendChild(inAppWarningModal.element);
-      inAppWarningModal.show();
-    }
 
     this.newWindowReminderModal = new Modal({
       description: t('popup-window-hint'),

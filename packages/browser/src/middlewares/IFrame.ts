@@ -1,4 +1,3 @@
-import InApp from 'detect-inapp';
 import { JsonRpcMiddleware, createAsyncMiddleware } from 'json-rpc-engine';
 import {
   BridgeEvent,
@@ -11,7 +10,6 @@ import {
 import { css, CSSInterpolation } from '@emotion/css';
 
 import BrowserBridge from '../utils/BrowserBridge';
-import inAppWarningModal from '../ui/inAppWarningModal';
 
 const styles: Record<string, CSSInterpolation> = {
   container: {
@@ -42,15 +40,6 @@ class IFrame implements Messenger {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
     this.chainId = chainId;
-
-    const inApp = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
-
-    const { body } = document;
-
-    if (inApp.isInApp) {
-      body.appendChild(inAppWarningModal.element);
-      inAppWarningModal.show();
-    }
 
     const iframe = document.createElement('iframe');
     iframe.width = '100%';

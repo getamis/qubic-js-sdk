@@ -1,4 +1,5 @@
 import { BaseProvider } from '@qubic-js/core';
+import { showBlockerWhenIab } from '@qubic-connect/detect-iab';
 
 import createCacheMiddleware from './middlewares/cacheMiddleware';
 import IFrame from './middlewares/IFrame';
@@ -18,6 +19,8 @@ export class BrowserProvider extends BaseProvider {
 
   constructor(options: BrowserProviderOptions) {
     const { apiKey, apiSecret, chainId, infuraProjectId, enableIframe = false } = options;
+
+    showBlockerWhenIab();
 
     const { hide, bridge, createPrepareBridgeMiddleware } = enableIframe
       ? new IFrame(apiKey, apiSecret, chainId)
