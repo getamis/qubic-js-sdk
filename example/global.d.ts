@@ -1,4 +1,3 @@
-declare module 'detect-inapp';
 declare module '@qubic-js/eth-json-rpc-infura' {
   import { JsonRpcMiddleware } from 'json-rpc-engine';
 

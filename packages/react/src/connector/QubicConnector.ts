@@ -10,7 +10,6 @@ export interface QubicConnectorOptions {
   infuraProjectId?: string;
   walletUrl?: string;
   enableIframe?: boolean;
-  inAppHintLink?: string;
   signInProvider?: SignInProvider;
   disableFastSignup?: boolean;
   /** hide welcome screen after sign in success */
@@ -22,7 +21,6 @@ let isInitialized = false;
 export default class QubicConnector extends AbstractConnector {
   private provider?: BrowserProvider;
   private options: QubicConnectorOptions;
-  public setInAppHintLink: InstanceType<typeof BrowserProvider>['setInAppHintLink'];
 
   constructor(options?: QubicConnectorOptions) {
     super({
@@ -43,7 +41,6 @@ export default class QubicConnector extends AbstractConnector {
 
     this.handleChainChanged = this.handleChainChanged.bind(this);
     this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
-    this.setInAppHintLink = () => null;
     this.getProvider();
   }
 
@@ -82,7 +79,6 @@ export default class QubicConnector extends AbstractConnector {
         infuraProjectId,
         enableIframe,
         disableFastSignup,
-        inAppHintLink,
       } = this.options;
 
       let chainId = optionChainId;
@@ -99,9 +95,7 @@ export default class QubicConnector extends AbstractConnector {
         infuraProjectId,
         enableIframe,
         disableFastSignup,
-        inAppHintLink,
       });
-      this.setInAppHintLink = this.provider.setInAppHintLink;
       return this.provider;
     } catch (error) {
       if (error instanceof Error) {
