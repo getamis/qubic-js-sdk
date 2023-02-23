@@ -27,7 +27,6 @@ const qubicConnector = new QubicConnector({
   infuraProjectId: INFURA_PROJECT_ID,
   autoHideWelcome: parsed.autoHideWelcome === 'true' || false,
   enableIframe,
-  inAppHintLink: 'https://www.google.com',
 });
 
 function App() {

@@ -55,9 +55,6 @@ const options {
   // optional, default: false, when value is true, the show iframe instead of new window, credit card payment will failed with this option value true
   enableIframe: true
 
-  // optional, default is window.parent.location.href || window.location.href;
-  inAppHintLink: 'https://www.google.com',
-
   // === QubicConnector Only options ===
   // optional, default: false, when value is true, the popup will hide automatically
   autoHideWelcome: true

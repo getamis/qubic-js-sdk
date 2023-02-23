@@ -1,10 +1,9 @@
 import { ApiConfig, BaseProvider, Network, WALLET_URL, SignInProvider } from '@qubic-js/core';
-import InApp from '@qubic-js/detect-inapp';
+import { showBlockerWhenIab } from '@qubic-connect/detect-iab';
+
 import createCacheMiddleware from './middlewares/cacheMiddleware';
-import { createInAppBrowserMiddleware } from './middlewares/createInAppBrowserMiddleware';
 import IFrame from './middlewares/IFrame';
 import PopupWindow from './middlewares/PopupWindow';
-import createInAppWarningModal from './ui/inAppWarningModal';
 
 export interface BrowserProviderOptions {
   apiKey?: string;
@@ -14,7 +13,6 @@ export interface BrowserProviderOptions {
   walletUrl?: string; // optional, it not provided use production wallet url
   enableIframe?: boolean;
   disableFastSignup?: boolean;
-  inAppHintLink?: string;
 }
 
 let isInitialized = false;
@@ -22,7 +20,6 @@ let isInitialized = false;
 export class BrowserProvider extends BaseProvider {
   // for react-web3, when activate success, call provider.hide()
   public hide: () => void;
-  public setInAppHintLink: ReturnType<typeof createInAppWarningModal>['setInAppHintLink'];
   public setSignInProvider: (value: SignInProvider) => void;
   constructor(options?: BrowserProviderOptions) {
     const {
@@ -33,7 +30,6 @@ export class BrowserProvider extends BaseProvider {
       enableIframe = false,
       walletUrl = WALLET_URL,
       disableFastSignup,
-      inAppHintLink,
     } = options || {};
 
     const apiConfig: ApiConfig = {
@@ -41,6 +37,8 @@ export class BrowserProvider extends BaseProvider {
       apiSecret,
       chainId,
     };
+
+    showBlockerWhenIab();
 
     const {
       hide,
@@ -51,29 +49,14 @@ export class BrowserProvider extends BaseProvider {
       ? new IFrame(walletUrl, apiConfig, disableFastSignup)
       : new PopupWindow(walletUrl, apiConfig, disableFastSignup);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { isInApp } = new InApp(navigator.userAgent || navigator.vendor || (window as any).opera);
-    const { modal: inAppWarningModal, setInAppHintLink } = createInAppWarningModal(inAppHintLink);
-
     super({
       infuraProjectId,
       network: chainId,
       bridge,
-      middlewares: [
-        createInAppBrowserMiddleware(isInApp, inAppWarningModal.show),
-        createCacheMiddleware(bridge),
-        createPrepareBridgeMiddleware(),
-      ],
+      middlewares: [createCacheMiddleware(bridge), createPrepareBridgeMiddleware()],
     });
 
     this.setSignInProvider = originSetSignInProvider;
-    if (isInApp) {
-      document.body.appendChild(inAppWarningModal.element);
-      inAppWarningModal.show();
-      this.setInAppHintLink = setInAppHintLink;
-    } else {
-      this.setInAppHintLink = () => null;
-    }
 
     if (isInitialized) {
       throw Error(`You can only new BrowserProvider() one time`);

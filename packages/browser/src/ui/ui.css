@@ -91,18 +91,6 @@
   border-color: #2962ff;
 }
 
-.qubic-in-app-warning__container {
-  margin-top: 24px;
-}
-
-.qubic-in-app-warning__link {
-  color: #568ddc;
-  word-break: break-all;
-  margin: 0;
-  text-align: center;
-  line-height: 1.7;
-}
-
 @media only screen and (max-width: 640px) {
   .qubic-modal__backdrop {
     align-items: flex-end;
