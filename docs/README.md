@@ -62,6 +62,9 @@ const options {
   // optional, default: false, when value is true, signUp actions from sdk will
   // create a account that will force password setting
   disableFastSignup: true
+
+   // optional, default: false, when value is true will not show in app browser warning
+  disableIabWarning: true
 }
 ```
 

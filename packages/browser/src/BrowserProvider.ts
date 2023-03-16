@@ -13,6 +13,7 @@ export interface BrowserProviderOptions {
   walletUrl?: string; // optional, it not provided use production wallet url
   enableIframe?: boolean;
   disableFastSignup?: boolean;
+  disableIabWarning?: boolean;
 }
 
 let isInitialized = false;
@@ -31,6 +32,7 @@ export class BrowserProvider extends BaseProvider {
       enableIframe = false,
       walletUrl = WALLET_URL,
       disableFastSignup,
+      disableIabWarning = false,
     } = options || {};
 
     const apiConfig: ApiConfig = {
@@ -38,6 +40,10 @@ export class BrowserProvider extends BaseProvider {
       apiSecret,
       chainId,
     };
+
+    if (!disableIabWarning) {
+      showBlockerWhenIab();
+    }
 
     const {
       hide,

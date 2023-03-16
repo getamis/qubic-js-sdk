@@ -12,6 +12,7 @@ export interface QubicConnectorOptions {
   enableIframe?: boolean;
   signInProvider?: SignInProvider;
   disableFastSignup?: boolean;
+  disableIabWarning?: boolean;
   /** hide welcome screen after sign in success */
   autoHideWelcome?: boolean;
 }
@@ -85,6 +86,7 @@ export default class QubicConnector extends AbstractConnector {
         infuraProjectId,
         enableIframe,
         disableFastSignup,
+        disableIabWarning,
       } = this.options;
 
       let chainId = optionChainId;
@@ -101,6 +103,7 @@ export default class QubicConnector extends AbstractConnector {
         infuraProjectId,
         enableIframe,
         disableFastSignup,
+        disableIabWarning,
       });
       return this.provider;
     } catch (error) {
