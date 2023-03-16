@@ -95,6 +95,8 @@ function App() {
   }, [address, enableSignMsgAfterActivate, web3?.currentProvider]);
 
   const handleSignInUp = useCallback(() => {
+    qubicConnector.removeSignInProvider();
+
     activate(qubicConnector, (e: Error): void => {
       console.error(e);
     });

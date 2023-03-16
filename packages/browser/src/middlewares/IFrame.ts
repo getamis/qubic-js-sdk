@@ -80,6 +80,11 @@ class IFrame implements Messenger {
     this.element.src = this.getUrl();
   };
 
+  public removeSignInProvider = (): void => {
+    this.signInProvider = undefined;
+    this.element.src = this.getUrl();
+  };
+
   private show = (): void => {
     if (!this.isIframeAppended) {
       document.body.appendChild(this.element);
