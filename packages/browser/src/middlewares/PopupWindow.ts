@@ -73,6 +73,10 @@ class PopupWindow implements Messenger {
     this.signInProvider = value;
   };
 
+  public removeSignInProvider = (): void => {
+    this.signInProvider = undefined;
+  };
+
   private detectCloseEventTimer = 0;
 
   private detectPopupWindowCloseEvent = (proxy: Window | null): void => {

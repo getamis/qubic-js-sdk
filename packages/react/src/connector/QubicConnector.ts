@@ -53,6 +53,12 @@ export default class QubicConnector extends AbstractConnector {
     }
   }
 
+  public removeSignInProvider(): void {
+    if (this.provider?.removeSignInProvider) {
+      this.provider.removeSignInProvider();
+    }
+  }
+
   private handleChainChanged(chainId: string): void {
     this.emitUpdate({ chainId });
   }

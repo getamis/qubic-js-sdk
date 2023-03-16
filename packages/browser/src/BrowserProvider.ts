@@ -22,6 +22,7 @@ export class BrowserProvider extends BaseProvider {
   // for react-web3, when activate success, call provider.hide()
   public hide: () => void;
   public setSignInProvider: (value: SignInProvider) => void;
+  public removeSignInProvider: () => void;
   constructor(options?: BrowserProviderOptions) {
     const {
       apiKey,
@@ -49,9 +50,12 @@ export class BrowserProvider extends BaseProvider {
       bridge,
       createPrepareBridgeMiddleware,
       setSignInProvider: originSetSignInProvider,
+      removeSignInProvider: originRemoveSignInProvider,
     } = enableIframe
       ? new IFrame(walletUrl, apiConfig, disableFastSignup)
       : new PopupWindow(walletUrl, apiConfig, disableFastSignup);
+
+    showBlockerWhenIab();
 
     super({
       infuraProjectId,
@@ -61,6 +65,7 @@ export class BrowserProvider extends BaseProvider {
     });
 
     this.setSignInProvider = originSetSignInProvider;
+    this.removeSignInProvider = originRemoveSignInProvider;
 
     if (isInitialized) {
       throw Error(`You can only new BrowserProvider() one time`);
