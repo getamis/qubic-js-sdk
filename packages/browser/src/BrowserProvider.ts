@@ -41,10 +41,6 @@ export class BrowserProvider extends BaseProvider {
       chainId,
     };
 
-    if (!disableIabWarning) {
-      showBlockerWhenIab();
-    }
-
     const {
       hide,
       bridge,
@@ -55,7 +51,9 @@ export class BrowserProvider extends BaseProvider {
       ? new IFrame(walletUrl, apiConfig, disableFastSignup)
       : new PopupWindow(walletUrl, apiConfig, disableFastSignup);
 
-    showBlockerWhenIab();
+    if (!disableIabWarning) {
+      showBlockerWhenIab();
+    }
 
     super({
       infuraProjectId,
