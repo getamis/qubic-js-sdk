@@ -1411,10 +1411,10 @@
   dependencies:
     "@octokit/openapi-types" "^11.2.0"
 
-"@qubic-connect/detect-iab@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@qubic-connect/detect-iab/-/detect-iab-0.7.0.tgz#a8e17f14b206093d4d6e605be9723a2da7bd47be"
-  integrity sha512-sWxFw4qTIIE/RDpg8/FCxsPyU/nxQTxuHaIO/D2ZTpadZwa2/qVgN0RYU6lcvYGSOskh0aKb3pJId7Zf9MRCQA==
+"@qubic-connect/detect-iab@^0.7.5":
+  version "0.7.5"
+  resolved "https://registry.yarnpkg.com/@qubic-connect/detect-iab/-/detect-iab-0.7.5.tgz#e42c9c762451c37b0041c747ec5d1d563840b1eb"
+  integrity sha512-MfP/7MyV5ALl/R49NnsUwyTyBWnOddEPg6q1Pg8l1qQqkFyphcFOPrqE2MgCOEjLFDj/pkN0gj7ujId5yo68Cw==
   dependencies:
     "@ethersproject/providers" "^5.6.8"
     "@qubic-js/detect-inapp" "^1.4.1"

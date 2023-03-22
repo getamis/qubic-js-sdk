@@ -13,6 +13,7 @@ export interface QubicConnectorOptions {
   signInProvider?: SignInProvider;
   disableFastSignup?: boolean;
   disableIabWarning?: boolean;
+  disableOpenExternalBrowserWhenLineIab?: boolean;
   /** hide welcome screen after sign in success */
   autoHideWelcome?: boolean;
 }
@@ -87,6 +88,7 @@ export default class QubicConnector extends AbstractConnector {
         enableIframe,
         disableFastSignup,
         disableIabWarning,
+        disableOpenExternalBrowserWhenLineIab,
       } = this.options;
 
       let chainId = optionChainId;
@@ -104,6 +106,7 @@ export default class QubicConnector extends AbstractConnector {
         enableIframe,
         disableFastSignup,
         disableIabWarning,
+        disableOpenExternalBrowserWhenLineIab,
       });
       return this.provider;
     } catch (error) {
