@@ -65,6 +65,9 @@ const options {
 
    // optional, default: false, when value is true will not show in app browser warning
   disableIabWarning: true
+
+  // optional, default: false, when value is true will not auto open external browser in line iab
+  disableOpenExternalBrowserWhenLineIab
 }
 ```
 

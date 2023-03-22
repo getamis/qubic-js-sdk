@@ -1,5 +1,5 @@
 import { ApiConfig, BaseProvider, Network, WALLET_URL, SignInProvider } from '@qubic-js/core';
-import { showBlockerWhenIab } from '@qubic-connect/detect-iab';
+import { openExternalBrowserWhenLineIab, showBlockerWhenIab } from '@qubic-connect/detect-iab';
 
 import createCacheMiddleware from './middlewares/cacheMiddleware';
 import IFrame from './middlewares/IFrame';
@@ -14,6 +14,7 @@ export interface BrowserProviderOptions {
   enableIframe?: boolean;
   disableFastSignup?: boolean;
   disableIabWarning?: boolean;
+  disableOpenExternalBrowserWhenLineIab?: boolean;
 }
 
 let isInitialized = false;
@@ -33,6 +34,7 @@ export class BrowserProvider extends BaseProvider {
       walletUrl = WALLET_URL,
       disableFastSignup,
       disableIabWarning = false,
+      disableOpenExternalBrowserWhenLineIab = false,
     } = options || {};
 
     const apiConfig: ApiConfig = {
@@ -51,6 +53,9 @@ export class BrowserProvider extends BaseProvider {
       ? new IFrame(walletUrl, apiConfig, disableFastSignup)
       : new PopupWindow(walletUrl, apiConfig, disableFastSignup);
 
+    if (!disableOpenExternalBrowserWhenLineIab) {
+      openExternalBrowserWhenLineIab();
+    }
     if (!disableIabWarning) {
       showBlockerWhenIab();
     }
