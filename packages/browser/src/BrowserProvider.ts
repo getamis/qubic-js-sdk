@@ -12,6 +12,8 @@ export interface BrowserProviderOptions {
   infuraProjectId?: string;
   walletUrl?: string; // optional, it not provided use production wallet url
   enableIframe?: boolean;
+  iabRedirectUrl?: string; // optional, it not provided use window.location.href
+  shouldAlwaysShowCopyUI?: boolean; // optional, it not provided use false
   disableFastSignup?: boolean;
   disableIabWarning?: boolean;
   disableOpenExternalBrowserWhenLineIab?: boolean;
@@ -32,6 +34,8 @@ export class BrowserProvider extends BaseProvider {
       infuraProjectId,
       enableIframe = false,
       walletUrl = WALLET_URL,
+      iabRedirectUrl,
+      shouldAlwaysShowCopyUI,
       disableFastSignup,
       disableIabWarning = false,
       disableOpenExternalBrowserWhenLineIab = false,
@@ -57,7 +61,10 @@ export class BrowserProvider extends BaseProvider {
       openExternalBrowserWhenLineIab();
     }
     if (!disableIabWarning) {
-      showBlockerWhenIab();
+      showBlockerWhenIab({
+        redirectUrl: iabRedirectUrl,
+        shouldAlwaysShowCopyUI,
+      });
     }
 
     super({
