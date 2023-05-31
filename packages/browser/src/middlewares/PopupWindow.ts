@@ -14,6 +14,7 @@ import BrowserBridge from '../utils/BrowserBridge';
 import Modal from '../ui/Modal';
 
 const DETECT_IF_POPUP_WINDOW_CLOSED_INTERVAL_MS = 500;
+const WAITING_FOR_WALLET_TIMEOUT_LIMIT_MIN = 5;
 
 class PopupWindow implements Messenger {
   public bridge: BrowserBridge;
@@ -31,7 +32,6 @@ class PopupWindow implements Messenger {
     this.walletUrl = walletUrl;
     this.apiConfig = apiConfig;
     this.disableFastSignup = disableFastSignup;
-
     this.newWindowReminderModal = new Modal({
       description: t('popup-window-hint'),
       cancelText: t('no'),
@@ -136,6 +136,9 @@ class PopupWindow implements Messenger {
     }
   };
 
+  private successHandler?: () => void;
+  private cancelHandler?: () => void;
+
   private waitUntilReady = (): Promise<void> => {
     const { bridge, proxy, isReady, show } = this;
     return new Promise((resolve, reject) => {
@@ -144,13 +147,29 @@ class PopupWindow implements Messenger {
         return;
       }
 
-      bridge.once(BridgeEvent.ready, resolve);
-      show({
-        onReminderModalCancel: () => {
-          bridge.removeListener(BridgeEvent.ready, resolve);
-          reject();
-        },
-      });
+      this.successHandler = () => {
+        if (!this?.cancelHandler) return;
+        bridge.removeListener(BridgeEvent.hide, this?.cancelHandler as any);
+        resolve();
+      };
+
+      this.cancelHandler = () => {
+        if (!this?.successHandler) return;
+        bridge.removeListener(BridgeEvent.ready, this?.successHandler as any);
+        reject();
+      };
+
+      bridge.once(BridgeEvent.ready, this.successHandler);
+      bridge.once(BridgeEvent.hide, this.cancelHandler);
+      show({ onReminderModalCancel: this.cancelHandler });
+
+      const timeout = setTimeout(() => {
+        if (!this?.cancelHandler || !this.successHandler) return;
+        bridge.removeListener(BridgeEvent.hide, this.cancelHandler);
+        bridge.removeListener(BridgeEvent.ready, this.successHandler);
+        reject();
+        clearTimeout(timeout);
+      }, 1000 * 60 * WAITING_FOR_WALLET_TIMEOUT_LIMIT_MIN);
     });
   };
 
