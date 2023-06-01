@@ -138,6 +138,7 @@ class PopupWindow implements Messenger {
 
   private successHandler?: () => void;
   private cancelHandler?: () => void;
+  private waitUntilReadyTimeout?: NodeJS.Timeout;
 
   private waitUntilReady = (): Promise<void> => {
     const { bridge, proxy, isReady, show } = this;
@@ -149,13 +150,13 @@ class PopupWindow implements Messenger {
 
       this.successHandler = () => {
         if (!this?.cancelHandler) return;
-        bridge.removeListener(BridgeEvent.hide, this?.cancelHandler as any);
+        bridge.removeListener(BridgeEvent.hide, this.cancelHandler);
         resolve();
       };
 
       this.cancelHandler = () => {
         if (!this?.successHandler) return;
-        bridge.removeListener(BridgeEvent.ready, this?.successHandler as any);
+        bridge.removeListener(BridgeEvent.ready, this.successHandler);
         reject();
       };
 
@@ -163,12 +164,13 @@ class PopupWindow implements Messenger {
       bridge.once(BridgeEvent.hide, this.cancelHandler);
       show({ onReminderModalCancel: this.cancelHandler });
 
-      const timeout = setTimeout(() => {
+      if (this.waitUntilReadyTimeout) clearTimeout(this.waitUntilReadyTimeout);
+      this.waitUntilReadyTimeout = setTimeout(() => {
         if (!this?.cancelHandler || !this.successHandler) return;
         bridge.removeListener(BridgeEvent.hide, this.cancelHandler);
         bridge.removeListener(BridgeEvent.ready, this.successHandler);
         reject();
-        clearTimeout(timeout);
+        if (this.waitUntilReadyTimeout) clearTimeout(this.waitUntilReadyTimeout);
       }, 1000 * 60 * WAITING_FOR_WALLET_TIMEOUT_LIMIT_MIN);
     });
   };
