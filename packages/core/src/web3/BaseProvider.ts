@@ -6,7 +6,7 @@ import { DEFAULT_INFURA_PROJECT_ID } from '../constants/network';
 
 import { createMultiInfuraMiddleware } from '../middlewares/multiJsonRpcServerMiddleware';
 import { createWalletMiddleware } from '../middlewares/walletMiddleware';
-import { Bridge, Request, SendAsync, Network, BridgeEvent } from '../types';
+import { Bridge, Network, BridgeEvent, RequestArguments } from '../types';
 
 interface BaseProviderOptions {
   infuraProjectId?: string;
@@ -23,6 +23,8 @@ export class BaseProvider extends EventEmitter {
     return (rpc as JsonRpcSuccess<T>).result !== undefined;
   }
 
+  private prevChainId?: string;
+  private prevAccounts?: string[];
   constructor(options: BaseProviderOptions) {
     super();
     const { bridge, middlewares, network, infuraProjectId } = options;
@@ -43,14 +45,23 @@ export class BaseProvider extends EventEmitter {
     );
 
     bridge.on(BridgeEvent.chainChanged, (chainId: string) => {
-      this.emit(BridgeEvent.chainChanged, chainId);
+      if (!this.prevChainId || this.prevChainId !== chainId) {
+        this.prevChainId = chainId;
+        this.emit(BridgeEvent.chainChanged, chainId);
+      }
     });
     bridge.on(BridgeEvent.accountsChanged, (accounts: Array<string>) => {
-      this.emit(BridgeEvent.accountsChanged, accounts);
+      if (!this.prevAccounts || this.prevAccounts.join() !== accounts.join()) {
+        this.prevAccounts = accounts;
+        this.emit(BridgeEvent.accountsChanged, accounts);
+      }
     });
   }
 
-  public sendAsync: SendAsync = (request, callback): void => {
+  public sendAsync = <T = unknown>(
+    request: RequestArguments,
+    callback: (error: unknown, response?: JsonRpcResponse<T>) => void,
+  ): void => {
     if (this.engine) {
       this.engine.handle(
         {
@@ -66,9 +77,9 @@ export class BaseProvider extends EventEmitter {
     }
   };
 
-  public request: Request = request => {
-    return new Promise((resolve, reject) => {
-      this.sendAsync(request, (error, response) => {
+  public request = <T = unknown>(request: RequestArguments): Promise<T> => {
+    return new Promise<T>((resolve, reject) => {
+      this.sendAsync<T>(request, (error, response) => {
         if (error) {
           reject(error);
           return;
@@ -77,7 +88,8 @@ export class BaseProvider extends EventEmitter {
           reject(ethErrors.provider.unauthorized());
           return;
         }
-        resolve(response.result);
+
+        resolve(response.result as T);
       });
     });
   };

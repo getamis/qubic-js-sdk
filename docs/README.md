@@ -71,40 +71,77 @@ const options {
 }
 ```
 
-#### React
+#### Web3 React
 
-```javascript
-import Web3 from 'web3';
-import { SignInProvider } from '@qubic-js/core';
-import QubicConnector from '@qubic-js/react';
-import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
-import options from './options'
+qubicWalletConnector.tsx
+
+```tsx
+import { initializeConnector } from '@web3-react/core';
+import QubicWalletConnector from '@qubic-js/react';
 
 // please check Connector and Provider Options section
 // You should only new only once in your application
-const qubicConnector = new QubicConnector(options);
+const qubicWalletConnector = initializeConnector<QubicWalletConnector>(
+  actions =>
+    new QubicWalletConnector({
+      actions,
+      options: {
+        chainId,
+        infuraProjectId: INFURA_PROJECT_ID,
+        autoHideWelcome,
+        enableIframe,
+      },
+    }),
+);
 
-export default () => {
-  const context = useWeb3React<Web3>();
-  const { account, chainId, activate, library: web3 } = context;
+export default qubicWalletConnector;
+```
+
+App.tsx
+
+```tsx
+import Main from './Main.tsx';
+import qubicWalletConnector from './qubicWalletConnector';
+import { Web3ReactProvider } from '@web3-react/core';
+
+export default function App() {
+  return (
+    <Web3ReactProvider connectors={[qubicWalletConnector]}>
+      <Main />
+    </Web3ReactProvider>
+  );
+}
+```
+
+Main.tsx
+
+```tsx
+import { SignInProvider } from '@qubic-js/core';
+import { useWeb3React } from '@web3-react/core';
+import qubicWalletConnector from './qubicWalletConnector';
+
+import options from './options';
+
+export default function Main() {
+  const { hooks } = useWeb3React();
+  const { usePriorityAccounts, usePriorityProvider, usePriorityChainId } = hooks;
 
   const handleSignIn = useCallback(async () => {
-    activate(qubicConnector, (e: Error): void => {
+    qubicWalletConnector.activate(qubicConnector, (e: Error): void => {
       console.error(e);
     });
   }, [activate]);
 
   const handleGoogleSignIn = useCallback(async () => {
     // will sign in Qubic wallet with Google
-    qubicConnector.setSignInProvider(SignInProvider.GOOGLE);
-    activate(qubicConnector, (e: Error): void => {
+    qubicWalletConnector.setSignInProvider(SignInProvider.GOOGLE);
+    qubicWalletConnector.activate(qubicConnector, (e: Error): void => {
       console.error(e);
     });
   }, [activate]);
 
-
   return (
-    <Web3ReactProvider getLibrary={library}>
+    <Web3ReactProvider connectors={library}>
       <button onClick={handleSignIn}>Qubic Wallet</button>
       <button onClick={handleSignIn}>Qubic Wallet - Google </button>
     </Web3ReactProvider>
@@ -115,7 +152,7 @@ export default () => {
 #### Javascript
 
 ```javascript
-import ethers from 'ethers';
+import { ethers } from 'ethers';
 import QubicProvider from '@qubic-js/browser';
 import options from './options';
 

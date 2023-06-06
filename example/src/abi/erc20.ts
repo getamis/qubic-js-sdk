@@ -1,5 +1,5 @@
-import { AbiItem } from 'web3-utils';
-export const ERC20_ABI = [
+import { ContractInterface } from 'ethers';
+export const ERC20_ABI: ContractInterface = [
   {
     constant: true,
     inputs: [],
@@ -220,4 +220,4 @@ export const ERC20_ABI = [
     name: 'Transfer',
     type: 'event',
   },
-] as AbiItem[];
+];
