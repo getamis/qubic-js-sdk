@@ -12,7 +12,7 @@
   "scripts": {
     "prepublishOnly": "cp ../../README.md .",
     "postpublish": "rm README.md",
-    "build": "genversion src/utils/version.js && tsc -p tsconfig.build.json"
+    "build": "genversion --semi src/utils/version.js && tsc -p tsconfig.build.json && git diff --quiet src/utils/version.js || git commit src/utils/version.js -m \"Updated version\""
   },
   "dependencies": {
     "@qubic-js/eth-json-rpc-infura": "^5.1.3",
