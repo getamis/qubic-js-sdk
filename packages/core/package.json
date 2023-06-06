@@ -1,6 +1,6 @@
 {
   "name": "@qubic-js/core",
-  "version": "1.10.0",
+  "version": "1.10.1-alpha.0",
   "description": "",
   "license": "Apache License 2.0",
   "source": "./src/index.ts",
@@ -12,7 +12,8 @@
   "scripts": {
     "prepublishOnly": "cp ../../README.md .",
     "postpublish": "rm README.md",
-    "build": "genversion --semi src/utils/version.js && tsc -p tsconfig.build.json && git diff --quiet src/utils/version.js || git commit src/utils/version.js -m \"Updated version\""
+    "version": "genversion --semi src/utils/version.js && git diff --quiet src/utils/version.js || git add src/utils/version.js",
+    "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "@qubic-js/eth-json-rpc-infura": "^5.1.3",
