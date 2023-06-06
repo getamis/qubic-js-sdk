@@ -1,5 +1,5 @@
-import { AbiItem } from 'web3-utils';
-export const ERC721_ABI = [
+import { ContractInterface } from 'ethers';
+export const ERC721_ABI: ContractInterface = [
   {
     inputs: [
       { internalType: 'string', name: '_name', type: 'string' },
@@ -460,4 +460,4 @@ export const ERC721_ABI = [
     stateMutability: 'payable',
     type: 'function',
   },
-] as AbiItem[];
+];

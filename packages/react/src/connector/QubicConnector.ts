@@ -1,7 +1,7 @@
-import BrowserProvider from '@qubic-js/browser';
-import { ConnectorUpdate } from '@web3-react/types';
-import { AbstractConnector } from '@web3-react/abstract-connector';
+import QubicProvider from '@qubic-js/browser';
 import { Network, SignInProvider } from '@qubic-js/core';
+import type { Actions, ProviderConnectInfo, ProviderRpcError } from '@web3-react/types';
+import { Connector } from '@web3-react/types';
 
 export interface QubicConnectorOptions {
   apiKey?: string;
@@ -18,32 +18,151 @@ export interface QubicConnectorOptions {
   autoHideWelcome?: boolean;
 }
 
+function parseChainId(chainId: string | number) {
+  return typeof chainId === 'number' ? chainId : Number.parseInt(chainId, chainId.startsWith('0x') ? 16 : 10);
+}
+
+export interface QubicConstructorArgs {
+  actions: Actions;
+  options: QubicConnectorOptions;
+  onError?: (error: Error) => void;
+}
+
 let isInitialized = false;
 
-export default class QubicConnector extends AbstractConnector {
-  private provider?: BrowserProvider;
-  private options: QubicConnectorOptions;
+export default class QubicWalletConnector extends Connector {
+  public provider: QubicProvider | undefined;
 
-  constructor(options?: QubicConnectorOptions) {
-    super({
-      supportedChainIds: [
-        Network.MAINNET,
-        Network.GOERLI,
-        Network.POLYGON,
-        Network.MUMBAI,
-        Network.BSC,
-        Network.BSC_TESTNET,
-      ],
-    });
+  private readonly options: QubicConnectorOptions;
+  private connected = false;
+  private eagerConnection?: Promise<void>;
+  private supportedChainIds = [
+    Network.MAINNET,
+    Network.GOERLI,
+    Network.POLYGON,
+    Network.MUMBAI,
+    Network.BSC,
+    Network.BSC_TESTNET,
+  ];
+
+  constructor({ actions, options, onError }: QubicConstructorArgs) {
+    super(actions, onError);
+    this.options = options;
+
     if (isInitialized) {
       throw Error(`You can only new QubicConnector() one time`);
     }
     isInitialized = true;
-    this.options = options || {};
+  }
 
-    this.handleChainChanged = this.handleChainChanged.bind(this);
-    this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
-    this.getProvider();
+  private async isomorphicInitialize(): Promise<void> {
+    if (this.eagerConnection) return;
+
+    await (this.eagerConnection = import('@qubic-js/browser').then(m => {
+      const {
+        apiKey,
+        apiSecret,
+        chainId: optionChainId = Network.MAINNET,
+        walletUrl,
+        infuraProjectId,
+        enableIframe,
+        disableFastSignup,
+        disableIabWarning,
+        disableOpenExternalBrowserWhenLineIab,
+      } = this.options;
+
+      let initChainId = optionChainId;
+      if (!this.supportedChainIds?.includes(optionChainId)) {
+        console.error(`chainId: ${optionChainId} does not supported, use mainnet instead`);
+        initChainId = Network.MAINNET;
+      }
+
+      // eslint-disable-next-line new-cap
+      this.provider = new m.default({
+        apiKey,
+        apiSecret,
+        chainId: initChainId,
+        walletUrl,
+        infuraProjectId,
+        enableIframe,
+        disableFastSignup,
+        disableIabWarning,
+        disableOpenExternalBrowserWhenLineIab,
+      });
+
+      this.connected = true;
+
+      this.provider.on('connect', ({ chainId }: ProviderConnectInfo): void => {
+        this.actions.update({ chainId: parseChainId(chainId) });
+      });
+
+      this.provider.on('disconnect', (error: ProviderRpcError): void => {
+        this.actions.resetState();
+        this.onError?.(error);
+      });
+
+      this.provider.on('chainChanged', (chainId: string): void => {
+        this.actions.update({ chainId: parseChainId(chainId) });
+      });
+
+      this.provider.on('accountsChanged', (accounts: string[]): void => {
+        if (accounts.length === 0) {
+          // handle this edge case by disconnecting
+          this.actions.resetState();
+        } else {
+          this.actions.update({ accounts });
+        }
+      });
+    }));
+  }
+
+  public async connectEagerly(): Promise<void> {
+    const cancelActivation = this.actions.startActivation();
+
+    try {
+      await this.isomorphicInitialize();
+
+      if (!this.provider || !this.connected) throw new Error('No existing connection');
+
+      // Wallets may resolve eth_chainId and hang on eth_accounts pending user interaction, which may include changing
+      // chains; they should be requested serially, with accounts first, so that the chainId can settle.
+      const accounts = await this.provider.request<string[]>({ method: 'eth_accounts' });
+      if (!accounts.length) throw new Error('No accounts returned');
+      const chainId = await this.provider.request<string>({ method: 'eth_chainId' });
+      this.actions.update({ chainId: parseChainId(chainId), accounts });
+    } catch (error) {
+      cancelActivation();
+      throw error;
+    }
+  }
+
+  public async activate(): Promise<void> {
+    const cancelActivation = this.actions.startActivation();
+
+    try {
+      await this.isomorphicInitialize();
+      if (!this.provider) throw new Error('No provider');
+
+      await this.provider?.request?.({
+        method: 'eth_requestAccounts',
+      });
+
+      await this.provider?.request?.({
+        method: 'eth_chainId',
+      });
+      if (this.options?.autoHideWelcome) {
+        this.provider?.hide();
+      }
+    } catch (error) {
+      cancelActivation();
+      throw error;
+    }
+  }
+
+  public deactivate(): void {
+    this.connected = false;
+    this.provider?.hide();
+    this.actions.resetState();
   }
 
   public setSignInProvider(value: SignInProvider): void {
@@ -59,118 +178,4 @@ export default class QubicConnector extends AbstractConnector {
       this.provider.removeSignInProvider();
     }
   }
-
-  private handleChainChanged(chainId: string): void {
-    this.emitUpdate({ chainId });
-  }
-
-  private handleAccountsChanged(accounts: string[]): void {
-    if (accounts && accounts.length !== 0) {
-      this.emitUpdate({ account: accounts[0] });
-    }
-  }
-
-  public getProvider = async (): Promise<BrowserProvider | null> => {
-    if (this.provider) {
-      return this.provider;
-    }
-
-    try {
-      // we don't want next.js run browser js code in server side rendering
-      // so we use dynamic import here
-      const { default: DynamicImportBrowserProvider } = await import('@qubic-js/browser');
-      const {
-        apiKey,
-        apiSecret,
-        chainId: optionChainId = Network.MAINNET,
-        walletUrl,
-        infuraProjectId,
-        enableIframe,
-        disableFastSignup,
-        disableIabWarning,
-        disableOpenExternalBrowserWhenLineIab,
-      } = this.options;
-
-      let chainId = optionChainId;
-      if (!this.supportedChainIds?.includes(optionChainId)) {
-        console.error(`chainId: ${optionChainId} does not supported, use mainnet instead`);
-        chainId = Network.MAINNET;
-      }
-
-      this.provider = new DynamicImportBrowserProvider({
-        apiKey,
-        apiSecret,
-        chainId,
-        walletUrl,
-        infuraProjectId,
-        enableIframe,
-        disableFastSignup,
-        disableIabWarning,
-        disableOpenExternalBrowserWhenLineIab,
-      });
-      return this.provider;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      }
-      return null;
-    }
-  };
-
-  public activate = async (): Promise<ConnectorUpdate> => {
-    const { provider } = this;
-
-    const accounts = (await provider?.request?.({
-      method: 'eth_requestAccounts',
-    })) as string[];
-
-    const chainId = (await provider?.request?.({
-      method: 'eth_chainId',
-    })) as string;
-
-    provider?.on('chainChanged', this.handleChainChanged);
-    provider?.on('accountsChanged', this.handleAccountsChanged);
-    if (this.options?.autoHideWelcome) {
-      provider?.hide();
-    }
-    return { provider, chainId: Number(chainId), account: accounts[0] };
-  };
-
-  public getChainId = async (): Promise<number | string> => {
-    const { provider } = this;
-
-    const chainId = (await provider?.request?.({
-      method: 'eth_chainId',
-    })) as string;
-    return chainId;
-  };
-
-  public async getAccount(): Promise<null | string> {
-    const { provider } = this;
-
-    const accounts = (await provider?.request?.({
-      method: 'eth_accounts',
-    })) as string[];
-
-    return accounts[0];
-  }
-
-  // https://github.com/NoahZinsmeister/web3-react/blob/v6/packages/portis-connector/src/index.ts#L109
-  // DONT'T call `this.emitDeactivate` in deactivate
-  public deactivate = (): void => {
-    const { provider } = this;
-
-    provider?.removeListener('chainChanged', this.handleChainChanged);
-    provider?.removeListener('accountsChanged', this.handleAccountsChanged);
-  };
-
-  // https://github.com/NoahZinsmeister/web3-react/blob/v6/packages/portis-connector/src/index.ts#L126
-  // call `this.emitDeactivate` in close
-  public close = (): void => {
-    const { provider } = this;
-
-    this.emitDeactivate();
-    provider?.removeListener('chainChanged', this.handleChainChanged);
-    provider?.removeListener('accountsChanged', this.handleAccountsChanged);
-  };
 }

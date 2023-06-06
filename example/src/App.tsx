@@ -1,40 +1,39 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
-import Web3 from 'web3';
-import Web3Utils, { toChecksumAddress } from 'web3-utils';
-import { AbstractProvider, TransactionReceipt } from 'web3-core';
 import { useWeb3React } from '@web3-react/core';
-// eslint-disable-next-line camelcase
-import { recoverPersonalSignature, recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
-import { QubicConnector } from '@qubic-js/react';
-import { SignInProvider } from '@qubic-js/core';
-import qs from 'query-string';
+import { ethers, BigNumber, ContractReceipt } from 'ethers';
+import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { v4 as uuidv4 } from 'uuid';
+import { Network, SignInProvider } from '@qubic-js/core';
 
 import { ERC20_ABI, ERC721_ABI } from './abi';
-import { Network } from '@qubic-js/core';
+import wrappedConnectors from './wrappedConnectors';
+import { enableIframe } from './queryParams';
+import QubicWalletConnector from '@qubic-js/react';
 
-const { REACT_APP_INFURA_NETWORK_KEY } = process.env as any;
+const qubicWalletConnector = wrappedConnectors.qubic[0] as QubicWalletConnector;
 
-const INFURA_PROJECT_ID = REACT_APP_INFURA_NETWORK_KEY;
-
-const parsed = qs.parse(window.location.search);
-
-const enableIframe = parsed.enableIframe === 'true';
-
-const qubicConnector = new QubicConnector({
-  chainId: Number(parsed.chainId) || 1,
-  infuraProjectId: INFURA_PROJECT_ID,
-  autoHideWelcome: parsed.autoHideWelcome === 'true' || false,
-  enableIframe,
-});
+function compareAddressAndLog(recoveredAddress: string, signerAddress: string): void {
+  if (ethers.utils.getAddress(recoveredAddress) === ethers.utils.getAddress(signerAddress)) {
+    console.log(`Successfully verified signer as ${recoveredAddress}`);
+  } else {
+    console.log(`Failed to verify signer when comparing ${recoveredAddress} to ${signerAddress}`);
+  }
+}
 
 function App() {
-  const context = useWeb3React<Web3>();
-  const { account, activate, deactivate, library: web3, chainId } = context;
+  const { hooks } = useWeb3React();
   const [enableSignMsgAfterActivate, setEnableSignMsgAfterActivate] = useState(false);
   const [address, setAddress] = useState<string>('');
   const [network, setNetwork] = useState('');
+
+  const { usePriorityAccounts, usePriorityProvider, usePriorityChainId } = hooks;
+
+  const account = usePriorityAccounts()?.[0];
+  const chainId = usePriorityChainId();
+  const web3Provider = usePriorityProvider();
+
+  const currentProvider = useMemo(() => web3Provider?.provider, [web3Provider?.provider]);
 
   useEffect(() => {
     console.log('network', chainId);
@@ -47,7 +46,6 @@ function App() {
   }, [account]);
 
   useEffect(() => {
-    const currentProvider = web3?.currentProvider as AbstractProvider | undefined;
     if (!currentProvider) return;
     const onAccountsChanged = (accounts: string[]) => {
       console.log('accountsChanged', accounts);
@@ -56,19 +54,15 @@ function App() {
     return () => {
       (currentProvider as any).off('accountsChanged', onAccountsChanged);
     };
-  }, [web3]);
+  }, [currentProvider]);
 
   useEffect(() => {
-    const currentProvider = web3?.currentProvider as AbstractProvider | undefined;
-
     if (enableSignMsgAfterActivate && address && currentProvider?.request) {
       setEnableSignMsgAfterActivate(false);
 
       const from = address;
-
       currentProvider
         .request({
-          jsonrpc: '2.0',
           method: 'qubic_login',
           params: [
             from,
@@ -92,135 +86,106 @@ function App() {
         })
         .catch(console.error);
     }
-  }, [address, enableSignMsgAfterActivate, web3?.currentProvider]);
+  }, [address, currentProvider, enableSignMsgAfterActivate]);
 
   const handleSignInUp = useCallback(() => {
-    qubicConnector.removeSignInProvider();
+    qubicWalletConnector.removeSignInProvider();
 
-    activate(qubicConnector, (e: Error): void => {
+    qubicWalletConnector.activate().catch(e => {
       console.error(e);
     });
-  }, [activate]);
+  }, []);
 
   const bindSignInUpWithSignInProvider = useCallback(
     (signInProvider: SignInProvider) => () => {
-      qubicConnector.setSignInProvider(signInProvider);
-      activate(qubicConnector, (e: Error): void => {
+      qubicWalletConnector.setSignInProvider(signInProvider);
+      qubicWalletConnector.activate().catch(e => {
         console.error(e);
       });
     },
-    [activate],
+    [],
   );
 
-  const handleSignInUpAndSignMessage = useCallback(async () => {
+  const handleSignInUpAndSignMessage = useCallback(() => {
     setEnableSignMsgAfterActivate(true);
-    await activate(qubicConnector, (e: Error): void => {
+    qubicWalletConnector.activate().catch(e => {
       console.error(e);
     });
-  }, [activate]);
+  }, []);
 
   const handleDisconnect = useCallback(() => {
-    deactivate();
-  }, [deactivate]);
+    qubicWalletConnector.deactivate();
+  }, []);
 
-  const handleEstimateGas = useCallback(() => {
-    web3?.eth.estimateGas(
-      {
-        from: '0x6c8d905b6480D32fF2E7A46B3325a6dE912a553b',
-        to: '0xd46e8dd67c5d32be8058bb8eb970870f07244567',
-        gas: '0x76c0',
-        gasPrice: '0x9184e72a000',
-        value: '0x9184e72a',
-        data: '0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675',
-      },
-      (_, gas) => {
-        console.log(`gas=${gas}`);
-      },
-    );
-  }, [web3?.eth]);
+  const handleEstimateGas = useCallback(async () => {
+    if (!web3Provider) throw Error('no web3Provider');
+    const gas = await web3Provider.estimateGas({
+      from: account,
+      to: '0xd46e8dd67c5d32be8058bb8eb970870f07244567',
+      gasPrice: '0x9184e72a000',
+      value: '0x9184e72a',
+      data: '0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675',
+    });
+
+    console.log(`gas=${gas.toString()}`);
+  }, [account, web3Provider]);
 
   const handleSend = useCallback(async () => {
+    if (!web3Provider) throw Error('no web3Provider');
+    if (!account) throw Error('no account');
     const tx = {
       // this could be provider.addresses[0] if it exists
-      from: account || '',
+      from: account,
       // target address, this could be a smart contract address
       to: '0xdd2c45b296C218779783c9AAF9f876391FA9aF53',
       // optional if you want to specify the gas limit
       gasLimit: 21000,
       // optional if you are invoking say a payable function
-      value: Web3Utils.toWei('0.0001'),
+      value: ethers.utils.parseUnits('0.0001'),
     };
 
-    web3?.eth
-      .sendTransaction(tx, (sendError, hash) => {
-        if (sendError) console.error(sendError);
-        else console.log('tx hash:', hash);
-      })
-      .once('transactionHash', hash => {
-        console.log('transactionHash:', hash);
-      })
-      .on('confirmation', (confirmationNumber, receipt) => {
-        console.log('confirmation:', confirmationNumber, receipt);
-      })
-      .then(receipt => {
-        console.log('receipt:', receipt);
-      })
-      .catch(() => {
-        // if you use then, than you have to use catch
-        // already handle in sendTransaction(tx, (error, hash)
-      });
-  }, [account, web3]);
+    const response = await web3Provider.getSigner().sendTransaction(tx);
+    console.log(response);
+  }, [account, web3Provider]);
 
   const handleGetERC20 = useCallback(async () => {
+    if (!web3Provider) throw Error('no web3Provider');
+    if (!account) throw Error('no account');
     const tx = {
       // this could be provider.addresses[0] if it exists
-      from: account || '',
+      from: account,
       to: '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c', // Xeenus
       // optional if you want to specify the gas limit
       gas: 60000,
       // optional if you are invoking say a payable function
-      value: web3?.utils.toWei('0'),
+      value: '0',
       // call fallback
       data: '0xdeadbeef',
     };
 
-    web3?.eth
-      .sendTransaction(tx, (getERCError, hash) => {
-        if (getERCError) console.error(getERCError);
-        else console.log('tx hash:', hash);
-      })
-      .once('transactionHash', hash => {
-        console.log('transactionHash:', hash);
-      })
-      .once('confirmation', (confirmationNumber, receipt) => {
-        console.log('confirmation:', confirmationNumber, receipt);
-      })
-      .then(receipt => {
-        console.log('receipt:', receipt);
-      })
-      .catch(() => {
-        // if you use then, than you have to use catch
-        // already handle in sendTransaction(tx, (error, hash)
-      });
-  }, [account, web3]);
+    const response = await web3Provider.getSigner().sendTransaction(tx);
+
+    console.log(response);
+  }, [account, web3Provider]);
 
   const handleSendERC20 = useCallback(async () => {
-    if (!web3) return;
-
+    if (!web3Provider) throw Error('no web3Provider');
+    if (!account) throw Error('no account');
     const contractAddress = '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c'; // Xeenus
-    const xeenusContract = new web3.eth.Contract(ERC20_ABI, contractAddress);
+
+    const xeenusContract = new ethers.Contract(contractAddress, ERC20_ABI, web3Provider);
 
     const toAddress = '0xdd2c45b296C218779783c9AAF9f876391FA9aF53';
     // Calculate contract compatible value for approve with proper decimal points using BigNumber
-    const tokenDecimals = Web3Utils.toBN(18);
-    const tokenAmountToApprove = Web3Utils.toBN(10);
-    const amount = Web3Utils.toHex(tokenAmountToApprove.mul(Web3Utils.toBN(10).pow(tokenDecimals)));
+    const tokenDecimals = BigNumber.from(18);
+    const tokenAmountToApprove = BigNumber.from(10);
+    const amount = tokenAmountToApprove.mul(BigNumber.from(10).pow(tokenDecimals)).toHexString();
 
     // call transfer function
     xeenusContract.methods
       .transfer(toAddress, amount)
       .send({
-        from: account || '', // default from address
+        from: account, // default from address
         value: 0,
         gas: 100000,
       })
@@ -230,23 +195,24 @@ function App() {
       .once('transactionHash', (hash: string) => {
         console.log(hash);
       })
-      .once('receipt', (receipt: TransactionReceipt) => {
+      .once('receipt', (receipt: ContractReceipt) => {
         console.log(receipt);
       });
-  }, [account, web3]);
+  }, [account, web3Provider]);
 
   const handleApproveERC20 = useCallback(async () => {
-    if (!web3) return;
+    if (!web3Provider) throw Error('no web3Provider');
+    if (!account) throw Error('no account');
     const spender = '0x7a250d5630b4cf539739df2c5dacb4c659f2488d'; // spender: dapp uniswap smart contract address
-    const tokenDecimals = Web3Utils.toBN(18);
-    const tokenAmountToApprove = Web3Utils.toBN(1);
-    const amount = Web3Utils.toHex(tokenAmountToApprove.mul(Web3Utils.toBN(10).pow(tokenDecimals)));
+    const tokenDecimals = BigNumber.from(18);
+    const tokenAmountToApprove = BigNumber.from(1);
+    const amount = tokenAmountToApprove.mul(BigNumber.from(10).pow(tokenDecimals)).toHexString();
     const contractAddress = '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c'; // Xeenus
-    const xeenusContract = new web3.eth.Contract(ERC20_ABI, contractAddress);
+    const xeenusContract = new ethers.Contract(contractAddress, ERC20_ABI, web3Provider);
     xeenusContract.methods
       .approve(spender, amount)
       .send({
-        from: account || '', // default from address
+        from: account, // default from address
         value: 0,
         gas: 100000,
       })
@@ -256,21 +222,20 @@ function App() {
       .once('transactionHash', (hash: string) => {
         console.log(hash);
       })
-      .once('receipt', (receipt: TransactionReceipt) => {
+      .once('receipt', (receipt: ContractReceipt) => {
         console.log(receipt);
       });
-  }, [account, web3]);
+  }, [account, web3Provider]);
 
-  const handleSignSign = useCallback(
-    async (data: string, signer: () => Promise<string>) => {
+  const handleSignHelper = useCallback(
+    async (message: string, signPromise: Promise<string>) => {
       try {
-        const signature = await signer();
+        const signature = await signPromise;
         // const signature = await web3.eth.personal.sign(data, addr, 'xxxxxx');
         console.log(`signature=${signature}`);
 
-        // The signer should always be the proxy owner
-        const signerAddress = web3?.eth.accounts.recover(data, signature);
-        console.log(`signerAddress=${signerAddress}`);
+        const recoverAddress = ethers.utils.verifyMessage(message, signature);
+        compareAddressAndLog(recoverAddress, address);
       } catch (err) {
         const { code, message, stack } = err as any;
         console.error({
@@ -280,14 +245,17 @@ function App() {
         });
       }
     },
-    [web3],
+    [address],
   );
 
   const handleSkipPreviewSign = useCallback(async () => {
-    const from = address;
-    const createdAt = Math.floor(new Date().getTime() / 1000);
+    if (!currentProvider?.request) {
+      throw Error('currentProvider.request not found');
+    }
 
     const requestId = uuidv4();
+    const from = address;
+    const createdAt = Math.floor(new Date().getTime() / 1000);
 
     const msgParams = {
       requestId,
@@ -297,65 +265,29 @@ function App() {
       createdAt,
     };
 
-    const toBeSigned = JSON.stringify(msgParams);
+    const message = JSON.stringify(msgParams);
 
-    const payload = {
-      jsonrpc: '2.0',
-      method: 'qubic_skipPreviewSign',
-      params: [toBeSigned, account],
-    };
-
-    function qubicSignSkipPreview() {
-      return new Promise<string>((resolve, reject) => {
-        (web3?.currentProvider as AbstractProvider).sendAsync(payload, (skipPreviewSignError, response) => {
-          if (skipPreviewSignError) {
-            reject(skipPreviewSignError);
-          } else {
-            resolve(response?.result);
-          }
-        });
-      });
-    }
-
-    const signature = (await qubicSignSkipPreview()) || '';
-
-    const recoveredAddr = recoverPersonalSignature({
-      data: msgParams as any,
-      sig: signature,
-    });
-
-    if (toChecksumAddress(recoveredAddr) === toChecksumAddress(from)) {
-      console.log(`Successfully verified signer as ${recoveredAddr}`);
-    } else {
-      console.log(`Failed to verify signer when comparing ${recoveredAddr} to ${from}`);
-    }
-  }, [account, address, web3?.currentProvider]);
+    handleSignHelper(
+      message,
+      currentProvider.request({
+        method: 'qubic_skipPreviewSign',
+        params: [message, from],
+      }),
+    );
+  }, [address, currentProvider, handleSignHelper]);
 
   const handleSkipPreviewSignTypedData = useCallback(async () => {
-    const from = address;
-
-    const toBeSigned =
-      '{"types":{"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}],"ForwardRequest":[{"name":"from","type":"address"},{"name":"to","type":"address"},{"name":"value","type":"uint256"},{"name":"gas","type":"uint256"},{"name":"nonce","type":"uint256"},{"name":"data","type":"bytes"}]},"primaryType":"ForwardRequest","domain":{"name":"GenericForwarderV2","version":"0.0.1","chainId":"0x4","verifyingContract":"0xDA09Ac0B1edDc502D2ca5F851516d32657Cf32c8","salt":""},"message":{"data":"0xb88d4fde00000000000000000000000046196bc1c0ef858f2f4034ee7e6121823a94b9000000000000000000000000002cb03697c0eb0a5a3cf5f23051c961962bb3c912000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000435792217934f5704c9105561dbb1939a2373b680000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000006343dfab000000000000000000000000000000000000000000000000000000000000001ba5ca7b2e3df628a2814975546274f5d2fea14e7f89166f5fc55ba29281a3438d21ab25033a44d0bb7253c472f2c3223454dac57ec5cbbf10433805c74cda83000000000000000000000000000000000000000000000000000000000000000044bcbd92e00000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b00000000000000000000000000000000000000000000000000000000","from":"0x46196Bc1C0Ef858f2F4034ee7e6121823A94B900","gas":"152143","nonce":"115792089237316195423570985008687907853269984665640564039457584007913129639935","to":"0x9D75f848328b25df36873E41eC5d79a9b10316f6","value":"0"}}';
-
-    const payload = {
-      jsonrpc: '2.0',
-      method: 'qubic_skipPreviewSignTypedData',
-      params: [account, toBeSigned],
-    };
-
-    function qubicSignSkipPreview() {
-      return new Promise<string>((resolve, reject) => {
-        (web3?.currentProvider as AbstractProvider).sendAsync(payload, (skipPreviewSignError, response) => {
-          if (skipPreviewSignError) {
-            reject(skipPreviewSignError);
-          } else {
-            resolve(response?.result);
-          }
-        });
-      });
+    if (!currentProvider?.request) {
+      throw Error('currentProvider.request not found');
     }
 
-    const signature = (await qubicSignSkipPreview()) || '';
+    const toBeSigned =
+      '{"types":{"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}],"ForwardRequest":[{"name":"from","type":"address"},{"name":"to","type":"address"},{"name":"value","type":"uint256"},{"name":"gas","type":"uint256"},{"name":"nonce","type":"uint256"},{"name":"data","type":"bytes"}]},"primaryType":"ForwardRequest","domain":{"name":"GenericForwarderV2","version":"0.0.1","chainId":"0x5","verifyingContract":"0xDA09Ac0B1edDc502D2ca5F851516d32657Cf32c8","salt":""},"message":{"data":"0xb88d4fde00000000000000000000000046196bc1c0ef858f2f4034ee7e6121823a94b9000000000000000000000000002cb03697c0eb0a5a3cf5f23051c961962bb3c912000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000435792217934f5704c9105561dbb1939a2373b680000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000006343dfab000000000000000000000000000000000000000000000000000000000000001ba5ca7b2e3df628a2814975546274f5d2fea14e7f89166f5fc55ba29281a3438d21ab25033a44d0bb7253c472f2c3223454dac57ec5cbbf10433805c74cda83000000000000000000000000000000000000000000000000000000000000000044bcbd92e00000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b00000000000000000000000000000000000000000000000000000000","from":"0x46196Bc1C0Ef858f2F4034ee7e6121823A94B900","gas":"152143","nonce":"115792089237316195423570985008687907853269984665640564039457584007913129639935","to":"0x6CA6E60AF3E645AA0295787CB1B97DBD847A0CCE","value":"0"}}';
+
+    const signature = await currentProvider.request({
+      method: 'qubic_skipPreviewSignTypedData',
+      params: [account, toBeSigned],
+    });
 
     const msgParams = JSON.parse(toBeSigned);
 
@@ -364,35 +296,30 @@ function App() {
       sig: signature,
     });
 
-    if (toChecksumAddress(recoveredAddr) === toChecksumAddress(from)) {
-      console.log(`Successfully verified signer as ${recoveredAddr}`);
-    } else {
-      console.log(`Failed to verify signer when comparing ${recoveredAddr} to ${from}`);
-    }
-  }, [account, address, web3?.currentProvider]);
+    compareAddressAndLog(recoveredAddr, address);
+  }, [account, address, currentProvider]);
 
-  const handlePersonalSign = useCallback(async () => {
-    const data = `0x${Buffer.from('example message', 'utf8').toString('hex')}`;
-    await handleSignSign(data, async () => {
-      return (await web3?.eth.personal.sign(data, account || '', 'test password!')) || '';
-    });
-  }, [handleSignSign, web3?.eth.personal, account]);
+  const handlePersonalSign = useCallback(() => {
+    if (!web3Provider) throw Error('no web3Provider');
+    const message = 'example message';
+    handleSignHelper(message, web3Provider.getSigner().signMessage(message));
+  }, [web3Provider, handleSignHelper]);
 
   const handlePersonalSignUnknownEncoding = useCallback(async () => {
+    if (!web3Provider) throw Error('no web3Provider');
     const data = `0xb073a86cd7e07dc4c222a7b4c489149c627684842c74b7dab99a2f99ceb46249`;
-    await handleSignSign(data, async () => {
-      return (await web3?.eth.personal.sign(data, account || '', 'test password!')) || '';
-    });
-  }, [handleSignSign, web3?.eth.personal, account]);
-
-  const handleEthSign = useCallback(async () => {
-    const data = '0xc9b8e1f1df93f7535e849d70806b546555549da9a6c2ae38ba674bf2db1a5817';
-    await handleSignSign(data, async () => {
-      return (await web3?.eth.sign(data, account || '')) || '';
-    });
-  }, [web3, account, handleSignSign]);
+    const message = ethers.utils.arrayify(data);
+    const signature = await web3Provider.getSigner().signMessage(message);
+    const recoveredAddress = ethers.utils.recoverAddress(ethers.utils.hashMessage(message), signature);
+    console.log(recoveredAddress);
+    compareAddressAndLog(recoveredAddress, address);
+  }, [address, web3Provider]);
 
   const handleSignTypedDataV3 = useCallback(async () => {
+    if (!currentProvider?.request) {
+      throw Error('currentProvider.request not found');
+    }
+
     const from = address;
     const msgParams = {
       types: {
@@ -432,39 +359,23 @@ function App() {
       },
     };
 
-    function ethSignTypedDataV3() {
-      return new Promise<string>((resolve, reject) => {
-        (web3?.currentProvider as AbstractProvider).sendAsync(
-          {
-            jsonrpc: '2.0',
-            method: 'eth_signTypedData_v3',
-            params: [from, JSON.stringify(msgParams)],
-          },
-          (ethSignTypedDataError, response) => {
-            if (ethSignTypedDataError) {
-              reject(ethSignTypedDataError);
-            } else {
-              resolve(response?.result);
-            }
-          },
-        );
-      });
-    }
-
-    const signature = (await ethSignTypedDataV3()) || '';
+    const signature = await currentProvider.request({
+      method: 'eth_signTypedData_v3',
+      params: [from, JSON.stringify(msgParams)],
+    });
 
     const recoveredAddr = recoverTypedSignature({
       data: msgParams as any,
       sig: signature,
     });
-    if (toChecksumAddress(recoveredAddr) === toChecksumAddress(from)) {
-      console.log(`Successfully verified signer as ${recoveredAddr}`);
-    } else {
-      console.log(`Failed to verify signer when comparing ${recoveredAddr} to ${from}`);
-    }
-  }, [address, chainId, web3?.currentProvider]);
+    compareAddressAndLog(recoveredAddr, address);
+  }, [address, chainId, currentProvider]);
 
   const handleSignTypedDataV4 = useCallback(async () => {
+    if (!currentProvider?.request) {
+      throw Error('currentProvider.request not found');
+    }
+
     const from = address;
     const msgParams = {
       domain: {
@@ -514,159 +425,114 @@ function App() {
       },
     };
 
-    function ethSignTypedDataV4() {
-      return new Promise<string>((resolve, reject) => {
-        (web3?.currentProvider as AbstractProvider).sendAsync(
-          {
-            jsonrpc: '2.0',
-            method: 'eth_signTypedData_v4',
-            params: [from, JSON.stringify(msgParams)],
-          },
-          (ethSignTypedDataV4Error, response) => {
-            if (ethSignTypedDataV4Error) {
-              reject(ethSignTypedDataV4Error);
-            } else {
-              resolve(response?.result);
-            }
-          },
-        );
-      });
-    }
-
-    const signature = (await ethSignTypedDataV4()) || '';
+    const signature = await currentProvider.request({
+      method: 'eth_signTypedData_v4',
+      params: [from, JSON.stringify(msgParams)],
+    });
 
     const recoveredAddr = recoverTypedSignature_v4({
       data: msgParams as any,
       sig: signature,
     });
 
-    if (toChecksumAddress(recoveredAddr) === toChecksumAddress(from)) {
-      console.log(`Successfully verified signer as ${recoveredAddr}`);
-    } else {
-      console.log(`Failed to verify signer when comparing ${recoveredAddr} to ${from}`);
-    }
-  }, [address, chainId, web3?.currentProvider]);
+    compareAddressAndLog(recoveredAddr, address);
+  }, [address, chainId, currentProvider]);
 
   const bindOperateEthereumChain = useCallback(
     (method: 'wallet_addEthereumChain' | 'wallet_switchEthereumChain') => () => {
+      if (!currentProvider?.request) {
+        throw Error('currentProvider.request not found');
+      }
       // eslint-disable-next-line no-alert
       const answer = window.prompt(`What's you chain id?`);
       if (answer === null) {
         return;
       }
       const nextChainId = Number(answer);
-      (web3?.currentProvider as AbstractProvider).sendAsync(
-        {
-          jsonrpc: '2.0',
-          method,
-          params: [
-            {
-              chainId: `0x${nextChainId.toString(16)}`,
-            },
-          ],
-        },
-        (bindOperateEthereumChainError, response) => {
-          if (bindOperateEthereumChainError) {
-            console.error(bindOperateEthereumChainError);
-          } else {
-            console.log(response?.result);
-          }
-        },
-      );
+
+      currentProvider.request({
+        method,
+        params: [
+          {
+            chainId: `0x${nextChainId.toString(16)}`,
+          },
+        ],
+      });
     },
-    [web3?.currentProvider],
+    [currentProvider],
   );
 
-  const handleGetAccounts = useCallback(() => {
-    web3?.eth.getAccounts().then(accounts => {
-      console.log({ accounts });
-    });
-  }, [web3?.eth]);
+  const handleGetAccounts = useCallback(async () => {
+    if (!web3Provider) {
+      throw Error('web3Provider not found');
+    }
+    const accounts = await web3Provider.listAccounts();
+    console.log({ accounts });
+  }, [web3Provider]);
 
   const handleCustomRpcRequest = useCallback(() => {
+    if (!currentProvider?.request) {
+      throw Error('currentProvider.request not found');
+    }
     // eslint-disable-next-line no-alert
     const answer = window.prompt('paste json rpc request');
     try {
       if (answer) {
         const rpcJson = JSON.parse(answer);
-        (web3?.currentProvider as AbstractProvider).sendAsync(rpcJson, (customRpcError, response) => {
-          if (customRpcError) {
-            throw customRpcError;
-          } else {
-            console.log(response?.result);
-          }
-        });
+        currentProvider.request(rpcJson);
       }
     } catch (error) {
       console.error(error);
     }
-  }, [web3?.currentProvider]);
+  }, [currentProvider]);
 
-  const handleQubicIdentityToken = useCallback(() => {
-    // eslint-disable-next-line no-alert
-    try {
-      (web3?.currentProvider as AbstractProvider).sendAsync(
-        {
-          jsonrpc: '2.0',
-          method: 'qubic_issueIdentityTicket',
-          params: [],
-        },
-        (customRpcError, response) => {
-          if (customRpcError) {
-            throw customRpcError;
-          } else {
-            const [ticket, expiredAt] = response?.result || [];
-            console.log({
-              ticket,
-              expiredAt,
-            });
-          }
-        },
-      );
-    } catch (error) {
-      console.error(error);
+  const handleQubicIdentityToken = useCallback(async () => {
+    if (!currentProvider?.request) {
+      throw Error('currentProvider.request not found');
     }
-  }, [web3?.currentProvider]);
+
+    const [ticket, expiredAt] = await currentProvider.request({
+      method: 'qubic_issueIdentityTicket',
+      params: [],
+    });
+    console.log({
+      ticket,
+      expiredAt,
+    });
+  }, [currentProvider]);
 
   const handlePopupBlockedByBrowser = useCallback(async () => {
-    // eslint-disable-next-line no-alert
-    try {
-      // wait a little time to trigger browser block popup window
-      const ref = window.open(
-        'https://www.google.com',
-        '_blank',
-        'location=no,resizable=yes,scrollbars=yes,status=yes,height=100,width=100',
-      );
-      ref?.close();
-      (web3?.currentProvider as AbstractProvider).sendAsync(
-        {
-          jsonrpc: '2.0',
-          method: 'eth_requestAccounts',
-          params: [],
-        },
-        (customRpcError, response) => {
-          if (customRpcError) {
-            throw customRpcError;
-          } else {
-            console.log(response);
-          }
-        },
-      );
-    } catch (error) {
-      console.error(error);
+    if (!currentProvider?.request) {
+      throw Error('currentProvider.request not found');
     }
-  }, [web3?.currentProvider]);
+    // wait a little time to trigger browser block popup window
+    const ref = window.open(
+      'https://www.google.com',
+      '_blank',
+      'location=no,resizable=yes,scrollbars=yes,status=yes,height=100,width=100',
+    );
+    ref?.close();
+    const response = currentProvider.request({
+      method: 'eth_requestAccounts',
+      params: [],
+    });
+
+    console.log(response);
+  }, [currentProvider]);
 
   const handleNftMint = useCallback(
     (options: { targetNetwork: Network; contractAddress: string }) => {
-      if (!web3 || !account) return;
+      if (!web3Provider) {
+        throw Error('web3Provider not found');
+      }
+      if (!account) return;
       const { targetNetwork, contractAddress } = options;
 
       if (chainId !== targetNetwork) {
         window.alert(`Network should be chain id: ${targetNetwork}`);
         return;
       }
-      const mineTestContract = new web3.eth.Contract(ERC721_ABI, contractAddress);
+      const mineTestContract = new ethers.Contract(contractAddress, ERC721_ABI, web3Provider);
       mineTestContract.methods
         .mint(account)
         .send({ from: account })
@@ -676,11 +542,11 @@ function App() {
         .once('transactionHash', (hash: string) => {
           console.log(hash);
         })
-        .once('receipt', (receipt: TransactionReceipt) => {
+        .once('receipt', (receipt: ContractReceipt) => {
           console.log(receipt);
         });
     },
-    [account, chainId, web3],
+    [account, chainId, web3Provider],
   );
 
   // TODO: should update contractAddress when new contract deploy
@@ -699,7 +565,10 @@ function App() {
   }, [handleNftMint]);
 
   const handleTransfer721 = useCallback(async () => {
-    if (!web3 || !account) return;
+    if (!web3Provider) {
+      throw Error('web3Provider not found');
+    }
+    if (!account) return;
 
     const contractAddress = window.prompt('NFT contract address');
     if (!contractAddress) return;
@@ -708,7 +577,7 @@ function App() {
     const toAddress = window.prompt('To address');
     if (!toAddress) return;
 
-    const mineTestContract = new web3.eth.Contract(ERC721_ABI, contractAddress);
+    const mineTestContract = new ethers.Contract(contractAddress, ERC721_ABI, web3Provider);
     mineTestContract.methods
       .safeTransferFrom(account, toAddress, tokenId)
       .send({ from: account })
@@ -718,10 +587,10 @@ function App() {
       .once('transactionHash', (hash: string) => {
         console.log(hash);
       })
-      .once('receipt', (receipt: TransactionReceipt) => {
+      .once('receipt', (receipt: ContractReceipt) => {
         console.log(receipt);
       });
-  }, [account, web3]);
+  }, [account, web3Provider]);
 
   return (
     <Container>
@@ -761,7 +630,6 @@ function App() {
           <Button onClick={handleSkipPreviewSignTypedData}>qubic_skipPreviewSignTypedData</Button>
           <Button onClick={handlePersonalSign}>personal_sign</Button>
           <Button onClick={handlePersonalSignUnknownEncoding}>personal_sign_unknown_encoding</Button>
-          <Button onClick={handleEthSign}>eth_sign</Button>
           <Button onClick={handleSignTypedDataV3}>eth_signTypedData_v3</Button>
           <Button onClick={handleSignTypedDataV4}>eth_signTypedData_v4</Button>
         </Group>
