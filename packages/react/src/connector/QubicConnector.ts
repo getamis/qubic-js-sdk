@@ -1,6 +1,6 @@
 import QubicProvider from '@qubic-js/browser';
 import { Network, SignInProvider } from '@qubic-js/core';
-import type { Actions, ProviderConnectInfo, ProviderRpcError } from '@web3-react/types';
+import type { Actions } from '@web3-react/types';
 import { Connector } from '@web3-react/types';
 
 export interface QubicConnectorOptions {
@@ -92,15 +92,6 @@ export default class QubicWalletConnector extends Connector {
 
       this.connected = true;
 
-      this.provider.on('connect', ({ chainId }: ProviderConnectInfo): void => {
-        this.actions.update({ chainId: parseChainId(chainId) });
-      });
-
-      this.provider.on('disconnect', (error: ProviderRpcError): void => {
-        this.actions.resetState();
-        this.onError?.(error);
-      });
-
       this.provider.on('chainChanged', (chainId: string): void => {
         this.actions.update({ chainId: parseChainId(chainId) });
       });
@@ -143,16 +134,22 @@ export default class QubicWalletConnector extends Connector {
       await this.isomorphicInitialize();
       if (!this.provider) throw new Error('No provider');
 
-      await this.provider?.request?.({
+      const accounts = await this.provider?.request?.<string[]>({
         method: 'eth_requestAccounts',
       });
 
-      await this.provider?.request?.({
+      const chainId = await this.provider?.request?.<string>({
         method: 'eth_chainId',
       });
+
       if (this.options?.autoHideWelcome) {
         this.provider?.hide();
       }
+
+      // in web js sdk, when iframe or popup start
+      // it will postMessage chainId and accounts immediately
+      // but in mobile dapp browser, we have to update manually
+      this.actions.update({ chainId: parseChainId(chainId), accounts });
     } catch (error) {
       cancelActivation();
       throw error;
