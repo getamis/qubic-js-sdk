@@ -13,8 +13,8 @@ import QubicWalletConnector from '@qubic-js/react';
 
 const qubicWalletConnector = wrappedConnectors.qubic[0] as QubicWalletConnector;
 
-function compareAddressAndLog(recoveredAddress: string, signerAddress: string): void {
-  if (ethers.utils.getAddress(recoveredAddress) === ethers.utils.getAddress(signerAddress)) {
+function compareAddressAndLog(recoveredAddress: string, signerAddress?: string): void {
+  if (signerAddress && ethers.utils.getAddress(recoveredAddress) === ethers.utils.getAddress(signerAddress)) {
     console.log(`Successfully verified signer as ${recoveredAddress}`);
   } else {
     console.log(`Failed to verify signer when comparing ${recoveredAddress} to ${signerAddress}`);
@@ -24,26 +24,14 @@ function compareAddressAndLog(recoveredAddress: string, signerAddress: string): 
 function App() {
   const { hooks } = useWeb3React();
   const [enableSignMsgAfterActivate, setEnableSignMsgAfterActivate] = useState(false);
-  const [address, setAddress] = useState<string>('');
-  const [network, setNetwork] = useState('');
 
-  const { usePriorityAccounts, usePriorityProvider, usePriorityChainId } = hooks;
+  const { usePriorityAccount, usePriorityProvider, usePriorityChainId } = hooks;
 
-  const account = usePriorityAccounts()?.[0];
-  const chainId = usePriorityChainId();
+  const address = usePriorityAccount();
+  const network = usePriorityChainId();
   const web3Provider = usePriorityProvider();
 
   const currentProvider = useMemo(() => web3Provider?.provider, [web3Provider?.provider]);
-
-  useEffect(() => {
-    console.log('network', chainId);
-    setNetwork(chainId?.toString() || '');
-  }, [chainId]);
-
-  useEffect(() => {
-    console.log('account', account);
-    setAddress(account || '');
-  }, [account]);
 
   useEffect(() => {
     if (!currentProvider) return;
@@ -88,12 +76,17 @@ function App() {
     }
   }, [address, currentProvider, enableSignMsgAfterActivate]);
 
-  const handleSignInUp = useCallback(() => {
-    qubicWalletConnector.removeSignInProvider();
+  const handleSignInUp = useCallback(async () => {
+    try {
+      qubicWalletConnector.removeSignInProvider();
+      await qubicWalletConnector.activate();
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
 
-    qubicWalletConnector.activate().catch(e => {
-      console.error(e);
-    });
+  const handleConnectEagerly = useCallback(() => {
+    qubicWalletConnector.connectEagerly();
   }, []);
 
   const bindSignInUpWithSignInProvider = useCallback(
@@ -120,7 +113,7 @@ function App() {
   const handleEstimateGas = useCallback(async () => {
     if (!web3Provider) throw Error('no web3Provider');
     const gas = await web3Provider.estimateGas({
-      from: account,
+      from: address,
       to: '0xd46e8dd67c5d32be8058bb8eb970870f07244567',
       gasPrice: '0x9184e72a000',
       value: '0x9184e72a',
@@ -128,14 +121,14 @@ function App() {
     });
 
     console.log(`gas=${gas.toString()}`);
-  }, [account, web3Provider]);
+  }, [address, web3Provider]);
 
   const handleSend = useCallback(async () => {
     if (!web3Provider) throw Error('no web3Provider');
-    if (!account) throw Error('no account');
+    if (!address) throw Error('no address');
     const tx = {
       // this could be provider.addresses[0] if it exists
-      from: account,
+      from: address,
       // target address, this could be a smart contract address
       to: '0xdd2c45b296C218779783c9AAF9f876391FA9aF53',
       // optional if you want to specify the gas limit
@@ -146,14 +139,14 @@ function App() {
 
     const response = await web3Provider.getSigner().sendTransaction(tx);
     console.log(response);
-  }, [account, web3Provider]);
+  }, [address, web3Provider]);
 
   const handleGetERC20 = useCallback(async () => {
     if (!web3Provider) throw Error('no web3Provider');
-    if (!account) throw Error('no account');
+    if (!address) throw Error('no account');
     const tx = {
       // this could be provider.addresses[0] if it exists
-      from: account,
+      from: address,
       to: '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c', // Xeenus
       // optional if you want to specify the gas limit
       gas: 60000,
@@ -166,11 +159,11 @@ function App() {
     const response = await web3Provider.getSigner().sendTransaction(tx);
 
     console.log(response);
-  }, [account, web3Provider]);
+  }, [address, web3Provider]);
 
   const handleSendERC20 = useCallback(async () => {
     if (!web3Provider) throw Error('no web3Provider');
-    if (!account) throw Error('no account');
+    if (!address) throw Error('no account');
     const contractAddress = '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c'; // Xeenus
 
     const xeenusContract = new ethers.Contract(contractAddress, ERC20_ABI, web3Provider);
@@ -185,7 +178,7 @@ function App() {
     xeenusContract.methods
       .transfer(toAddress, amount)
       .send({
-        from: account, // default from address
+        from: address, // default from address
         value: 0,
         gas: 100000,
       })
@@ -198,11 +191,11 @@ function App() {
       .once('receipt', (receipt: ContractReceipt) => {
         console.log(receipt);
       });
-  }, [account, web3Provider]);
+  }, [address, web3Provider]);
 
   const handleApproveERC20 = useCallback(async () => {
     if (!web3Provider) throw Error('no web3Provider');
-    if (!account) throw Error('no account');
+    if (!address) throw Error('no address');
     const spender = '0x7a250d5630b4cf539739df2c5dacb4c659f2488d'; // spender: dapp uniswap smart contract address
     const tokenDecimals = BigNumber.from(18);
     const tokenAmountToApprove = BigNumber.from(1);
@@ -212,7 +205,7 @@ function App() {
     xeenusContract.methods
       .approve(spender, amount)
       .send({
-        from: account, // default from address
+        from: address, // default from address
         value: 0,
         gas: 100000,
       })
@@ -225,7 +218,7 @@ function App() {
       .once('receipt', (receipt: ContractReceipt) => {
         console.log(receipt);
       });
-  }, [account, web3Provider]);
+  }, [address, web3Provider]);
 
   const handleSignHelper = useCallback(
     async (message: string, signPromise: Promise<string>) => {
@@ -286,7 +279,7 @@ function App() {
 
     const signature = await currentProvider.request({
       method: 'qubic_skipPreviewSignTypedData',
-      params: [account, toBeSigned],
+      params: [address, toBeSigned],
     });
 
     const msgParams = JSON.parse(toBeSigned);
@@ -297,7 +290,7 @@ function App() {
     });
 
     compareAddressAndLog(recoveredAddr, address);
-  }, [account, address, currentProvider]);
+  }, [address, currentProvider]);
 
   const handlePersonalSign = useCallback(() => {
     if (!web3Provider) throw Error('no web3Provider');
@@ -343,7 +336,7 @@ function App() {
       domain: {
         name: 'Ether Mail',
         version: '1',
-        chainId,
+        chainId: network,
         verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
       },
       message: {
@@ -369,7 +362,7 @@ function App() {
       sig: signature,
     });
     compareAddressAndLog(recoveredAddr, address);
-  }, [address, chainId, currentProvider]);
+  }, [address, network, currentProvider]);
 
   const handleSignTypedDataV4 = useCallback(async () => {
     if (!currentProvider?.request) {
@@ -379,7 +372,7 @@ function App() {
     const from = address;
     const msgParams = {
       domain: {
-        chainId,
+        chainId: network,
         name: 'Ether Mail',
         verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
         version: '1',
@@ -436,7 +429,7 @@ function App() {
     });
 
     compareAddressAndLog(recoveredAddr, address);
-  }, [address, chainId, currentProvider]);
+  }, [address, network, currentProvider]);
 
   const bindOperateEthereumChain = useCallback(
     (method: 'wallet_addEthereumChain' | 'wallet_switchEthereumChain') => () => {
@@ -525,17 +518,17 @@ function App() {
       if (!web3Provider) {
         throw Error('web3Provider not found');
       }
-      if (!account) return;
+      if (!address) return;
       const { targetNetwork, contractAddress } = options;
 
-      if (chainId !== targetNetwork) {
+      if (network !== targetNetwork) {
         window.alert(`Network should be chain id: ${targetNetwork}`);
         return;
       }
       const mineTestContract = new ethers.Contract(contractAddress, ERC721_ABI, web3Provider);
       mineTestContract.methods
-        .mint(account)
-        .send({ from: account })
+        .mint(address)
+        .send({ from: address })
         .on('error', (mintError: Error): void => {
           console.error(mintError);
         })
@@ -546,7 +539,7 @@ function App() {
           console.log(receipt);
         });
     },
-    [account, chainId, web3Provider],
+    [address, network, web3Provider],
   );
 
   // TODO: should update contractAddress when new contract deploy
@@ -568,7 +561,7 @@ function App() {
     if (!web3Provider) {
       throw Error('web3Provider not found');
     }
-    if (!account) return;
+    if (!address) return;
 
     const contractAddress = window.prompt('NFT contract address');
     if (!contractAddress) return;
@@ -579,8 +572,8 @@ function App() {
 
     const mineTestContract = new ethers.Contract(contractAddress, ERC721_ABI, web3Provider);
     mineTestContract.methods
-      .safeTransferFrom(account, toAddress, tokenId)
-      .send({ from: account })
+      .safeTransferFrom(address, toAddress, tokenId)
+      .send({ from: address })
       .on('error', (mintError: Error): void => {
         console.error(mintError);
       })
@@ -590,7 +583,7 @@ function App() {
       .once('receipt', (receipt: ContractReceipt) => {
         console.log(receipt);
       });
-  }, [account, web3Provider]);
+  }, [address, web3Provider]);
 
   return (
     <Container>
@@ -598,6 +591,7 @@ function App() {
         <Group>
           <Title>1. 註冊或登錄以獲得地址</Title>
           <Button onClick={handleSignInUp}>SIGN IN / SIGN UP</Button>
+          <Button onClick={handleConnectEagerly}>Connect Eagerly</Button>
 
           <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.GOOGLE)}>google</Button>
           <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.FACEBOOK)}>facebook</Button>
