@@ -4,6 +4,8 @@ import { openExternalBrowserWhenLineIab, showBlockerWhenIab } from '@qubic-conne
 import createCacheMiddleware from './middlewares/cacheMiddleware';
 import IFrame from './middlewares/IFrame';
 import PopupWindow from './middlewares/PopupWindow';
+import { clearPersistedData } from './utils/persistData';
+import { globalEthereum, isInQubicDappBrowser } from './utils/isInQubicDappBrowser';
 
 export interface BrowserProviderOptions {
   apiKey?: string;
@@ -17,6 +19,7 @@ export interface BrowserProviderOptions {
   disableFastSignup?: boolean;
   disableIabWarning?: boolean;
   disableOpenExternalBrowserWhenLineIab?: boolean;
+  enablePersist?: boolean; // enable persist accounts and chain id
 }
 
 let isInitialized = false;
@@ -39,6 +42,7 @@ export class BrowserProvider extends BaseProvider {
       disableFastSignup,
       disableIabWarning = false,
       disableOpenExternalBrowserWhenLineIab = false,
+      enablePersist = false,
     } = options || {};
 
     const apiConfig: ApiConfig = {
@@ -60,7 +64,8 @@ export class BrowserProvider extends BaseProvider {
     if (!disableOpenExternalBrowserWhenLineIab) {
       openExternalBrowserWhenLineIab();
     }
-    if (!disableIabWarning) {
+
+    if (!disableIabWarning && !isInQubicDappBrowser) {
       showBlockerWhenIab({
         redirectUrl: iabRedirectUrl,
         shouldAlwaysShowCopyUI,
@@ -71,7 +76,7 @@ export class BrowserProvider extends BaseProvider {
       infuraProjectId,
       network: chainId,
       bridge,
-      middlewares: [createCacheMiddleware(bridge), createPrepareBridgeMiddleware()],
+      middlewares: [createCacheMiddleware(bridge, enablePersist), createPrepareBridgeMiddleware()],
     });
 
     this.setSignInProvider = originSetSignInProvider;
@@ -84,15 +89,20 @@ export class BrowserProvider extends BaseProvider {
 
     this.hide = () => hide();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const globalEthereum = typeof window !== 'undefined' ? (window as any).ethereum : undefined;
-
     // when dapp browser open dapp which use qubic-sdk
     // it will use window.ethereum as default provider
-    if (globalEthereum && globalEthereum?.isQubic) {
+    if (isInQubicDappBrowser) {
+      // ignore all these methods
       globalEthereum.hide = () => null;
+      globalEthereum.setSignInProvider = () => null;
+      globalEthereum.removeSignInProvider = () => null;
       return globalEthereum;
     }
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  public clearPersistedData(): void {
+    clearPersistedData();
   }
 }
 

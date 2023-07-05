@@ -1,4 +1,4 @@
-import QubicProvider from '@qubic-js/browser';
+import QubicProvider, { getPersistedData, isInQubicDappBrowser } from '@qubic-js/browser';
 import { Network, SignInProvider } from '@qubic-js/core';
 import type { Actions } from '@web3-react/types';
 import { Connector } from '@web3-react/types';
@@ -34,7 +34,6 @@ export default class QubicWalletConnector extends Connector {
   public provider: QubicProvider | undefined;
 
   private readonly options: QubicConnectorOptions;
-  private connected = false;
   private eagerConnection?: Promise<void>;
   private supportedChainIds = [
     Network.MAINNET,
@@ -88,9 +87,8 @@ export default class QubicWalletConnector extends Connector {
         disableFastSignup,
         disableIabWarning,
         disableOpenExternalBrowserWhenLineIab,
+        enablePersist: true,
       });
-
-      this.connected = true;
 
       this.provider.on('chainChanged', (chainId: string): void => {
         this.actions.update({ chainId: parseChainId(chainId) });
@@ -109,21 +107,40 @@ export default class QubicWalletConnector extends Connector {
 
   public async connectEagerly(): Promise<void> {
     const cancelActivation = this.actions.startActivation();
-
     try {
       await this.isomorphicInitialize();
 
-      if (!this.provider || !this.connected) throw new Error('No existing connection');
+      if (!this.provider) {
+        throw new Error('No provider');
+      }
+
+      // in dapp browser use window.ethereum from dapp browser directly
+      // it doesn't use middlewares in this project
+      if (isInQubicDappBrowser) {
+        const accounts = await this.provider?.request?.<string[]>({
+          method: 'eth_requestAccounts',
+        });
+
+        const chainId = await this.provider?.request?.<string>({
+          method: 'eth_chainId',
+        });
+        this.actions.update({ chainId: parseChainId(chainId), accounts });
+        return;
+      }
+
+      // in browser
+      const persistedData = getPersistedData();
+      if (!persistedData) {
+        throw new Error('No existing connection');
+      }
 
       // Wallets may resolve eth_chainId and hang on eth_accounts pending user interaction, which may include changing
       // chains; they should be requested serially, with accounts first, so that the chainId can settle.
-      const accounts = await this.provider.request<string[]>({ method: 'eth_accounts' });
-      if (!accounts.length) throw new Error('No accounts returned');
-      const chainId = await this.provider.request<string>({ method: 'eth_chainId' });
-      this.actions.update({ chainId: parseChainId(chainId), accounts });
+      this.actions.update({ chainId: parseChainId(persistedData.chainId), accounts: persistedData.accounts });
     } catch (error) {
       cancelActivation();
-      throw error;
+      console.warn(error);
+      this.actions.resetState();
     }
   }
 
@@ -157,8 +174,8 @@ export default class QubicWalletConnector extends Connector {
   }
 
   public deactivate(): void {
-    this.connected = false;
     this.provider?.hide();
+    this.provider?.clearPersistedData();
     this.actions.resetState();
   }
 
