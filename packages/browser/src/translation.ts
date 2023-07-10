@@ -1,6 +1,7 @@
-const language: string = (
-  ((window.navigator as any).userLanguage as string) || window.navigator.language
-).toLowerCase();
+const language: string =
+  typeof window !== 'undefined'
+    ? (((window.navigator as any).userLanguage as string) || window.navigator.language).toLowerCase()
+    : 'en--us';
 
 const enUs = {
   yes: 'Yes',
