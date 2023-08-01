@@ -24,7 +24,9 @@
     "webpack": "^5.72.0"
   },
   "scripts": {
-    "start": "GENERATE_SOURCEMAP=false dotenv -e ../.env react-app-rewired start",
+    "start:dev": "GENERATE_SOURCEMAP=false dotenv -e ../.env.dev react-app-rewired start",
+    "start:stag": "GENERATE_SOURCEMAP=false dotenv -e ../.env.stag react-app-rewired start",
+    "start:prod": "GENERATE_SOURCEMAP=false dotenv -e ../.env.prod react-app-rewired start",
     "build": "GENERATE_SOURCEMAP=false react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject"
