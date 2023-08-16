@@ -14,7 +14,8 @@
     "moduleResolution": "node",
     "noEmit": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "noUncheckedIndexedAccess": true
   },
   "exclude": ["coverage", "dist/**", "node_modules", "**/__tests__", "**/__mocks__"]
 }

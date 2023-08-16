@@ -15,7 +15,8 @@
     "prepublishOnly": "yarn run build",
     "prerelease": "lerna run clean",
     "release": "lerna publish --force-publish",
-    "test": "jest"
+    "test": "jest",
+    "lint:tsc": "yarn workspace @qubic-js/core tsc && yarn workspace @qubic-js/browser tsc && yarn workspace @qubic-js/react tsc"
   },
   "engines": {
     "node": ">=8"
@@ -62,7 +63,7 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "husky": "^4.3.8",
     "lint-staged": "^10.2.11",
-    "prettier": "^2.0.5"
+    "prettier": "3.0.2"
   },
   "private": true
 }
