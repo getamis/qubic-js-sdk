@@ -23,7 +23,7 @@
   "devDependencies": {
     "@qubic-js/browser": "^1.10.4",
     "@types/react": "^16.9.35",
-    "typescript": "^3.6.4"
+    "typescript": "4.9.4"
   },
   "publishConfig": {
     "access": "public"
