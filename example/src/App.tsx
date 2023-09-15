@@ -257,15 +257,15 @@ function App() {
   }, [address, currentProvider, handleSignHelper]);
 
   const bindSkipPreviewSignTypedData = useCallback(
-    (chainId: number, contractAddress: string) => async () => {
+    (contractAddress: string) => async () => {
       if (!currentProvider?.request) {
         throw Error('currentProvider.request not found');
       }
-      if (network !== chainId) throw Error(`chain id should be ${chainId}`);
+      if (network !== SKIP_PREVIEW_SIGN_CHAIN_ID) throw Error(`chain id should be ${SKIP_PREVIEW_SIGN_CHAIN_ID}`);
 
       // that any contract address deployed by qubic creator market
       // const contractAddress = CONTRACT_ADDRESS_IN_WHITE_LIST;
-      // const chainId = utils.hexlify(Number(CONTRACT_CHAIN_ID_IN_WHITE_LIST));
+      const chainId = utils.hexlify(Number(SKIP_PREVIEW_SIGN_CHAIN_ID));
       const toBeSigned = `{"types":{"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}],"ForwardRequest":[{"name":"from","type":"address"},{"name":"to","type":"address"},{"name":"value","type":"uint256"},{"name":"gas","type":"uint256"},{"name":"nonce","type":"uint256"},{"name":"data","type":"bytes"}]},"primaryType":"ForwardRequest","domain":{"name":"GenericForwarderV2","version":"0.0.1","chainId":"${chainId}","verifyingContract":"0xDA09Ac0B1edDc502D2ca5F851516d32657Cf32c8","salt":""},"message":{"data":"0xb88d4fde00000000000000000000000046196bc1c0ef858f2f4034ee7e6121823a94b9000000000000000000000000002cb03697c0eb0a5a3cf5f23051c961962bb3c912000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000435792217934f5704c9105561dbb1939a2373b680000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000006343dfab000000000000000000000000000000000000000000000000000000000000001ba5ca7b2e3df628a2814975546274f5d2fea14e7f89166f5fc55ba29281a3438d21ab25033a44d0bb7253c472f2c3223454dac57ec5cbbf10433805c74cda83000000000000000000000000000000000000000000000000000000000000000044bcbd92e00000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b00000000000000000000000000000000000000000000000000000000","from":"0x46196Bc1C0Ef858f2F4034ee7e6121823A94B900","gas":"152143","nonce":"115792089237316195423570985008687907853269984665640564039457584007913129639935","to":"${contractAddress}","value":"0"}}`;
 
       const signature = await currentProvider.request({
@@ -647,19 +647,13 @@ function App() {
           <Title>Qubic Only RPC Method</Title>
           <Button onClick={handleSkipPreviewSign}>qubic_skipPreviewSign</Button>
           <InfoText>以下範例要先切到 chain id: {SKIP_PREVIEW_SIGN_CHAIN_ID} </InfoText>
-          <Button
-            onClick={bindSkipPreviewSignTypedData(SKIP_PREVIEW_SIGN_CHAIN_ID, SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_DEV)}
-          >
+          <Button onClick={bindSkipPreviewSignTypedData(SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_DEV)}>
             qubic_skipPreviewSignTypedData - dev
           </Button>
-          <Button
-            onClick={bindSkipPreviewSignTypedData(SKIP_PREVIEW_SIGN_CHAIN_ID, SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_STAG)}
-          >
+          <Button onClick={bindSkipPreviewSignTypedData(SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_STAG)}>
             qubic_skipPreviewSignTypedData - stag
           </Button>
-          <Button
-            onClick={bindSkipPreviewSignTypedData(SKIP_PREVIEW_SIGN_CHAIN_ID, SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_PROD)}
-          >
+          <Button onClick={bindSkipPreviewSignTypedData(SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_PROD)}>
             qubic_skipPreviewSignTypedData - prod
           </Button>
         </Group>
