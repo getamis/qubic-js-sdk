@@ -10,19 +10,20 @@ import { ERC20_ABI, ERC721_ABI } from './abi';
 import wrappedConnectors from './wrappedConnectors';
 import { enableIframe } from './queryParams';
 import QubicWalletConnector from '@qubic-js/react';
-
-const CONTRACT_ADDRESS_IN_WHITE_LIST = process.env.REACT_APP_CONTRACT_ADDRESS_IN_WHITE_LIST;
-const CONTRACT_CHAIN_ID_IN_WHITE_LIST = process.env.REACT_APP_CONTRACT_CHAIN_ID_IN_WHITE_LIST;
+import { compareAddressAndLog } from './utils';
 
 const qubicWalletConnector = wrappedConnectors.qubic[0] as QubicWalletConnector;
 
-function compareAddressAndLog(recoveredAddress: string, signerAddress?: string): void {
-  if (signerAddress && utils.getAddress(recoveredAddress) === utils.getAddress(signerAddress)) {
-    console.log(`Successfully verified signer as ${recoveredAddress}`);
-  } else {
-    console.log(`Failed to verify signer when comparing ${recoveredAddress} to ${signerAddress}`);
-  }
-}
+// https://goerli.etherscan.io/address/0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c
+const ERC_20_EXAMPLE_CONTRACT_ADDRESS = '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c';
+const ERC_20_EXAMPLE_CHAIN_ID = 5;
+const ERC_20_EXAMPLE_EXPLORER_TX = 'https://goerli.etherscan.io/tx';
+
+// These are from dev/stag/prod creator contract
+const SKIP_PREVIEW_SIGN_CHAIN_ID = 80001;
+const SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_DEV = '0xe2CF55b027d49D14f663aa1B76177F271cF8C0C6';
+const SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_STAG = '0xf04bca9e84e938e3e84eb58ea936e38012c7546f';
+const SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_PROD = '0x8135b33986F5112a535609c2e5A423d55808B14b';
 
 function App() {
   const { hooks } = useWeb3React();
@@ -58,8 +59,8 @@ function App() {
           params: [
             from,
             JSON.stringify({
-              name: 'OneOffs',
-              url: 'https://nft.oneoffs.art',
+              name: 'Qubic Demo',
+              url: 'https://www.qubic.app',
               permissions: [
                 'wallet.permission.access_email_address',
                 // 'wallet.permission.access_profile_image',
@@ -72,7 +73,6 @@ function App() {
           ],
         })
         .then(signature => {
-          console.log('handleSignInUpAndSignMessage 2');
           console.log(`signature=${signature}`);
         })
         .catch(console.error);
@@ -147,29 +147,30 @@ function App() {
   const handleGetERC20 = useCallback(async () => {
     if (!web3Provider) throw Error('no web3Provider');
     if (!address) throw Error('no account');
+    if (network !== ERC_20_EXAMPLE_CHAIN_ID) throw Error(`chain id should be ${ERC_20_EXAMPLE_CHAIN_ID}`);
+
     const tx = {
-      // this could be provider.addresses[0] if it exists
       from: address,
-      to: '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c', // Xeenus
-      // optional if you want to specify the gas limit
-      gas: 60000,
-      // optional if you are invoking say a payable function
+      to: ERC_20_EXAMPLE_CONTRACT_ADDRESS,
       value: '0',
-      // call fallback
+      // 0xdeadbeef is a method to request erc20 token
       data: '0xdeadbeef',
     };
 
     const response = await web3Provider.getSigner().sendTransaction(tx);
-
-    console.log(response);
-  }, [address, web3Provider]);
+    console.log(`${ERC_20_EXAMPLE_EXPLORER_TX}/${response.hash}`);
+    console.log('waiting...');
+    const recipient = await response.wait();
+    console.log('done!');
+    console.log(recipient);
+  }, [address, network, web3Provider]);
 
   const handleSendERC20 = useCallback(async () => {
     if (!web3Provider) throw Error('no web3Provider');
     if (!address) throw Error('no account');
-    const contractAddress = '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c'; // Xeenus
+    if (network !== ERC_20_EXAMPLE_CHAIN_ID) throw Error(`chain id should be ${ERC_20_EXAMPLE_CHAIN_ID}`);
 
-    const xeenusContract = new Contract(contractAddress, ERC20_ABI, web3Provider);
+    const erc20TokenContract = new Contract(ERC_20_EXAMPLE_CONTRACT_ADDRESS, ERC20_ABI, web3Provider.getSigner());
 
     const toAddress = '0xdd2c45b296C218779783c9AAF9f876391FA9aF53';
     // Calculate contract compatible value for approve with proper decimal points using BigNumber
@@ -178,50 +179,33 @@ function App() {
     const amount = tokenAmountToApprove.mul(BigNumber.from(10).pow(tokenDecimals)).toHexString();
 
     // call transfer function
-    xeenusContract.methods
-      .transfer(toAddress, amount)
-      .send({
-        from: address, // default from address
-        value: 0,
-        gas: 100000,
-      })
-      .on('error', (contractError: Error): void => {
-        console.error(contractError);
-      })
-      .once('transactionHash', (hash: string) => {
-        console.log(hash);
-      })
-      .once('receipt', (receipt: ContractReceipt) => {
-        console.log(receipt);
-      });
-  }, [address, web3Provider]);
+
+    const response = await erc20TokenContract.transfer(toAddress, amount);
+    console.log(`${ERC_20_EXAMPLE_EXPLORER_TX}/${response.hash}`);
+    console.log('waiting...');
+    const receipt = await response.wait();
+    console.log('done!');
+    console.log(receipt);
+  }, [address, network, web3Provider]);
 
   const handleApproveERC20 = useCallback(async () => {
     if (!web3Provider) throw Error('no web3Provider');
     if (!address) throw Error('no address');
+    if (network !== ERC_20_EXAMPLE_CHAIN_ID) throw Error(`chain id should be ${ERC_20_EXAMPLE_CHAIN_ID}`);
+
     const spender = '0x7a250d5630b4cf539739df2c5dacb4c659f2488d'; // spender: dapp uniswap smart contract address
     const tokenDecimals = BigNumber.from(18);
     const tokenAmountToApprove = BigNumber.from(1);
     const amount = tokenAmountToApprove.mul(BigNumber.from(10).pow(tokenDecimals)).toHexString();
-    const contractAddress = '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c'; // Xeenus
-    const xeenusContract = new Contract(contractAddress, ERC20_ABI, web3Provider);
-    xeenusContract.methods
-      .approve(spender, amount)
-      .send({
-        from: address, // default from address
-        value: 0,
-        gas: 100000,
-      })
-      .on('error', (approveError: Error): void => {
-        console.error(approveError);
-      })
-      .once('transactionHash', (hash: string) => {
-        console.log(hash);
-      })
-      .once('receipt', (receipt: ContractReceipt) => {
-        console.log(receipt);
-      });
-  }, [address, web3Provider]);
+    const contractAddress = ERC_20_EXAMPLE_CONTRACT_ADDRESS;
+    const erc20TokenContract = new Contract(contractAddress, ERC20_ABI, web3Provider.getSigner());
+    const response = await erc20TokenContract.approve(spender, amount);
+    console.log(`${ERC_20_EXAMPLE_EXPLORER_TX}/${response.hash}`);
+    console.log('waiting...');
+    const receipt = await response.wait();
+    console.log('done!');
+    console.log(receipt);
+  }, [address, network, web3Provider]);
 
   const handleSignHelper = useCallback(
     async (message: string, signPromise: Promise<string>) => {
@@ -272,30 +256,34 @@ function App() {
     );
   }, [address, currentProvider, handleSignHelper]);
 
-  const handleSkipPreviewSignTypedData = useCallback(async () => {
-    if (!currentProvider?.request) {
-      throw Error('currentProvider.request not found');
-    }
+  const bindSkipPreviewSignTypedData = useCallback(
+    (contractAddress: string) => async () => {
+      if (!currentProvider?.request) {
+        throw Error('currentProvider.request not found');
+      }
+      if (network !== SKIP_PREVIEW_SIGN_CHAIN_ID) throw Error(`chain id should be ${SKIP_PREVIEW_SIGN_CHAIN_ID}`);
 
-    // that any contract address deployed by qubic creator market
-    const contractAddress = CONTRACT_ADDRESS_IN_WHITE_LIST;
-    const chainId = utils.hexlify(Number(CONTRACT_CHAIN_ID_IN_WHITE_LIST));
-    const toBeSigned = `{"types":{"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}],"ForwardRequest":[{"name":"from","type":"address"},{"name":"to","type":"address"},{"name":"value","type":"uint256"},{"name":"gas","type":"uint256"},{"name":"nonce","type":"uint256"},{"name":"data","type":"bytes"}]},"primaryType":"ForwardRequest","domain":{"name":"GenericForwarderV2","version":"0.0.1","chainId":"${chainId}","verifyingContract":"0xDA09Ac0B1edDc502D2ca5F851516d32657Cf32c8","salt":""},"message":{"data":"0xb88d4fde00000000000000000000000046196bc1c0ef858f2f4034ee7e6121823a94b9000000000000000000000000002cb03697c0eb0a5a3cf5f23051c961962bb3c912000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000435792217934f5704c9105561dbb1939a2373b680000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000006343dfab000000000000000000000000000000000000000000000000000000000000001ba5ca7b2e3df628a2814975546274f5d2fea14e7f89166f5fc55ba29281a3438d21ab25033a44d0bb7253c472f2c3223454dac57ec5cbbf10433805c74cda83000000000000000000000000000000000000000000000000000000000000000044bcbd92e00000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b00000000000000000000000000000000000000000000000000000000","from":"0x46196Bc1C0Ef858f2F4034ee7e6121823A94B900","gas":"152143","nonce":"115792089237316195423570985008687907853269984665640564039457584007913129639935","to":"${contractAddress}","value":"0"}}`;
+      // that any contract address deployed by qubic creator market
+      // const contractAddress = CONTRACT_ADDRESS_IN_WHITE_LIST;
+      const chainId = utils.hexlify(Number(SKIP_PREVIEW_SIGN_CHAIN_ID));
+      const toBeSigned = `{"types":{"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}],"ForwardRequest":[{"name":"from","type":"address"},{"name":"to","type":"address"},{"name":"value","type":"uint256"},{"name":"gas","type":"uint256"},{"name":"nonce","type":"uint256"},{"name":"data","type":"bytes"}]},"primaryType":"ForwardRequest","domain":{"name":"GenericForwarderV2","version":"0.0.1","chainId":"${chainId}","verifyingContract":"0xDA09Ac0B1edDc502D2ca5F851516d32657Cf32c8","salt":""},"message":{"data":"0xb88d4fde00000000000000000000000046196bc1c0ef858f2f4034ee7e6121823a94b9000000000000000000000000002cb03697c0eb0a5a3cf5f23051c961962bb3c912000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000000200000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b000000000000000000000000435792217934f5704c9105561dbb1939a2373b680000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000006343dfab000000000000000000000000000000000000000000000000000000000000001ba5ca7b2e3df628a2814975546274f5d2fea14e7f89166f5fc55ba29281a3438d21ab25033a44d0bb7253c472f2c3223454dac57ec5cbbf10433805c74cda83000000000000000000000000000000000000000000000000000000000000000044bcbd92e00000000000000000000000009d75f848328b25df36873e41ec5d79a9b10316f6000000000000000000000000000000000000000000000000000000000000004b00000000000000000000000000000000000000000000000000000000","from":"0x46196Bc1C0Ef858f2F4034ee7e6121823A94B900","gas":"152143","nonce":"115792089237316195423570985008687907853269984665640564039457584007913129639935","to":"${contractAddress}","value":"0"}}`;
 
-    const signature = await currentProvider.request({
-      method: 'qubic_skipPreviewSignTypedData',
-      params: [address, toBeSigned],
-    });
+      const signature = await currentProvider.request({
+        method: 'qubic_skipPreviewSignTypedData',
+        params: [address, toBeSigned],
+      });
 
-    const msgParams = JSON.parse(toBeSigned);
+      const msgParams = JSON.parse(toBeSigned);
 
-    const recoveredAddr = recoverTypedSignature_v4({
-      data: msgParams as any,
-      sig: signature,
-    });
+      const recoveredAddr = recoverTypedSignature_v4({
+        data: msgParams as any,
+        sig: signature,
+      });
 
-    compareAddressAndLog(recoveredAddr, address);
-  }, [address, currentProvider]);
+      compareAddressAndLog(recoveredAddr, address);
+    },
+    [address, currentProvider, network],
+  );
 
   const handlePersonalSign = useCallback(() => {
     if (!web3Provider) throw Error('no web3Provider');
@@ -468,7 +456,7 @@ function App() {
     console.log({ accounts });
   }, [web3Provider]);
 
-  const handleCustomRpcRequest = useCallback(() => {
+  const handleCustomRpcRequest = useCallback(async () => {
     if (!currentProvider?.request) {
       throw Error('currentProvider.request not found');
     }
@@ -477,7 +465,8 @@ function App() {
     try {
       if (answer) {
         const rpcJson = JSON.parse(answer);
-        currentProvider.request(rpcJson);
+        const response = await currentProvider.request(rpcJson);
+        console.log(response);
       }
     } catch (error) {
       console.error(error);
@@ -590,70 +579,93 @@ function App() {
       });
   }, [address, web3Provider]);
 
+  const isConnected = !!address && !!network;
+
   return (
     <Container>
       <Wrapper>
+        <InfoText>請開啟 Devtool 查看 console 訊息</InfoText>
         <Group>
-          <Title>1. 註冊或登錄以獲得地址</Title>
+          <Title>錢包狀態</Title>
+          {isConnected ? (
+            <InfoText>
+              address: <br /> {address}
+              <br />
+              <br />
+              network: {network}
+            </InfoText>
+          ) : (
+            <InfoText>未連結</InfoText>
+          )}
+        </Group>
+        <Group>
+          <Title>註冊或登錄以獲得地址</Title>
           <Button onClick={handleSignInUp}>SIGN IN / SIGN UP</Button>
           <Button onClick={handleConnectEagerly}>Connect Eagerly</Button>
-
           <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.GOOGLE)}>google</Button>
           <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.FACEBOOK)}>facebook</Button>
           <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.APPLE)}>apple</Button>
           <Button onClick={bindSignInUpWithSignInProvider(SignInProvider.YAHOO)}>yahoo</Button>
-
           <Button onClick={handleSignInUpAndSignMessage}>{`SIGN IN / SIGN UP\nAnd Sign custom message`}</Button>
           <Button onClick={handleQubicIdentityToken}>qubic_issueIdentityTicket</Button>
-          {!!address && <InfoText>address: {address}</InfoText>}
-          {!!network && <InfoText>network: {network}</InfoText>}
-          <Button onClick={handleDisconnect}>Disconnect</Button>
+          {isConnected && <Button onClick={handleDisconnect}>Disconnect</Button>}
         </Group>
         <Group>
-          <Title>2. 估算 Gas Price (顯示在 console 中)</Title>
-          <Button onClick={handleEstimateGas}>Estimate Gas</Button>
+          <Title>標準 JSON RPC Method</Title>
+          <Button onClick={handleGetAccounts}>eth_accounts</Button>
+          <Button onClick={handleEstimateGas}>eth_estimateGas</Button>
+          <InfoText>ETH 交易，須先有 ETH</InfoText>
+          <Button onClick={handleSend}>eth_sendRawTransaction</Button>
+          <Button onClick={bindOperateEthereumChain('wallet_switchEthereumChain')}>wallet_switchEthereumChain</Button>
+          <Button onClick={bindOperateEthereumChain('wallet_addEthereumChain')}>wallet_addEthereumChain</Button>
         </Group>
+
         <Group>
-          <Title>3. ETH 交易，須先有 ETH</Title>
-          <Button onClick={handleSend}>Send Transaction</Button>
-        </Group>
-        <Group>
-          <Title>4. ERC-20 交易</Title>
+          <Title>ERC-20 交易</Title>
+          <InfoText>以下範例要先切到 chain id:{ERC_20_EXAMPLE_CHAIN_ID}</InfoText>
           <Button onClick={handleGetERC20}>Get Test ERC-20 Token</Button>
           <Button onClick={handleSendERC20}>Send Test ERC-20 Token</Button>
           <Button onClick={handleApproveERC20}>Approve Test ERC-20 Token</Button>
         </Group>
+
         <Group>
-          <Title>5. 簽名</Title>
-          <Button onClick={handleSkipPreviewSign}>qubic_skipPreviewSign</Button>
-          <Button onClick={handleSkipPreviewSignTypedData}>qubic_skipPreviewSignTypedData</Button>
+          <Title>簽名</Title>
           <Button onClick={handlePersonalSign}>personal_sign</Button>
           <Button onClick={handlePersonalSignUnknownEncoding}>personal_sign_unknown_encoding</Button>
           <Button onClick={handleSignTypedDataV3}>eth_signTypedData_v3</Button>
           <Button onClick={handleSignTypedDataV4}>eth_signTypedData_v4</Button>
         </Group>
+
         <Group>
-          <Title>6. chain</Title>
-          <Button onClick={bindOperateEthereumChain('wallet_switchEthereumChain')}>wallet_switchEthereumChain</Button>
-          <Button onClick={bindOperateEthereumChain('wallet_addEthereumChain')}>wallet_addEthereumChain</Button>
-        </Group>
-        <Group>
-          <Title>7. web3.eth</Title>
-          <Button onClick={handleGetAccounts}>Get Accounts</Button>
-        </Group>
-        <Group>
-          <Title>8. Custom rpc request</Title>
-          <Button onClick={handleCustomRpcRequest}>Send</Button>
-        </Group>
-        <Group>
-          <Title>9. Smart Contract</Title>
+          <Title>Smart Contract</Title>
           <Button onClick={handleGoerliMint}>Mint - goerli</Button>
           <Button onClick={handleBscTestnetMint}>Mint - bsc testnet</Button>
           <Button onClick={handleTransfer721}>Transfer721</Button>
         </Group>
+
+        <Group>
+          <Title>Qubic Only RPC Method</Title>
+          <Button onClick={handleSkipPreviewSign}>qubic_skipPreviewSign</Button>
+          <InfoText>以下範例要先切到 chain id: {SKIP_PREVIEW_SIGN_CHAIN_ID} </InfoText>
+          <Button onClick={bindSkipPreviewSignTypedData(SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_DEV)}>
+            qubic_skipPreviewSignTypedData - dev
+          </Button>
+          <Button onClick={bindSkipPreviewSignTypedData(SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_STAG)}>
+            qubic_skipPreviewSignTypedData - stag
+          </Button>
+          <Button onClick={bindSkipPreviewSignTypedData(SKIP_PREVIEW_SIGN_CONTRACT_ADDRESS_PROD)}>
+            qubic_skipPreviewSignTypedData - prod
+          </Button>
+        </Group>
+
+        <Group>
+          <Title>傳送任意 RPC</Title>
+          <Button onClick={handleCustomRpcRequest}>Send</Button>
+        </Group>
+
         {!enableIframe && (
           <Group>
-            <Title>10. Popup mode</Title>
+            <Title>Popup mode</Title>
             <Button onClick={handlePopupBlockedByBrowser}>popup blocked by browser</Button>
           </Group>
         )}
@@ -675,7 +687,7 @@ const Container = styled.div`
 
 const Wrapper = styled.div`
   width: 100%;
-  width: 300px;
+  width: 320px;
 `;
 
 const Button = styled.button`
@@ -706,5 +718,6 @@ const InfoText = styled.span`
   display: block;
   word-break: break-all;
   color: #fff;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
+  font-size: 12px;
 `;
