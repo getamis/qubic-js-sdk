@@ -461,11 +461,14 @@ function App() {
       throw Error('currentProvider.request not found');
     }
     // eslint-disable-next-line no-alert
-    const answer = window.prompt('paste json rpc request');
+    const rawRpcJson = window.prompt('paste json rpc request');
     try {
-      if (answer) {
-        const rpcJson = JSON.parse(answer);
+      if (rawRpcJson) {
+        const rpcJson = JSON.parse(rawRpcJson);
+        console.log('Request:');
+        console.log(rpcJson);
         const response = await currentProvider.request(rpcJson);
+        console.log('Response:');
         console.log(response);
       }
     } catch (error) {
