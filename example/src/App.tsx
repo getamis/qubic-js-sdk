@@ -1,10 +1,10 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { useWeb3React } from '@web3-react/core';
-import { Contract, BigNumber, ContractReceipt, utils } from 'ethers';
+import { Contract, BigNumber, utils } from 'ethers';
 import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { v4 as uuidv4 } from 'uuid';
-import { Network, SignInProvider } from '@qubic-js/core';
+import { NETWORK_INFO, Network, SignInProvider } from '@qubic-js/core';
 
 import { ERC20_ABI, ERC721_ABI } from './abi';
 import wrappedConnectors from './wrappedConnectors';
@@ -17,7 +17,7 @@ const qubicWalletConnector = wrappedConnectors.qubic[0] as QubicWalletConnector;
 // https://goerli.etherscan.io/address/0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c
 const ERC_20_EXAMPLE_CONTRACT_ADDRESS = '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c';
 const ERC_20_EXAMPLE_CHAIN_ID = 5;
-const ERC_20_EXAMPLE_EXPLORER_TX = 'https://goerli.etherscan.io/tx';
+const ERC_20_EXAMPLE_EXPLORER_TX = NETWORK_INFO[ERC_20_EXAMPLE_CHAIN_ID].explorerUrl + '/tx';
 
 // These are from dev/stag/prod creator contract
 const SKIP_PREVIEW_SIGN_CHAIN_ID = 80001;
@@ -158,6 +158,8 @@ function App() {
     };
 
     const response = await web3Provider.getSigner().sendTransaction(tx);
+    console.log(`sending sendTransaction(tx)`);
+    console.log({ tx });
     console.log(`${ERC_20_EXAMPLE_EXPLORER_TX}/${response.hash}`);
     console.log('waiting...');
     const recipient = await response.wait();
@@ -179,7 +181,7 @@ function App() {
     const amount = tokenAmountToApprove.mul(BigNumber.from(10).pow(tokenDecimals)).toHexString();
 
     // call transfer function
-
+    console.log(`sending transfer(${toAddress}, ${amount})`);
     const response = await erc20TokenContract.transfer(toAddress, amount);
     console.log(`${ERC_20_EXAMPLE_EXPLORER_TX}/${response.hash}`);
     console.log('waiting...');
@@ -199,6 +201,7 @@ function App() {
     const amount = tokenAmountToApprove.mul(BigNumber.from(10).pow(tokenDecimals)).toHexString();
     const contractAddress = ERC_20_EXAMPLE_CONTRACT_ADDRESS;
     const erc20TokenContract = new Contract(contractAddress, ERC20_ABI, web3Provider.getSigner());
+    console.log(`sending approve(${spender}, ${amount})`);
     const response = await erc20TokenContract.approve(spender, amount);
     console.log(`${ERC_20_EXAMPLE_EXPLORER_TX}/${response.hash}`);
     console.log('waiting...');
@@ -511,7 +514,7 @@ function App() {
   }, [currentProvider]);
 
   const handleNftMint = useCallback(
-    (options: { targetNetwork: Network; contractAddress: string }) => {
+    async (options: { targetNetwork: Network; contractAddress: string }) => {
       if (!web3Provider) {
         throw Error('web3Provider not found');
       }
@@ -522,19 +525,14 @@ function App() {
         window.alert(`Network should be chain id: ${targetNetwork}`);
         return;
       }
-      const mineTestContract = new Contract(contractAddress, ERC721_ABI, web3Provider);
-      mineTestContract.methods
-        .mint(address)
-        .send({ from: address })
-        .on('error', (mintError: Error): void => {
-          console.error(mintError);
-        })
-        .once('transactionHash', (hash: string) => {
-          console.log(hash);
-        })
-        .once('receipt', (receipt: ContractReceipt) => {
-          console.log(receipt);
-        });
+      const contract = new Contract(contractAddress, ERC721_ABI, web3Provider.getSigner());
+      console.log(`sending mint(${address})`);
+      const response = await contract.mint(address);
+      console.log(`${NETWORK_INFO[targetNetwork].explorerUrl}/tx/${response.hash}`);
+      console.log('waiting...');
+      const receipt = await response.wait();
+      console.log('done!');
+      console.log(receipt);
     },
     [address, network, web3Provider],
   );
@@ -543,7 +541,7 @@ function App() {
   const handleGoerliMint = useCallback(async () => {
     handleNftMint({
       targetNetwork: Network.GOERLI,
-      contractAddress: '0xC730b891F4FF8b659ab4Fc8D362239907cb99c17',
+      contractAddress: '0x5BF70eA03D7747f574A30227599AE26Bc6Be5C00',
     });
   }, [handleNftMint]);
 
@@ -567,19 +565,14 @@ function App() {
     const toAddress = window.prompt('To address');
     if (!toAddress) return;
 
-    const mineTestContract = new Contract(contractAddress, ERC721_ABI, web3Provider);
-    mineTestContract.methods
-      .safeTransferFrom(address, toAddress, tokenId)
-      .send({ from: address })
-      .on('error', (mintError: Error): void => {
-        console.error(mintError);
-      })
-      .once('transactionHash', (hash: string) => {
-        console.log(hash);
-      })
-      .once('receipt', (receipt: ContractReceipt) => {
-        console.log(receipt);
-      });
+    const contract = new Contract(contractAddress, ERC721_ABI, web3Provider.getSigner());
+    console.log(`sending safeTransferFrom(${address}, ${toAddress}, ${tokenId})`);
+    const response = await contract['safeTransferFrom(address,address,uint256)'](address, toAddress, tokenId);
+    console.log(`${ERC_20_EXAMPLE_EXPLORER_TX}/${response.hash}`);
+    console.log('waiting...');
+    const receipt = await response.wait();
+    console.log('done!');
+    console.log(receipt);
   }, [address, web3Provider]);
 
   const isConnected = !!address && !!network;
