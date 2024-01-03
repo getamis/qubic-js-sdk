@@ -1,6 +1,6 @@
 {
   "name": "@qubic-js/react",
-  "version": "1.10.4",
+  "version": "1.10.5",
   "description": "",
   "license": "Apache License 2.0",
   "source": "./src/index.ts",
@@ -21,7 +21,7 @@
     "@qubic-js/browser": "*"
   },
   "devDependencies": {
-    "@qubic-js/browser": "^1.10.4",
+    "@qubic-js/browser": "^1.10.5",
     "@types/react": "^16.9.35",
     "typescript": "4.9.4"
   },
