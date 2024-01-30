@@ -14,6 +14,9 @@ interface MultiInfuraMiddlewareOptions {
 const BSC_RPC_URL = 'https://bsc-dataseed1.binance.org';
 const BSC_TESTNET_RPC_URL = 'https://data-seed-prebsc-1-s1.binance.org:8545';
 
+// infura doesn't support holesky, so we use json rpc server here
+const HOLESKY_RPC_URL = 'https://1rpc.io/holesky';
+
 export const createMultiInfuraMiddleware = (
   options: MultiInfuraMiddlewareOptions,
   bridge: Bridge,
@@ -22,18 +25,42 @@ export const createMultiInfuraMiddleware = (
   const infuraMiddlewares = new Map<Network, JsonRpcMiddleware<unknown, unknown>>();
 
   function getCurrentMiddleware(): JsonRpcMiddleware<unknown, unknown> {
-    const currentMiddleware =
-      infuraMiddlewares.get(currentNetwork) ||
-      ([Network.BSC, Network.BSC_TESTNET].includes(currentNetwork)
-        ? createJsonRpcServerMiddleware({
-            url: currentNetwork === Network.BSC ? BSC_RPC_URL : BSC_TESTNET_RPC_URL,
-          })
-        : createInfuraMiddleware({
-            network: INFURA_NETWORK_ENDPOINTS[currentNetwork],
-            projectId: options.projectId,
-          }));
+    const existMiddleWare = infuraMiddlewares.get(currentNetwork);
+    if (existMiddleWare) {
+      return existMiddleWare;
+    }
 
-    infuraMiddlewares.set(currentNetwork, currentMiddleware);
+    let currentMiddleware;
+
+    switch (currentNetwork) {
+      case Network.BSC:
+        currentMiddleware = createJsonRpcServerMiddleware({
+          url: BSC_RPC_URL,
+        });
+
+        break;
+      case Network.BSC_TESTNET:
+        currentMiddleware = createJsonRpcServerMiddleware({
+          url: BSC_TESTNET_RPC_URL,
+        });
+
+        break;
+      case Network.HOLESKY:
+        currentMiddleware = createJsonRpcServerMiddleware({
+          url: HOLESKY_RPC_URL,
+        });
+
+        break;
+      default:
+        currentMiddleware = createInfuraMiddleware({
+          network: INFURA_NETWORK_ENDPOINTS[currentNetwork],
+          projectId: options.projectId,
+        });
+
+        break;
+    }
+
+    infuraMiddlewares.set(currentNetwork, currentMiddleware as JsonRpcMiddleware<unknown, unknown>);
 
     return currentMiddleware;
   }
