@@ -14,9 +14,9 @@ import { compareAddressAndLog } from './utils';
 
 const qubicWalletConnector = wrappedConnectors.qubic[0] as QubicWalletConnector;
 
-// https://goerli.etherscan.io/address/0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c
-const ERC_20_EXAMPLE_CONTRACT_ADDRESS = '0x022E292b44B5a146F2e8ee36Ff44D3dd863C915c';
-const ERC_20_EXAMPLE_CHAIN_ID = 5;
+// https://holesky.etherscan.io/address/0xe20c80EEf6911888D2A13FB181B476cd5E47f6B3
+const ERC_20_EXAMPLE_CONTRACT_ADDRESS = '0xe20c80EEf6911888D2A13FB181B476cd5E47f6B3';
+const ERC_20_EXAMPLE_CHAIN_ID = 17000;
 const ERC_20_EXAMPLE_EXPLORER_TX = NETWORK_INFO[ERC_20_EXAMPLE_CHAIN_ID].explorerUrl + '/tx';
 
 // These are from dev/stag/prod creator contract
@@ -537,11 +537,10 @@ function App() {
     [address, network, web3Provider],
   );
 
-  // TODO: should update contractAddress when new contract deploy
-  const handleGoerliMint = useCallback(async () => {
+  const handleHoleskyMint = useCallback(async () => {
     handleNftMint({
-      targetNetwork: Network.GOERLI,
-      contractAddress: '0x5BF70eA03D7747f574A30227599AE26Bc6Be5C00',
+      targetNetwork: Network.HOLESKY,
+      contractAddress: '0x3978aaae125cba044d1d2864a68bf4e77720adbf',
     });
   }, [handleNftMint]);
 
@@ -634,7 +633,7 @@ function App() {
 
         <Group>
           <Title>Smart Contract</Title>
-          <Button onClick={handleGoerliMint}>Mint - goerli</Button>
+          <Button onClick={handleHoleskyMint}>Mint - holesky</Button>
           <Button onClick={handleBscTestnetMint}>Mint - bsc testnet</Button>
           <Button onClick={handleTransfer721}>Transfer721</Button>
         </Group>

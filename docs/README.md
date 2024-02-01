@@ -25,7 +25,7 @@ npm install @qubic-js/browser
 ```javascript
 enum Network {
   MAINNET,
-  GOERLI,
+  HOLESKY,
   POLYGON,
   MUMBAI,
   BSC,
