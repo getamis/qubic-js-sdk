@@ -1,21 +1,14 @@
 import createInfuraMiddleware from '@qubic-js/eth-json-rpc-infura';
 import { JsonRpcMiddleware } from 'json-rpc-engine';
-import { INFURA_NETWORK_ENDPOINTS } from '../constants/backend';
 import { Network } from '../types';
 import { Bridge, BridgeEvent } from '../types/bridge';
 import { createJsonRpcServerMiddleware } from '../utils';
+import { NETWORK_INFO } from '../constants/network';
 
 interface MultiInfuraMiddlewareOptions {
   initNetwork: Network;
   projectId: string;
 }
-
-// infura doesn't support bsc, so we use json rpc server here
-const BSC_RPC_URL = 'https://bsc-dataseed1.binance.org';
-const BSC_TESTNET_RPC_URL = 'https://data-seed-prebsc-1-s1.binance.org:8545';
-
-// infura doesn't support holesky, so we use json rpc server here
-const HOLESKY_RPC_URL = 'https://1rpc.io/holesky';
 
 export const createMultiInfuraMiddleware = (
   options: MultiInfuraMiddlewareOptions,
@@ -32,32 +25,16 @@ export const createMultiInfuraMiddleware = (
 
     let currentMiddleware;
 
-    switch (currentNetwork) {
-      case Network.BSC:
-        currentMiddleware = createJsonRpcServerMiddleware({
-          url: BSC_RPC_URL,
-        });
-
-        break;
-      case Network.BSC_TESTNET:
-        currentMiddleware = createJsonRpcServerMiddleware({
-          url: BSC_TESTNET_RPC_URL,
-        });
-
-        break;
-      case Network.HOLESKY:
-        currentMiddleware = createJsonRpcServerMiddleware({
-          url: HOLESKY_RPC_URL,
-        });
-
-        break;
-      default:
-        currentMiddleware = createInfuraMiddleware({
-          network: INFURA_NETWORK_ENDPOINTS[currentNetwork],
-          projectId: options.projectId,
-        });
-
-        break;
+    const networkInfoRpc = NETWORK_INFO[currentNetwork].rpc;
+    if ('infuraNetwork' in networkInfoRpc) {
+      currentMiddleware = createInfuraMiddleware({
+        network: networkInfoRpc.infuraNetwork,
+        projectId: options.projectId,
+      });
+    } else {
+      currentMiddleware = createJsonRpcServerMiddleware({
+        url: networkInfoRpc.url,
+      });
     }
 
     infuraMiddlewares.set(currentNetwork, currentMiddleware as JsonRpcMiddleware<unknown, unknown>);
