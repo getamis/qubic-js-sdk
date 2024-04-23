@@ -30,6 +30,9 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     color: '#3cc29e',
     nativeToken: ETHEREUM_NATIVE_TOKEN,
     networkType: 'ethereum',
+    rpc: {
+      infuraNetwork: 'mainnet',
+    },
   },
 
   [Network.HOLESKY]: {
@@ -41,6 +44,9 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     color: '#f6c343',
     nativeToken: ETHEREUM_NATIVE_TOKEN,
     networkType: 'ethereum',
+    rpc: {
+      url: 'https://1rpc.io/holesky',
+    },
   },
 
   [Network.POLYGON]: {
@@ -51,16 +57,22 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     color: '#8247e5',
     nativeToken: POLYGON_NATIVE_TOKEN,
     networkType: 'polygon',
+    rpc: {
+      infuraNetwork: 'polygon-mainnet',
+    },
   },
 
-  [Network.MUMBAI]: {
-    name: 'mumbai',
-    chainId: Network.MUMBAI,
+  [Network.AMOY]: {
+    name: 'amoy',
+    chainId: Network.AMOY,
     ensAddress: '0x0000000000000000000000000000000000000000',
-    explorerUrl: 'https://mumbai.polygonscan.com',
+    explorerUrl: 'https://www.oklink.com/zh-hant/amoy',
     color: '#de4437',
     nativeToken: POLYGON_NATIVE_TOKEN,
     networkType: 'polygon',
+    rpc: {
+      infuraNetwork: 'polygon-amoy',
+    },
   },
 
   [Network.BSC]: {
@@ -71,6 +83,9 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     color: '#F0B90b',
     nativeToken: BSC_NATIVE_TOKEN,
     networkType: 'bsc',
+    rpc: {
+      url: 'https://bsc-dataseed1.binance.org',
+    },
   },
 
   [Network.BSC_TESTNET]: {
@@ -81,6 +96,9 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     color: '#12161c',
     nativeToken: BSC_NATIVE_TOKEN,
     networkType: 'bsc',
+    rpc: {
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+    },
   },
 };
 

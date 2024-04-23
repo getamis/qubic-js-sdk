@@ -39,7 +39,7 @@ export default class QubicWalletConnector extends Connector {
     Network.MAINNET,
     Network.HOLESKY,
     Network.POLYGON,
-    Network.MUMBAI,
+    Network.AMOY,
     Network.BSC,
     Network.BSC_TESTNET,
   ];

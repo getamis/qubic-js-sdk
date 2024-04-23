@@ -27,7 +27,7 @@ enum Network {
   MAINNET,
   HOLESKY,
   POLYGON,
-  MUMBAI,
+  AMOY,
   BSC,
   BSC_TEST_NET
 }
