@@ -45,7 +45,7 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     nativeToken: ETHEREUM_NATIVE_TOKEN,
     networkType: 'ethereum',
     rpc: {
-      url: 'https://1rpc.io/holesky',
+      infuraNetwork: 'holesky',
     },
   },
 
@@ -66,7 +66,7 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     name: 'amoy',
     chainId: Network.AMOY,
     ensAddress: '0x0000000000000000000000000000000000000000',
-    explorerUrl: 'https://www.oklink.com/zh-hant/amoy',
+    explorerUrl: 'https://amoy.polygonscan.com/',
     color: '#de4437',
     nativeToken: POLYGON_NATIVE_TOKEN,
     networkType: 'polygon',
