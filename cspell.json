@@ -1,0 +1,15 @@
+{
+  "ignorePaths": [
+    "node_modules/"
+  ],
+  "words": [
+    "arbitrum",
+    "holesky",
+    "qubic",
+    "sepolia"
+  ],
+  "ignoreWords": [
+    "getamis",
+    "uuidv"
+  ]
+}

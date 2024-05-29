@@ -42,6 +42,8 @@ export default class QubicWalletConnector extends Connector {
     Network.AMOY,
     Network.BSC,
     Network.BSC_TESTNET,
+    Network.ARBITRUM,
+    Network.ARBITRUM_SEPOLIA,
   ];
 
   constructor({ actions, options, onError }: QubicConstructorArgs) {

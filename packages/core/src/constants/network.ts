@@ -100,6 +100,30 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
     },
   },
+  [Network.ARBITRUM]: {
+    name: 'arbitrum',
+    chainId: Network.ARBITRUM,
+    ensAddress: '0x0000000000000000000000000000000000000000',
+    explorerUrl: 'https://arbiscan.io',
+    color: '#17202c',
+    nativeToken: ETHEREUM_NATIVE_TOKEN, // Using ETH as native token
+    networkType: 'arbitrum',
+    rpc: {
+      infuraNetwork: 'arbitrum-mainnet',
+    },
+  },
+  [Network.ARBITRUM_SEPOLIA]: {
+    name: 'arbitrumSepolia',
+    chainId: Network.ARBITRUM_SEPOLIA,
+    ensAddress: '0x0000000000000000000000000000000000000000',
+    explorerUrl: 'https://sepolia.arbiscan.io',
+    color: '#17202c',
+    nativeToken: ETHEREUM_NATIVE_TOKEN, // Using ETH as native token
+    networkType: 'arbitrum',
+    rpc: {
+      infuraNetwork: 'arbitrum-sepolia',
+    },
+  },
 };
 
 export const DEFAULT_INFURA_PROJECT_ID = '9aa3d95b3bc440fa88ea12eaa4456161';
