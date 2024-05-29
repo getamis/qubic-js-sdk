@@ -4,9 +4,10 @@ export enum Network {
   POLYGON = 137,
   AMOY = 80002,
   // OPTIMISTIC = 10,
-  // ARBITRUM = 200,
   BSC = 56,
   BSC_TESTNET = 97,
+  ARBITRUM = 42161,
+  ARBITRUM_SEPOLIA = 42164,
 }
 
 export interface Token {
@@ -15,11 +16,21 @@ export interface Token {
   decimals: number;
 }
 
-export const ALL_NETWORKS_TYPES = ['ethereum', 'polygon', 'bsc'] as const;
+export const ALL_NETWORKS_TYPES = ['ethereum', 'polygon', 'bsc', 'arbitrum'] as const;
 export type NetworkType = (typeof ALL_NETWORKS_TYPES)[number];
 
+export type NetworkName =
+  | 'mainnet'
+  | 'holesky'
+  | 'polygon'
+  | 'amoy'
+  | 'bsc'
+  | 'bscTestnet'
+  | 'arbitrum'
+  | 'arbitrumSepolia';
+
 export interface NetworkInfo {
-  name: 'mainnet' | 'holesky' | 'polygon' | 'amoy' | 'bsc' | 'bscTestnet';
+  name: NetworkName;
   chainId: Network;
   ensAddress: string;
   explorerUrl: string; // no last `/`

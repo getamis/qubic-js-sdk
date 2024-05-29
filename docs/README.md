@@ -29,7 +29,9 @@ enum Network {
   POLYGON,
   AMOY,
   BSC,
-  BSC_TEST_NET
+  BSC_TEST_NET,
+  ARBITRUM,
+  ARBITRUM_SEPOLIA,
 }
 ```
 
