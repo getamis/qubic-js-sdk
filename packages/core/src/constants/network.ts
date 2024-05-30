@@ -105,7 +105,7 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     chainId: Network.ARBITRUM,
     ensAddress: '0x0000000000000000000000000000000000000000',
     explorerUrl: 'https://arbiscan.io',
-    color: '#17202c',
+    color: '#1b4add',
     nativeToken: ETHEREUM_NATIVE_TOKEN, // Using ETH as native token
     networkType: 'arbitrum',
     rpc: {
@@ -117,7 +117,7 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     chainId: Network.ARBITRUM_SEPOLIA,
     ensAddress: '0x0000000000000000000000000000000000000000',
     explorerUrl: 'https://sepolia.arbiscan.io',
-    color: '#17202c',
+    color: '#1b4add',
     nativeToken: ETHEREUM_NATIVE_TOKEN, // Using ETH as native token
     networkType: 'arbitrum',
     rpc: {
