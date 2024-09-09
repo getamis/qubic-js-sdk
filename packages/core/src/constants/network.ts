@@ -10,7 +10,7 @@ const ETHEREUM_NATIVE_TOKEN: Token = {
 };
 
 const POLYGON_NATIVE_TOKEN: Token = {
-  symbol: 'MATIC',
+  symbol: 'POL',
   address: NATIVE_TOKEN_ADDRESS,
   decimals: 18,
 };
