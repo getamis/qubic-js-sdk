@@ -65,5 +65,9 @@
     "lint-staged": "^10.2.11",
     "prettier": "3.0.2"
   },
+  "resolutions": {
+    "elliptic": "^6.5.7",
+    "ws": "^7.5.10"
+  },
   "private": true
 }
