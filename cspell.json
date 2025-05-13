@@ -1,15 +1,5 @@
 {
-  "ignorePaths": [
-    "node_modules/"
-  ],
-  "words": [
-    "arbitrum",
-    "holesky",
-    "qubic",
-    "sepolia"
-  ],
-  "ignoreWords": [
-    "getamis",
-    "uuidv"
-  ]
+  "ignorePaths": ["node_modules/"],
+  "words": ["arbitrum", "hoodi", "qubic", "sepolia"],
+  "ignoreWords": ["getamis", "uuidv"]
 }

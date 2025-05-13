@@ -37,13 +37,12 @@ export default class QubicWalletConnector extends Connector {
   private eagerConnection?: Promise<void>;
   private supportedChainIds = [
     Network.MAINNET,
-    Network.HOLESKY,
+    Network.HOODI,
     Network.POLYGON,
     Network.AMOY,
     Network.BSC,
     Network.BSC_TESTNET,
     Network.ARBITRUM,
-    Network.ARBITRUM_SEPOLIA,
   ];
 
   constructor({ actions, options, onError }: QubicConstructorArgs) {
