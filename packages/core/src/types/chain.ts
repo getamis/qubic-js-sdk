@@ -7,6 +7,7 @@ export enum Network {
   BSC = 56,
   BSC_TESTNET = 97,
   ARBITRUM = 42161,
+  ARBITRUM_SEPOLIA = 421614,
 }
 
 export interface Token {
