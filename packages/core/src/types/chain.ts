@@ -1,13 +1,12 @@
 export enum Network {
   MAINNET = 1,
-  HOLESKY = 17000,
+  HOODI = 560048,
   POLYGON = 137,
   AMOY = 80002,
   // OPTIMISTIC = 10,
   BSC = 56,
   BSC_TESTNET = 97,
   ARBITRUM = 42161,
-  ARBITRUM_SEPOLIA = 421614,
 }
 
 export interface Token {
@@ -21,7 +20,7 @@ export type NetworkType = (typeof ALL_NETWORKS_TYPES)[number];
 
 export type NetworkName =
   | 'mainnet'
-  | 'holesky'
+  | 'hoodi'
   | 'polygon'
   | 'amoy'
   | 'bsc'

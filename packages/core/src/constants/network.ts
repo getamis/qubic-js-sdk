@@ -35,17 +35,17 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
     },
   },
 
-  [Network.HOLESKY]: {
-    name: 'holesky',
-    chainId: Network.HOLESKY,
-    // ens currently does not support holesky
+  [Network.HOODI]: {
+    name: 'hoodi',
+    chainId: Network.HOODI,
+    // ens currently does not support hoodi
     ensAddress: '0x0000000000000000000000000000000000000000',
-    explorerUrl: 'https://holesky.etherscan.io',
+    explorerUrl: 'https://hoodi.etherscan.io',
     color: '#f6c343',
     nativeToken: ETHEREUM_NATIVE_TOKEN,
     networkType: 'ethereum',
     rpc: {
-      infuraNetwork: 'holesky',
+      infuraNetwork: 'hoodi',
     },
   },
 
@@ -112,18 +112,6 @@ export const NETWORK_INFO: Record<Network, NetworkInfo> = {
       infuraNetwork: 'arbitrum-mainnet',
     },
   },
-  [Network.ARBITRUM_SEPOLIA]: {
-    name: 'arbitrumSepolia',
-    chainId: Network.ARBITRUM_SEPOLIA,
-    ensAddress: '0x0000000000000000000000000000000000000000',
-    explorerUrl: 'https://sepolia.arbiscan.io',
-    color: '#1b4add',
-    nativeToken: ETHEREUM_NATIVE_TOKEN, // Using ETH as native token
-    networkType: 'arbitrum',
-    rpc: {
-      infuraNetwork: 'arbitrum-sepolia',
-    },
-  },
 };
 
-export const DEFAULT_INFURA_PROJECT_ID = '9aa3d95b3bc440fa88ea12eaa4456161';
+export const DEFAULT_INFURA_PROJECT_ID = '954810afb5474a309612a18a448250e4';
