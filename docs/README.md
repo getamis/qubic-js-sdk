@@ -22,24 +22,47 @@ npm install @qubic-js/browser
 
 ### Usage
 
+These are the network names we recognize along with their corresponding chain IDs.
 ```javascript
-enum Network {
-  MAINNET,
-  HOODI,
-  POLYGON,
-  AMOY,
-  BSC,
-  BSC_TEST_NET,
-  ARBITRUM,
-  ARBITRUM_SEPOLIA,
+enum KnownNetwork {
+  MAINNET = 1,
+  HOODI = 560048,
+  POLYGON = 137,
+  AMOY = 80002,
+  BSC = 56,
+  BSC_TESTNET = 97,
+  ARBITRUM = 42161,
+  ARBITRUM_SEPOLIA = 421614,
 }
+```
+
+#### Graphql NetworkInfo
+
+Init graphql client at the start of your project
+```javascript
+import { initGraphqlClient } from '@qubic-js/core';
+initGraphqlClient({
+  apiKey: 'example-api-key',
+  apiSecret: 'example-api-secret',
+  apiUri: 'example-api-uri',
+});
+```
+
+then you are free to access network (chain) related data from api
+
+```javascript
+import { getNetworkInfo, getAllNetworkInfo, checkIsNetworkSupported } from '@qubic-js/core';
+const networkInfo = await getNetworkInfo(1);
+const allNetworkInfo = await getAllNetworkInfo();
+const isNetworkSupported = await checkIsNetworkSupported(1)
 ```
 
 #### Provider and Connector Options
 
 ```javascript
 const options {
-  // optional
+  // deprecated
+  // we now get corresponding rpc from chains api
   infuraProjectId: INFURA_PROJECT_ID,
 
   // optional, you can contact us to apply for higher rate limit
@@ -89,7 +112,6 @@ const qubicWalletConnector = initializeConnector<QubicWalletConnector>(
       actions,
       options: {
         chainId,
-        infuraProjectId: INFURA_PROJECT_ID,
         autoHideWelcome,
         enableIframe,
       },

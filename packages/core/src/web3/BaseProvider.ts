@@ -2,15 +2,13 @@ import { ethErrors } from 'eth-rpc-errors';
 import EventEmitter from 'events';
 import { JsonRpcResponse, JsonRpcSuccess, JsonRpcEngine, getUniqueId, JsonRpcMiddleware } from 'json-rpc-engine';
 
-import { DEFAULT_INFURA_PROJECT_ID } from '../constants/network';
-
 import { createMultiInfuraMiddleware } from '../middlewares/multiJsonRpcServerMiddleware';
 import { createWalletMiddleware } from '../middlewares/walletMiddleware';
-import { Bridge, Network, BridgeEvent, RequestArguments } from '../types';
+import { Bridge, BridgeEvent, RequestArguments } from '../types';
 
 interface BaseProviderOptions {
   infuraProjectId?: string;
-  network: Network;
+  network: number;
   bridge: Bridge;
   middlewares: Array<JsonRpcMiddleware<unknown, unknown>>;
 }
@@ -27,22 +25,19 @@ export class BaseProvider extends EventEmitter {
   private prevAccounts?: string[];
   constructor(options: BaseProviderOptions) {
     super();
-    const { bridge, middlewares, network, infuraProjectId } = options;
+    const { bridge, middlewares, network } = options;
 
     this.engine = new JsonRpcEngine();
     middlewares.forEach(middleware => {
       this.engine?.push(middleware);
     });
     this.engine.push(createWalletMiddleware(bridge.send.bind(bridge)));
-    this.engine.push(
-      createMultiInfuraMiddleware(
-        {
-          initNetwork: network,
-          projectId: infuraProjectId || DEFAULT_INFURA_PROJECT_ID,
-        },
-        bridge,
-      ),
-    );
+
+    createMultiInfuraMiddleware(network, bridge).then((infuraMiddleware) => {
+      this.engine?.push(infuraMiddleware);
+    }).catch((error) => {
+      console.error('Failed to create MultiInfuraMiddleware:', error);
+    });
 
     bridge.on(BridgeEvent.chainChanged, (chainId: string) => {
       if (!this.prevChainId || this.prevChainId !== chainId) {

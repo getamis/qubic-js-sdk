@@ -1,47 +1,53 @@
-export enum Network {
+export enum KnownNetwork {
   MAINNET = 1,
   HOODI = 560048,
   POLYGON = 137,
   AMOY = 80002,
-  // OPTIMISTIC = 10,
   BSC = 56,
   BSC_TESTNET = 97,
   ARBITRUM = 42161,
   ARBITRUM_SEPOLIA = 421614,
 }
 
-export interface Token {
-  address: string;
+export enum ChainType {
+  MAINNET = 'MAINNET',
+  TESTNET = 'TESTNET',
+}
+
+export enum ChainNetworkType {
+  ETHEREUM = 'ETHEREUM',
+  BSC = 'BSC',
+  POLYGON = 'POLYGON',
+  ARBITRUM = 'ARBITRUM',
+}
+export interface TokenInfo {
+  id: ID;
+  chainId: number;
+  address: Address;
+  name: string;
   symbol: string;
   decimals: number;
 }
 
-export const ALL_NETWORKS_TYPES = ['ethereum', 'polygon', 'bsc', 'arbitrum'] as const;
-export type NetworkType = (typeof ALL_NETWORKS_TYPES)[number];
+// interface Chain is used to represent chain data from api
+export interface ChainInfo {
+  id: ID;
+  chainId: number;
+  name: string;
+  blockExplorerUrls: string[];
+  rpcUrls: string[];
+  nativeToken: TokenInfo;
+  networkType: ChainNetworkType;
+  type: ChainType;
+}
 
-export type NetworkName =
-  | 'mainnet'
-  | 'hoodi'
-  | 'polygon'
-  | 'amoy'
-  | 'bsc'
-  | 'bscTestnet'
-  | 'arbitrum'
-  | 'arbitrumSepolia';
-
+// interface NetworkInfo is used to represent chain data parsed by the sdk
 export interface NetworkInfo {
-  name: NetworkName;
-  chainId: Network;
-  ensAddress: string;
-  explorerUrl: string; // no last `/`
-  color: string; // for dot color and other usage
-  nativeToken: Token;
-  networkType: NetworkType;
-  rpc:
-    | {
-        infuraNetwork: string; // check if it support in infura https://docs.infura.io/api/network-endpoints
-      }
-    | {
-        url: string; // otherwise use the chain official endpoint
-      };
+  chainId: number;
+  chainName: string;
+  blockExplorerUrls: string[];
+  nativeCurrency: TokenInfo;
+  rpcUrls: string[];
+  type: ChainType;
+  networkType: ChainNetworkType;
 }

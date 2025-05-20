@@ -1,41 +1,34 @@
-import createInfuraMiddleware from '@qubic-js/eth-json-rpc-infura';
 import { JsonRpcMiddleware } from 'json-rpc-engine';
-import { Network } from '../types';
 import { Bridge, BridgeEvent } from '../types/bridge';
-import { createJsonRpcServerMiddleware } from '../utils';
-import { NETWORK_INFO } from '../constants/network';
+import { createJsonRpcServerMiddleware, getNetworkInfo } from '../utils';
 
-interface MultiInfuraMiddlewareOptions {
-  initNetwork: Network;
-  projectId: string;
-}
-
-export const createMultiInfuraMiddleware = (
-  options: MultiInfuraMiddlewareOptions,
+export const createMultiInfuraMiddleware = async (
+  initNetwork: number,
   bridge: Bridge,
-): JsonRpcMiddleware<unknown, unknown> => {
-  let currentNetwork: Network = options.initNetwork;
-  const infuraMiddlewares = new Map<Network, JsonRpcMiddleware<unknown, unknown>>();
+): Promise<JsonRpcMiddleware<unknown, unknown>> => {
+  let currentNetwork: number = initNetwork;
+  const infuraMiddlewares = new Map<number, JsonRpcMiddleware<unknown, unknown>>();
 
-  function getCurrentMiddleware(): JsonRpcMiddleware<unknown, unknown> {
+  async function getCurrentMiddleware(): Promise<JsonRpcMiddleware<unknown, unknown>> {
     const existMiddleWare = infuraMiddlewares.get(currentNetwork);
     if (existMiddleWare) {
       return existMiddleWare;
     }
 
-    let currentMiddleware;
+    const networkInfo = await getNetworkInfo(currentNetwork);
 
-    const networkInfoRpc = NETWORK_INFO[currentNetwork].rpc;
-    if ('infuraNetwork' in networkInfoRpc) {
-      currentMiddleware = createInfuraMiddleware({
-        network: networkInfoRpc.infuraNetwork,
-        projectId: options.projectId,
-      });
-    } else {
-      currentMiddleware = createJsonRpcServerMiddleware({
-        url: networkInfoRpc.url,
-      });
+    if (!networkInfo.rpcUrls || networkInfo.rpcUrls.length === 0) {
+      throw new Error(`No rpcUrls found for network ${currentNetwork}`);
     }
+
+    const networkInfoRpc = networkInfo.rpcUrls[0];
+    if (!networkInfoRpc || typeof networkInfoRpc !== 'string') {
+      throw new Error(`Invalid rpcUrl for network ${currentNetwork}`);
+    }
+
+    const currentMiddleware = createJsonRpcServerMiddleware({
+      url: networkInfoRpc,
+    });
 
     infuraMiddlewares.set(currentNetwork, currentMiddleware as JsonRpcMiddleware<unknown, unknown>);
 
@@ -46,7 +39,8 @@ export const createMultiInfuraMiddleware = (
     currentNetwork = Number(chainId);
   });
 
-  return (req, res, next, end) => {
-    getCurrentMiddleware()(req, res, next, end);
+  return async (req, res, next, end) => {
+    const middleware = await getCurrentMiddleware();
+    middleware(req, res, next, end);
   };
 };
