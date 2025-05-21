@@ -23,6 +23,7 @@ export class BaseProvider extends EventEmitter {
 
   private prevChainId?: string;
   private prevAccounts?: string[];
+  private engineIsReady = false;
   constructor(options: BaseProviderOptions) {
     super();
     const { bridge, middlewares, network } = options;
@@ -35,6 +36,7 @@ export class BaseProvider extends EventEmitter {
 
     createMultiInfuraMiddleware(network, bridge).then((infuraMiddleware) => {
       this.engine?.push(infuraMiddleware);
+      this.engineIsReady = true;
     }).catch((error) => {
       console.error('Failed to create MultiInfuraMiddleware:', error);
     });
@@ -57,19 +59,20 @@ export class BaseProvider extends EventEmitter {
     request: RequestArguments,
     callback: (error: unknown, response?: JsonRpcResponse<T>) => void,
   ): void => {
-    if (this.engine) {
-      this.engine.handle(
-        {
-          id: getUniqueId(),
-          jsonrpc: '2.0',
-          params: [],
-          ...request,
-        },
-        callback,
-      );
-    } else {
+    if (!this.engineIsReady || !this.engine) {
       callback(ethErrors.provider.disconnected());
+      return;
     }
+
+    this.engine.handle(
+      {
+        id: getUniqueId(),
+        jsonrpc: '2.0',
+        params: [],
+        ...request,
+      },
+      callback,
+    );
   };
 
   public request = <T = unknown>(request: RequestArguments): Promise<T> => {

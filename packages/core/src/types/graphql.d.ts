@@ -4,7 +4,7 @@ type ID = string;
 
 type Time = string;
 
-type Address = string;
+type Address = `0x${string}`;
 
 type Hash = string;
 
