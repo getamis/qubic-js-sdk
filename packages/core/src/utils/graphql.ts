@@ -100,6 +100,6 @@ export class GraphQLClient {
   }
 }
 
-export function initGraphqlClient(config: GqlConfig): void {
+export function initNetworkInfoFetcher(config: GqlConfig): void {
   GraphQLClient.getInstance().init(config);
 }

@@ -1,4 +1,5 @@
 import { gql } from 'graphql-request';
+import NodeCache from 'node-cache';
 import { GraphQLClient } from './graphql';
 import { ChainInfo, ChainType, NetworkInfo } from '../types';
 
@@ -56,9 +57,16 @@ function getNetworkFromApiChain(chainInfo: ChainInfo): NetworkInfo {
     networkType: chainInfo.networkType,
   };
 }
-
+const cache = new NodeCache({ stdTTL: 3600 });
 
 export async function getNetworkInfo(id: string | number): Promise<NetworkInfo> {
+  const cacheKey = `networkInfo:${id}`;
+  const cachedData = cache.get<NetworkInfo>(cacheKey);
+
+  if (cachedData) {
+    return cachedData;
+  }
+
   const chainInfo = await GraphQLClient.getInstance().request<ChainVariables, ChainInfo>({
     query: CHAIN,
     variables: {
@@ -66,7 +74,9 @@ export async function getNetworkInfo(id: string | number): Promise<NetworkInfo> 
     },
   });
 
-  return getNetworkFromApiChain(chainInfo);
+  const networkInfo = getNetworkFromApiChain(chainInfo);
+  cache.set(cacheKey, networkInfo);
+  return networkInfo;
 }
 
 interface ChainsVariables {
@@ -74,6 +84,13 @@ interface ChainsVariables {
 }
 
 export async function getAllNetworkInfo(type?: ChainType): Promise<NetworkInfo[]> {
+  const cacheKey = `allNetworkInfo:${type || 'all'}`;
+  const cachedData = cache.get<NetworkInfo[]>(cacheKey);
+
+  if (cachedData) {
+    return cachedData;
+  }
+
   const allChainInfo = await GraphQLClient.getInstance().request<ChainsVariables, ChainInfo[]>({
     query: CHAINS,
     variables: {
@@ -81,7 +98,9 @@ export async function getAllNetworkInfo(type?: ChainType): Promise<NetworkInfo[]
     },
   });
 
-  return allChainInfo.map((chainInfo) => getNetworkFromApiChain(chainInfo));
+  const allNetworkInfo = allChainInfo.map((chainInfo) => getNetworkFromApiChain(chainInfo));
+  cache.set(cacheKey, allNetworkInfo);
+  return allNetworkInfo;
 }
 
 export async function checkIsNetworkSupported(chainId: number | string, type?: ChainType): Promise<boolean> {

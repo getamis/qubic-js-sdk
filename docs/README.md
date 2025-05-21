@@ -38,10 +38,10 @@ enum KnownNetwork {
 
 #### Graphql NetworkInfo
 
-Init graphql client at the start of your project
+Init networkInfo fetcher at the start of your project
 ```javascript
-import { initGraphqlClient } from '@qubic-js/core';
-initGraphqlClient({
+import { initNetworkInfoFetcher } from '@qubic-js/core';
+initNetworkInfoFetcher({
   apiKey: 'example-api-key',
   apiSecret: 'example-api-secret',
   apiUri: 'example-api-uri',
