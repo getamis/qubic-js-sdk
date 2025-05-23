@@ -6,6 +6,7 @@ import { ChainInfo, ChainType, NetworkInfo } from '../types';
 const CHAIN_FIELDS = gql`
   fragment ChainFields on Chain {
     id
+    chainId
     name
     blockExplorerUrls
     rpcUrls
@@ -42,10 +43,6 @@ const CHAINS = gql`
   }
 `;
 
-interface ChainVariables {
-  id: string | number;
-}
-
 function getNetworkFromApiChain(chainInfo: ChainInfo): NetworkInfo {
   return {
     chainId: chainInfo.chainId,
@@ -59,6 +56,14 @@ function getNetworkFromApiChain(chainInfo: ChainInfo): NetworkInfo {
 }
 const cache = new NodeCache({ stdTTL: 3600 });
 
+interface ChainVariables {
+  id: string | number;
+}
+
+interface ChainResult {
+  chain: ChainInfo;
+}
+
 export async function getNetworkInfo(id: string | number): Promise<NetworkInfo> {
   const cacheKey = `networkInfo:${id}`;
   const cachedData = cache.get<NetworkInfo>(cacheKey);
@@ -67,20 +72,26 @@ export async function getNetworkInfo(id: string | number): Promise<NetworkInfo> 
     return cachedData;
   }
 
-  const chainInfo = await GraphQLClient.getInstance().request<ChainVariables, ChainInfo>({
+  const chainInfo = await GraphQLClient.getInstance().request<ChainVariables, ChainResult>({
     query: CHAIN,
     variables: {
       id,
     },
   });
 
-  const networkInfo = getNetworkFromApiChain(chainInfo);
+  const networkInfo = getNetworkFromApiChain(chainInfo.chain);
   cache.set(cacheKey, networkInfo);
   return networkInfo;
 }
 
 interface ChainsVariables {
   type?: ChainType;
+}
+
+interface ChainsResult {
+  chains: {
+    nodes: ChainInfo[];
+  };
 }
 
 export async function getAllNetworkInfo(type?: ChainType): Promise<NetworkInfo[]> {
@@ -91,14 +102,14 @@ export async function getAllNetworkInfo(type?: ChainType): Promise<NetworkInfo[]
     return cachedData;
   }
 
-  const allChainInfo = await GraphQLClient.getInstance().request<ChainsVariables, ChainInfo[]>({
+  const allChainInfo = await GraphQLClient.getInstance().request<ChainsVariables, ChainsResult>({
     query: CHAINS,
     variables: {
       type,
     },
   });
 
-  const allNetworkInfo = allChainInfo.map((chainInfo) => getNetworkFromApiChain(chainInfo));
+  const allNetworkInfo = allChainInfo.chains.nodes.map((chainInfo) => getNetworkFromApiChain(chainInfo));
   cache.set(cacheKey, allNetworkInfo);
   return allNetworkInfo;
 }
