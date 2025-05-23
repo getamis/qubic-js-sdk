@@ -7,7 +7,6 @@ import { createWalletMiddleware } from '../middlewares/walletMiddleware';
 import { Bridge, BridgeEvent, RequestArguments } from '../types';
 
 interface BaseProviderOptions {
-  infuraProjectId?: string;
   network: number;
   bridge: Bridge;
   middlewares: Array<JsonRpcMiddleware<unknown, unknown>>;

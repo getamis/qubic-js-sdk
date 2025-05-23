@@ -11,7 +11,6 @@ export interface BrowserProviderOptions {
   apiKey?: string;
   apiSecret?: string;
   chainId?: number;
-  infuraProjectId?: string;
   walletUrl?: string; // optional, it not provided use production wallet url
   enableIframe?: boolean;
   iabRedirectUrl?: string; // optional, it not provided use window.location.href
@@ -34,7 +33,6 @@ export class BrowserProvider extends BaseProvider {
       apiKey,
       apiSecret,
       chainId = KnownNetwork.MAINNET,
-      infuraProjectId,
       enableIframe = false,
       walletUrl = WALLET_URL,
       iabRedirectUrl,
@@ -73,7 +71,6 @@ export class BrowserProvider extends BaseProvider {
     }
 
     super({
-      infuraProjectId,
       network: chainId,
       bridge,
       middlewares: [createCacheMiddleware(bridge, enablePersist), createPrepareBridgeMiddleware()],

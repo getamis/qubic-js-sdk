@@ -7,7 +7,6 @@ export interface QubicConnectorOptions {
   apiKey?: string;
   apiSecret?: string;
   chainId?: number;
-  infuraProjectId?: string;
   walletUrl?: string;
   enableIframe?: boolean;
   signInProvider?: SignInProvider;
@@ -65,7 +64,6 @@ export default class QubicWalletConnector extends Connector {
         apiSecret,
         chainId: optionChainId = KnownNetwork.MAINNET,
         walletUrl,
-        infuraProjectId,
         enableIframe,
         disableFastSignup,
         disableIabWarning,
@@ -84,7 +82,6 @@ export default class QubicWalletConnector extends Connector {
         apiSecret,
         chainId: initChainId,
         walletUrl,
-        infuraProjectId,
         enableIframe,
         disableFastSignup,
         disableIabWarning,
