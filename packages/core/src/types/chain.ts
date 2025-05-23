@@ -1,3 +1,6 @@
+export type ID = string;
+export type Address = `0x${string}`;
+
 export enum KnownNetwork {
   MAINNET = 1,
   HOODI = 560048,
@@ -20,6 +23,7 @@ export enum ChainNetworkType {
   POLYGON = 'POLYGON',
   ARBITRUM = 'ARBITRUM',
 }
+
 export interface TokenInfo {
   id: ID;
   chainId: number;
