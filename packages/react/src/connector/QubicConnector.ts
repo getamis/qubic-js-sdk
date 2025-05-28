@@ -1,5 +1,5 @@
 import QubicProvider, { getPersistedData, isInQubicDappBrowser } from '@qubic-js/browser';
-import { KnownNetwork, SignInProvider } from '@qubic-js/core';
+import { Network, SignInProvider } from '@qubic-js/core';
 import type { Actions } from '@web3-react/types';
 import { Connector } from '@web3-react/types';
 
@@ -35,14 +35,14 @@ export default class QubicWalletConnector extends Connector {
   private readonly options: QubicConnectorOptions;
   private eagerConnection?: Promise<void>;
   private supportedChainIds = [
-    KnownNetwork.MAINNET,
-    KnownNetwork.HOODI,
-    KnownNetwork.POLYGON,
-    KnownNetwork.AMOY,
-    KnownNetwork.BSC,
-    KnownNetwork.BSC_TESTNET,
-    KnownNetwork.ARBITRUM,
-    KnownNetwork.ARBITRUM_SEPOLIA,
+    Network.MAINNET,
+    Network.HOODI,
+    Network.POLYGON,
+    Network.AMOY,
+    Network.BSC,
+    Network.BSC_TESTNET,
+    Network.ARBITRUM,
+    Network.ARBITRUM_SEPOLIA,
   ];
 
   constructor({ actions, options, onError }: QubicConstructorArgs) {
@@ -62,7 +62,7 @@ export default class QubicWalletConnector extends Connector {
       const {
         apiKey,
         apiSecret,
-        chainId: optionChainId = KnownNetwork.MAINNET,
+        chainId: optionChainId = Network.MAINNET,
         walletUrl,
         enableIframe,
         disableFastSignup,
@@ -73,7 +73,7 @@ export default class QubicWalletConnector extends Connector {
       let initChainId = optionChainId;
       if (!this.supportedChainIds?.includes(optionChainId)) {
         console.error(`chainId: ${optionChainId} does not supported, use mainnet instead`);
-        initChainId = KnownNetwork.MAINNET;
+        initChainId = Network.MAINNET;
       }
 
       // eslint-disable-next-line new-cap

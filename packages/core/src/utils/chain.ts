@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request';
 import NodeCache from 'node-cache';
 import { GraphQLClient } from './graphql';
-import { ChainInfo, ChainType, NetworkInfo } from '../types';
+import { ChainInfo, ChainType, Network, NetworkInfo } from '../types';
 
 const CHAIN_FIELDS = gql`
   fragment ChainFields on Chain {
@@ -43,6 +43,14 @@ const CHAINS = gql`
   }
 `;
 
+function isEnumValue<T extends Record<string, unknown>>(enumObj: T, value: unknown): value is T[keyof T] {
+  return Object.values(enumObj).filter(v => typeof v === 'number').includes(Number(value));
+}
+
+export function isNetwork(chainId: number | string): chainId is Network {
+  return isEnumValue(Network, chainId);
+}
+
 function getNetworkFromApiChain(chainInfo: ChainInfo): NetworkInfo {
   return {
     chainId: chainInfo.chainId,
@@ -54,17 +62,25 @@ function getNetworkFromApiChain(chainInfo: ChainInfo): NetworkInfo {
     networkType: chainInfo.networkType,
   };
 }
+
 const cache = new NodeCache({ stdTTL: 3600 });
 
 interface ChainVariables {
   id: string | number;
 }
-
 interface ChainResult {
   chain: ChainInfo;
 }
+interface ChainsVariables {
+  type?: ChainType;
+}
+interface ChainsResult {
+  chains: {
+    nodes: ChainInfo[];
+  };
+}
 
-export async function getNetworkInfo(id: string | number): Promise<NetworkInfo> {
+export async function getNetworkInfo(id: string | number): Promise<NetworkInfo | null> {
   const cacheKey = `networkInfo:${id}`;
   const cachedData = cache.get<NetworkInfo>(cacheKey);
 
@@ -72,29 +88,29 @@ export async function getNetworkInfo(id: string | number): Promise<NetworkInfo> 
     return cachedData;
   }
 
-  const chainInfo = await GraphQLClient.getInstance().request<ChainVariables, ChainResult>({
-    query: CHAIN,
-    variables: {
-      id,
-    },
-  });
+  let chainInfo: ChainResult;
+  try {
+    chainInfo = await GraphQLClient.getInstance().request<ChainVariables, ChainResult>({
+      query: CHAIN,
+      variables: { id },
+    });
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch chain info for ID ${id}: ` +
+      `${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+
+  if (!isNetwork(chainInfo.chain.chainId)) {
+    throw new Error(`Unknown chainId: ${chainInfo.chain.chainId}. Check Network enum update status.`);
+  }
 
   const networkInfo = getNetworkFromApiChain(chainInfo.chain);
   cache.set(cacheKey, networkInfo);
   return networkInfo;
 }
 
-interface ChainsVariables {
-  type?: ChainType;
-}
-
-interface ChainsResult {
-  chains: {
-    nodes: ChainInfo[];
-  };
-}
-
-export async function getAllNetworkInfo(type?: ChainType): Promise<NetworkInfo[]> {
+export async function getAllNetworkInfo(type?: ChainType): Promise<NetworkInfo[] | null> {
   const cacheKey = `allNetworkInfo:${type || 'all'}`;
   const cachedData = cache.get<NetworkInfo[]>(cacheKey);
 
@@ -102,19 +118,41 @@ export async function getAllNetworkInfo(type?: ChainType): Promise<NetworkInfo[]
     return cachedData;
   }
 
-  const allChainInfo = await GraphQLClient.getInstance().request<ChainsVariables, ChainsResult>({
-    query: CHAINS,
-    variables: {
-      type,
-    },
+  let allChainInfo: ChainsResult;
+  try {
+    allChainInfo = await GraphQLClient.getInstance().request<ChainsVariables, ChainsResult>({
+      query: CHAINS,
+      variables: { type },
+    });
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch all chain info${type ? ` with type ${type}` : ''}: ` +
+      `${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+
+  allChainInfo.chains.nodes.forEach(node => {
+    if (!isNetwork(node.chainId)) {
+      throw new Error(`Unknown chainId: ${node.chainId}. Check Network enum update status.`);
+    }
   });
 
-  const allNetworkInfo = allChainInfo.chains.nodes.map((chainInfo) => getNetworkFromApiChain(chainInfo));
+  const allNetworkInfo = allChainInfo.chains.nodes.map(getNetworkFromApiChain);
   cache.set(cacheKey, allNetworkInfo);
   return allNetworkInfo;
 }
 
-export async function checkIsNetworkSupported(chainId: number | string, type?: ChainType): Promise<boolean> {
-  const supportedNetworks = await getAllNetworkInfo(type);
-  return supportedNetworks.some((network) => network.chainId === chainId);
-}
+export const parseNetwork = async (chainId: number | string): Promise<Network | null> => {
+  if (!isNetwork(chainId)) {
+    return null;
+  }
+  const correspondNetworkInfo = await getNetworkInfo(chainId);
+  if (!correspondNetworkInfo) {
+    throw new Error(
+      `Chain ID ${chainId} is Network but unknown to API. Check Network enum update status.`
+    );
+  }
+  return Number(chainId) as Network;
+};
+
+export const NATIVE_TOKEN_ADDRESS = '0x0000000000000000000000000000000000455448';

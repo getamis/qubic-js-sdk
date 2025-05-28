@@ -17,7 +17,7 @@ export const createMultiInfuraMiddleware = async (
 
     const networkInfo = await getNetworkInfo(currentNetwork);
 
-    if (!networkInfo.rpcUrls || networkInfo.rpcUrls.length === 0) {
+    if (!networkInfo || !networkInfo.rpcUrls || networkInfo.rpcUrls.length === 0) {
       throw new Error(`No rpcUrls found for network ${currentNetwork}`);
     }
 

@@ -1,4 +1,4 @@
-import { ApiConfig, BaseProvider, KnownNetwork, WALLET_URL, SignInProvider } from '@qubic-js/core';
+import { ApiConfig, BaseProvider, Network, WALLET_URL, SignInProvider } from '@qubic-js/core';
 import { openExternalBrowserWhenLineIab, showBlockerWhenIab } from '@qubic-connect/detect-iab';
 
 import createCacheMiddleware from './middlewares/cacheMiddleware';
@@ -32,7 +32,7 @@ export class BrowserProvider extends BaseProvider {
     const {
       apiKey,
       apiSecret,
-      chainId = KnownNetwork.MAINNET,
+      chainId = Network.MAINNET,
       enableIframe = false,
       walletUrl = WALLET_URL,
       iabRedirectUrl,

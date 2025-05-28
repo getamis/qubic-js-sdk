@@ -1,7 +1,7 @@
 export type ID = string;
 export type Address = `0x${string}`;
 
-export enum KnownNetwork {
+export enum Network {
   MAINNET = 1,
   HOODI = 560048,
   POLYGON = 137,
@@ -47,7 +47,7 @@ export interface ChainInfo {
 
 // interface NetworkInfo is used to represent chain data parsed by the sdk
 export interface NetworkInfo {
-  chainId: number;
+  chainId: Network;
   chainName: string;
   blockExplorerUrls: string[];
   nativeCurrency: TokenInfo;

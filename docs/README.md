@@ -24,7 +24,7 @@ npm install @qubic-js/browser
 
 These are the network names we recognize along with their corresponding chain IDs.
 ```javascript
-enum KnownNetwork {
+enum Network {
   MAINNET = 1,
   HOODI = 560048,
   POLYGON = 137,
@@ -49,12 +49,14 @@ initNetworkInfoFetcher({
 ```
 
 then you are free to access network (chain) related data from api
+use try / catch while using to catch error that should report to backend
 
 ```javascript
-import { getNetworkInfo, getAllNetworkInfo, checkIsNetworkSupported } from '@qubic-js/core';
+import { getNetworkInfo, getAllNetworkInfo, parseNetwork } from '@qubic-js/core';
 const networkInfo = await getNetworkInfo(1);
 const allNetworkInfo = await getAllNetworkInfo();
-const isNetworkSupported = await checkIsNetworkSupported(1)
+const network = await parseNetwork(1)
+if (isNetwork(1)) { ... }
 ```
 
 #### Provider and Connector Options
