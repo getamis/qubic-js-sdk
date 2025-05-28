@@ -4,7 +4,7 @@ import { useWeb3React } from '@web3-react/core';
 import { utils } from 'ethers';
 import { recoverTypedSignature, recoverTypedSignature_v4 } from 'eth-sig-util';
 import { v4 as uuidv4 } from 'uuid';
-import { SignInProvider, getNetworkInfo, getAllNetworkInfo, checkIsNetworkSupported } from '@qubic-js/core';
+import { SignInProvider, getNetworkInfo, getAllNetworkInfo, parseNetwork } from '@qubic-js/core';
 
 import wrappedConnectors from './wrappedConnectors';
 import { enableIframe } from './queryParams';
@@ -449,9 +449,9 @@ function App() {
     const allNetworkInfo = await getAllNetworkInfo()
     console.log('-----------> allNetworkInfo', allNetworkInfo);
   }, []);
-  const handleCheckIsNetworkSupported = useCallback(async () => {
-    const isSupported = await checkIsNetworkSupported(1);
-    console.log('-----------> isSupported', isSupported);
+  const handleParseNetwork = useCallback(async () => {
+    const network = await parseNetwork(1);
+    console.log('-----------> network', network);
   }, []);
 
   const isConnected = !!address && !!network;
@@ -522,7 +522,7 @@ function App() {
           <Title>Network Logic(log in console)</Title>
           <Button onClick={handleGetNetworkInfo}>getNetworkInfo(chainId: 1)</Button>
           <Button onClick={handleGetAllNetworkInfo}>getAllNetworkInfo</Button>
-          <Button onClick={handleCheckIsNetworkSupported}>checkIsNetworkSupported(chainId: 1)</Button>
+          <Button onClick={handleParseNetwork}>parseNetwork(chainId: 1)</Button>
         </Group>
 
         <Group>
