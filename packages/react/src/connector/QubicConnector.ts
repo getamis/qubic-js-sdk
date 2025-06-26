@@ -10,7 +10,6 @@ export interface QubicConnectorOptions {
   walletUrl?: string;
   enableIframe?: boolean;
   signInProvider?: SignInProvider;
-  disableFastSignup?: boolean;
   disableIabWarning?: boolean;
   disableOpenExternalBrowserWhenLineIab?: boolean;
   /** hide welcome screen after sign in success */
@@ -65,7 +64,6 @@ export default class QubicWalletConnector extends Connector {
         chainId: optionChainId = Network.MAINNET,
         walletUrl,
         enableIframe,
-        disableFastSignup,
         disableIabWarning,
         disableOpenExternalBrowserWhenLineIab,
       } = this.options;
@@ -83,7 +81,6 @@ export default class QubicWalletConnector extends Connector {
         chainId: initChainId,
         walletUrl,
         enableIframe,
-        disableFastSignup,
         disableIabWarning,
         disableOpenExternalBrowserWhenLineIab,
         enablePersist: true,

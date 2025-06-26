@@ -31,17 +31,15 @@ class IFrame implements Messenger {
 
   private apiConfig: ApiConfig;
   private walletUrl: string;
-  private disableFastSignup: boolean;
   private signInProvider?: SignInProvider;
   private isReady = false;
 
   private element: HTMLIFrameElement;
   public isIframeAppended = false;
 
-  constructor(walletUrl: string, apiConfig: ApiConfig, disableFastSignup = false) {
+  constructor(walletUrl: string, apiConfig: ApiConfig) {
     this.walletUrl = walletUrl;
     this.apiConfig = apiConfig;
-    this.disableFastSignup = disableFastSignup;
 
     const iframe = document.createElement('iframe');
     iframe.width = '100%';
@@ -71,7 +69,7 @@ class IFrame implements Messenger {
   }
 
   private getUrl = (): string => {
-    return urlWithApiConfig(this.walletUrl, this.apiConfig, this.disableFastSignup, this.signInProvider);
+    return urlWithApiConfig(this.walletUrl, this.apiConfig, this.signInProvider);
   };
 
   public setSignInProvider = (value: SignInProvider): void => {
