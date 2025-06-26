@@ -21,17 +21,15 @@ class PopupWindow implements Messenger {
 
   private apiConfig: ApiConfig;
   private walletUrl: string;
-  private disableFastSignup: boolean;
   private signInProvider?: SignInProvider;
   private isReady = false;
 
   private proxy: Window | null = null;
   private newWindowReminderModal: Modal;
 
-  constructor(walletUrl: string, apiConfig: ApiConfig, disableFastSignup = false) {
+  constructor(walletUrl: string, apiConfig: ApiConfig) {
     this.walletUrl = walletUrl;
     this.apiConfig = apiConfig;
-    this.disableFastSignup = disableFastSignup;
     this.newWindowReminderModal = new Modal({
       description: t('popup-window-hint'),
       cancelText: t('no'),
@@ -66,7 +64,7 @@ class PopupWindow implements Messenger {
   }
 
   private getUrl = (): string => {
-    return urlWithApiConfig(this.walletUrl, this.apiConfig, this.disableFastSignup, this.signInProvider);
+    return urlWithApiConfig(this.walletUrl, this.apiConfig, this.signInProvider);
   };
 
   public setSignInProvider = (value: SignInProvider): void => {
@@ -165,13 +163,16 @@ class PopupWindow implements Messenger {
       show({ onReminderModalCancel: this.cancelHandler });
 
       if (this.waitUntilReadyTimeout) clearTimeout(this.waitUntilReadyTimeout);
-      this.waitUntilReadyTimeout = setTimeout(() => {
-        if (!this?.cancelHandler || !this.successHandler) return;
-        bridge.removeListener(BridgeEvent.hide, this.cancelHandler);
-        bridge.removeListener(BridgeEvent.ready, this.successHandler);
-        reject();
-        if (this.waitUntilReadyTimeout) clearTimeout(this.waitUntilReadyTimeout);
-      }, 1000 * 60 * WAITING_FOR_WALLET_TIMEOUT_LIMIT_MIN);
+      this.waitUntilReadyTimeout = setTimeout(
+        () => {
+          if (!this?.cancelHandler || !this.successHandler) return;
+          bridge.removeListener(BridgeEvent.hide, this.cancelHandler);
+          bridge.removeListener(BridgeEvent.ready, this.successHandler);
+          reject();
+          if (this.waitUntilReadyTimeout) clearTimeout(this.waitUntilReadyTimeout);
+        },
+        1000 * 60 * WAITING_FOR_WALLET_TIMEOUT_LIMIT_MIN,
+      );
     });
   };
 

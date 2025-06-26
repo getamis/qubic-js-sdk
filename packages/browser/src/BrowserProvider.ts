@@ -15,7 +15,6 @@ export interface BrowserProviderOptions {
   enableIframe?: boolean;
   iabRedirectUrl?: string; // optional, it not provided use window.location.href
   shouldAlwaysShowCopyUI?: boolean; // optional, it not provided use false
-  disableFastSignup?: boolean;
   disableIabWarning?: boolean;
   disableOpenExternalBrowserWhenLineIab?: boolean;
   enablePersist?: boolean; // enable persist accounts and chain id
@@ -37,7 +36,6 @@ export class BrowserProvider extends BaseProvider {
       walletUrl = WALLET_URL,
       iabRedirectUrl,
       shouldAlwaysShowCopyUI,
-      disableFastSignup,
       disableIabWarning = false,
       disableOpenExternalBrowserWhenLineIab = false,
       enablePersist = false,
@@ -55,9 +53,7 @@ export class BrowserProvider extends BaseProvider {
       createPrepareBridgeMiddleware,
       setSignInProvider: originSetSignInProvider,
       removeSignInProvider: originRemoveSignInProvider,
-    } = enableIframe
-      ? new IFrame(walletUrl, apiConfig, disableFastSignup)
-      : new PopupWindow(walletUrl, apiConfig, disableFastSignup);
+    } = enableIframe ? new IFrame(walletUrl, apiConfig) : new PopupWindow(walletUrl, apiConfig);
 
     if (!disableOpenExternalBrowserWhenLineIab) {
       openExternalBrowserWhenLineIab();

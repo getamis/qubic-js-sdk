@@ -6,18 +6,12 @@ import { ApiConfig, SignInProvider } from '../types';
 // so we use genversion to create version.js file
 import sdkVersion from './version';
 
-export const urlWithApiConfig = (
-  url: string,
-  config: ApiConfig,
-  disableFastSignup: boolean,
-  signInProvider?: SignInProvider,
-): string => {
+export const urlWithApiConfig = (url: string, config: ApiConfig, signInProvider?: SignInProvider): string => {
   const { apiKey, apiSecret, chainId } = config;
 
   return qs.stringifyUrl({
     url,
     query: {
-      disableFastSignup,
       sdkVersion,
       ...(chainId && { network: chainId }),
       ...(apiKey && { k: btoa(apiKey) }),
