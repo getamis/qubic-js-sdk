@@ -19,7 +19,7 @@
     "lint:tsc": "yarn workspace @qubic-js/core tsc && yarn workspace @qubic-js/browser tsc && yarn workspace @qubic-js/react tsc"
   },
   "engines": {
-    "node": ">=8"
+    "node": ">=22"
   },
   "jest": {
     "testTimeout": 50000,
