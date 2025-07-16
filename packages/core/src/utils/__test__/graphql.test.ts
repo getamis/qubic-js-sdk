@@ -1,7 +1,7 @@
 import * as graphqlRequest from 'graphql-request';
 import serviceHeaderBuilder from '../serviceHeaderBuilder';
 import { GraphQLClient, initNetworkInfoFetcher, InitGqlConfig, resolveRequestDocument } from '../graphql';
-import { GRAPHQL_ENDPOINT } from '../../types';
+import { GRAPHQL_ENDPOINT } from '../../constants/backend';
 
 jest.mock('graphql-request', () => ({
   request: jest.fn(),
@@ -23,7 +23,7 @@ describe('GraphQL related functions', () => {
     jest.clearAllMocks();
   });
 
-  describe('initNetworkInfoFetcher and GraphQLClient.init', () => {
+  describe('initNetworkInfoFetcher and GraphQLClient.getInstance', () => {
     it('should return true on successful initialization with valid config', () => {
       const config: InitGqlConfig = {
         apiKey: 'test-api-key',
@@ -61,12 +61,12 @@ describe('GraphQL related functions', () => {
     it('should throw an error if called before initialization', () => {
       expect(() => {
         GraphQLClient.getInstance();
-      }).toThrow('GraphQLClient not initialized. Please call initNetworkInfoFetcher() or init() first.');
+      }).toThrow('GraphQLClient not initialized. Please call initNetworkInfoFetcher() first.');
     });
 
     it('should return an instance of GraphQLClient after initialization', () => {
       const config: InitGqlConfig = { apiKey: 'test-api-key', apiSecret: 'test-api-secret' };
-      GraphQLClient.init(config);
+      GraphQLClient.getInstance(config);
       const instance = GraphQLClient.getInstance();
       expect(instance).toBeInstanceOf(GraphQLClient);
     });
@@ -85,7 +85,7 @@ describe('GraphQL related functions', () => {
     });
 
     it('should make a request with custom apiUri if provided', async () => {
-      GraphQLClient.init(config);
+      GraphQLClient.getInstance(config);
       const client = GraphQLClient.getInstance();
 
       await client.request({ query: MOCK_QUERY, variables: MOCK_VARIABLES });
@@ -108,7 +108,7 @@ describe('GraphQL related functions', () => {
 
     it('should make a request with default endpoint if apiUri is not provided', async () => {
       const defaultConfig = { apiKey: 'key', apiSecret: 'secret' };
-      GraphQLClient.init(defaultConfig);
+      GraphQLClient.getInstance(defaultConfig);
       const client = GraphQLClient.getInstance();
 
       await client.request({ query: MOCK_QUERY, variables: MOCK_VARIABLES });
@@ -130,7 +130,7 @@ describe('GraphQL related functions', () => {
     });
 
     it('should throw an error if the query is invalid and body cannot be created', async () => {
-      GraphQLClient.init(config);
+      GraphQLClient.getInstance(config);
       const client = GraphQLClient.getInstance();
 
       await expect(client.request({ query: '' })).rejects.toThrow('Invalid GraphQL query or operation name not found');
@@ -176,7 +176,7 @@ describe('GraphQL related functions', () => {
         apiSecret: 'test-api-secret',
       };
 
-      GraphQLClient.init(configNoRetry);
+      GraphQLClient.getInstance(configNoRetry);
       const client = GraphQLClient.getInstance();
 
       const originalError = new Error('Network connection failed');
@@ -189,7 +189,7 @@ describe('GraphQL related functions', () => {
     });
 
     it('should handle serviceHeaderBuilder errors and preserve stack trace', async () => {
-      GraphQLClient.init(config);
+      GraphQLClient.getInstance(config);
       const client = GraphQLClient.getInstance();
 
       const originalError = new Error('Header generation failed');
@@ -215,7 +215,7 @@ describe('GraphQL related functions', () => {
         apiSecret: 'test-api-secret',
       };
 
-      GraphQLClient.init(configNoRetry);
+      GraphQLClient.getInstance(configNoRetry);
       const client = GraphQLClient.getInstance();
 
       const retryableError = new Error('ECONNRESET');
@@ -255,13 +255,13 @@ describe('GraphQL related functions', () => {
         apiSecret: 'test-api-secret',
       };
 
-      GraphQLClient.init(config1);
-      const result = GraphQLClient.init(config2);
-      expect(result).toBeUndefined();
+      GraphQLClient.getInstance(config1);
+      const result = GraphQLClient.getInstance(config2);
+      expect(result).toBeInstanceOf(GraphQLClient);
     });
   });
 
-  describe('GraphQLClient.init with configuration conflicts', () => {
+  describe('GraphQLClient.getInstance with configuration conflicts', () => {
     beforeEach(() => {
       GraphQLClient._resetInstanceForTesting();
     });
@@ -280,12 +280,12 @@ describe('GraphQL related functions', () => {
       };
 
       // First initialization should succeed
-      const firstResult = GraphQLClient.init(firstConfig);
-      expect(firstResult).toBeUndefined();
+      const firstResult = GraphQLClient.getInstance(firstConfig);
+      expect(firstResult).toBeInstanceOf(GraphQLClient);
 
       // Second initialization with different config should throw
       expect(() => {
-        GraphQLClient.init(secondConfig);
+        GraphQLClient.getInstance(secondConfig);
       }).toThrow('GraphQLClient already initialized with a different configuration.');
     });
 
@@ -300,10 +300,10 @@ describe('GraphQL related functions', () => {
         apiSecret: 'same-secret',
       };
 
-      GraphQLClient.init(firstConfig);
+      GraphQLClient.getInstance(firstConfig);
 
       expect(() => {
-        GraphQLClient.init(secondConfig);
+        GraphQLClient.getInstance(secondConfig);
       }).toThrow('GraphQLClient already initialized with a different configuration.');
     });
 
@@ -318,10 +318,10 @@ describe('GraphQL related functions', () => {
         apiSecret: 'different-secret',
       };
 
-      GraphQLClient.init(firstConfig);
+      GraphQLClient.getInstance(firstConfig);
 
       expect(() => {
-        GraphQLClient.init(secondConfig);
+        GraphQLClient.getInstance(secondConfig);
       }).toThrow('GraphQLClient already initialized with a different configuration.');
     });
 
@@ -338,10 +338,10 @@ describe('GraphQL related functions', () => {
         apiUri: 'https://different.api/graphql',
       };
 
-      GraphQLClient.init(firstConfig);
+      GraphQLClient.getInstance(firstConfig);
 
       expect(() => {
-        GraphQLClient.init(secondConfig);
+        GraphQLClient.getInstance(secondConfig);
       }).toThrow('GraphQLClient already initialized with a different configuration.');
     });
   });
