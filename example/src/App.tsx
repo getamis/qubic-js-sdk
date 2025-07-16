@@ -442,15 +442,27 @@ function App() {
   }, [currentProvider]);
 
   const handleGetNetworkInfo = useCallback(async () => {
-    const networkInfo = await getNetworkInfo(1)
+    const answer = window.prompt('Enter chain ID (default: 1):', '1');
+    if (answer === null) {
+      return;
+    }
+    const chainId = Number(answer);
+    const networkInfo = await getNetworkInfo(chainId);
     console.log('-----------> networkInfo', networkInfo);
   }, []);
+
   const handleGetAllNetworkInfo = useCallback(async () => {
-    const allNetworkInfo = await getAllNetworkInfo()
+    const allNetworkInfo = await getAllNetworkInfo();
     console.log('-----------> allNetworkInfo', allNetworkInfo);
   }, []);
+
   const handleParseNetwork = useCallback(async () => {
-    const network = await parseNetwork(1);
+    const answer = window.prompt('Enter chain ID(default: 1):', '1');
+    if (answer === null) {
+      return;
+    }
+    const chainId = Number(answer);
+    const network = await parseNetwork(chainId);
     console.log('-----------> network', network);
   }, []);
 
@@ -520,9 +532,9 @@ function App() {
 
         <Group>
           <Title>Network Logic(log in console)</Title>
-          <Button onClick={handleGetNetworkInfo}>getNetworkInfo(chainId: 1)</Button>
+          <Button onClick={handleGetNetworkInfo}>getNetworkInfo</Button>
           <Button onClick={handleGetAllNetworkInfo}>getAllNetworkInfo</Button>
-          <Button onClick={handleParseNetwork}>parseNetwork(chainId: 1)</Button>
+          <Button onClick={handleParseNetwork}>parseNetwork</Button>
         </Group>
 
         <Group>

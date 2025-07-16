@@ -17,7 +17,7 @@ const serviceHeaderBuilder = ({
   apiKey,
   body = '',
   accessToken,
-}: BuilderInput): HeadersInit => {
+}: BuilderInput): Record<string, string> => {
   if (!apiKey || !apiSecret) {
     return {};
   }

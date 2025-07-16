@@ -1,67 +1,83 @@
+// graphql.ts
+// eslint-disable-next-line max-classes-per-file
 import { DocumentNode, OperationDefinitionNode, parse, print } from 'graphql';
-import { request, RequestDocument, Variables } from 'graphql-request';
+import { request as gqlRequest, Variables, RequestDocument } from 'graphql-request';
 import serviceHeaderBuilder from './serviceHeaderBuilder';
 
-interface GqlConfig {
+export const GRAPHQL_ENDPOINT = 'https://wallet.qubic.app/services/graphql-public';
+
+export interface GqlConfig {
   apiKey: string;
   apiSecret: string;
   apiUri: string;
 }
 
-interface RequestGraphqlInput<TVariables> {
-  query: string;
-  variables?: TVariables;
-  isPublic?: boolean;
+export interface InitGqlConfig extends Partial<Pick<GqlConfig, 'apiUri'>> {
+  apiKey: string;
+  apiSecret: string;
 }
 
-function extractOperationName(document: DocumentNode): string | undefined {
-  const operationDefinitions = document.definitions.filter(
-    (def): def is OperationDefinitionNode => def.kind === 'OperationDefinition'
-  );
-
-  return operationDefinitions.length === 1
-    ? operationDefinitions[0]?.name?.value
-    : undefined;
+function extractOperationName(doc: DocumentNode): string | undefined {
+  const def = doc.definitions.find(d => d.kind === 'OperationDefinition') as OperationDefinitionNode | undefined;
+  return def?.name?.value;
 }
 
 export class GraphQLClient {
-  private static instance: GraphQLClient;
-  private config: GqlConfig | undefined;
+  private static instance: GraphQLClient | null = null;
+  private config!: GqlConfig;
+
+  // eslint-disable-next-line no-useless-constructor, @typescript-eslint/no-empty-function
+  private constructor() {}
+
+  public static init(cfg: InitGqlConfig): void {
+    if (!cfg.apiKey || !cfg.apiSecret) {
+      throw new Error('Missing required configuration parameters: apiKey and apiSecret.');
+    }
+
+    const full: GqlConfig = {
+      apiKey: cfg.apiKey,
+      apiSecret: cfg.apiSecret,
+      apiUri: cfg.apiUri || GRAPHQL_ENDPOINT,
+    };
+
+    if (!this.instance) {
+      this.instance = new GraphQLClient();
+      this.instance.config = full;
+      return;
+    }
+
+    const cur = this.instance.config;
+    if (cur.apiKey === full.apiKey && cur.apiSecret === full.apiSecret && cur.apiUri === full.apiUri) {
+      return;
+    }
+
+    throw new Error('GraphQLClient already initialized with a different configuration.');
+  }
+
+  public static _resetInstanceForTesting(): void {
+    this.instance = null;
+  }
 
   public static getInstance(): GraphQLClient {
-    if (!GraphQLClient.instance) {
-      GraphQLClient.instance = new GraphQLClient();
+    if (!this.instance) {
+      throw new Error('GraphQLClient not initialized. Please call initNetworkInfoFetcher() or init() first.');
     }
-    return GraphQLClient.instance;
+    return this.instance;
   }
 
-  public init(config: GqlConfig): void {
-    if (this.config) {
-      throw new Error('GraphQLClient already initialized');
-    }
-
-    if (!config.apiKey || !config.apiSecret || !config.apiUri) {
-      throw new Error('Missing required configuration parameters');
-    }
-
-    this.config = { ...config };
-  }
-
-  public async request<TVariables extends Variables, TResult>(
-    input: RequestGraphqlInput<TVariables>
-  ): Promise<TResult> {
+  public async request<TVars extends Variables, TResult>(input: {
+    query: string;
+    variables?: TVars;
+    isPublic?: boolean;
+  }): Promise<TResult> {
     const { query, variables } = input;
-    if (!this.config) {
-      throw new Error('GraphQLClient not initialized');
-    }
-
     const { apiKey, apiSecret, apiUri } = this.config;
 
-    const { operationName, query: graphQLQuery } = GraphQLClient.resolveRequestDocument(query);
-    const body = operationName && query
-      ? JSON.stringify({ query: graphQLQuery, variables, operationName })
-      : undefined;
-
+    const { query: gql, operationName } = GraphQLClient.resolveRequestDocument(query);
+    if (!operationName) {
+      throw new Error('Invalid GraphQL query or operation name not found');
+    }
+    const body = JSON.stringify({ query: gql, variables, operationName });
     const headers = serviceHeaderBuilder({
       serviceUri: apiUri,
       httpMethod: 'POST',
@@ -70,36 +86,27 @@ export class GraphQLClient {
       body,
     });
 
-    return request({
+    return gqlRequest({
       url: apiUri,
-      document: query,
+      document: gql,
       variables,
       requestHeaders: headers,
     });
   }
 
-  static resolveRequestDocument(
-    document: RequestDocument
-  ): { query: string; operationName?: string } {
-    if (typeof document === 'string') {
-      let operationName;
-
+  public static resolveRequestDocument(doc: RequestDocument): { query: string; operationName?: string } {
+    if (typeof doc === 'string') {
       try {
-        const parsedDocument = parse(document);
-        operationName = extractOperationName(parsedDocument);
-      } catch (err) {
-        // Failed parsing the document, the operationName will be undefined
+        const parsed = parse(doc);
+        return { query: doc, operationName: extractOperationName(parsed) };
+      } catch {
+        return { query: doc };
       }
-
-      return { query: document, operationName };
     }
-
-    const operationName = extractOperationName(document);
-
-    return { query: print(document), operationName };
+    return { query: print(doc), operationName: extractOperationName(doc as DocumentNode) };
   }
 }
 
-export function initNetworkInfoFetcher(config: GqlConfig): void {
-  GraphQLClient.getInstance().init(config);
+export function initNetworkInfoFetcher(cfg: InitGqlConfig): void {
+  return GraphQLClient.init(cfg);
 }

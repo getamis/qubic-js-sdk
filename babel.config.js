@@ -1,24 +1,35 @@
 module.exports = api => {
   api.cache(true);
 
-  const config = {
-    presets: [
-      [
-        '@babel/preset-typescript',
-        {
-          allowNamespaces: true,
-          allowDeclareFields: true,
+  const presets = [
+    [
+      '@babel/preset-env',
+      {
+        // Target the current node version for tests
+        targets: {
+          node: 'current',
         },
-      ],
+      },
     ],
-    plugins: [
-      '@babel/plugin-proposal-export-namespace-from',
-      '@babel/plugin-proposal-optional-chaining',
-      '@babel/plugin-proposal-class-properties',
-      '@babel/plugin-syntax-dynamic-import',
-      '@babel/plugin-transform-runtime',
-      '@babel/plugin-transform-modules-commonjs',
+    [
+      '@babel/preset-typescript',
+      {
+        allowNamespaces: true,
+        allowDeclareFields: true,
+      },
     ],
+    // Add preset for React since it's in the project
+    '@babel/preset-react',
+  ];
+
+  const plugins = [
+    // This plugin is still useful to avoid duplicating helper functions
+    '@babel/plugin-transform-runtime',
+  ];
+
+  const config = {
+    presets,
+    plugins,
   };
 
   return config;

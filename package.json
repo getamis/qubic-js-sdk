@@ -22,7 +22,7 @@
     "node": ">=22"
   },
   "jest": {
-    "testTimeout": 50000,
+    "testTimeout": 5000,
     "testEnvironment": "node",
     "testPathIgnorePatterns": [
       "<rootDir>/node_modules/"
@@ -51,6 +51,10 @@
     "lerna": "5.1.8"
   },
   "devDependencies": {
+    "@babel/plugin-transform-runtime": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
+    "@babel/preset-typescript": "^7.27.1",
     "@types/node": "^12.11.5",
     "@typescript-eslint/eslint-plugin": "^3.9.0",
     "@typescript-eslint/parser": "^3.9.0",
