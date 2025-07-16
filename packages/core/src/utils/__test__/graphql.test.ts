@@ -1,6 +1,7 @@
 import * as graphqlRequest from 'graphql-request';
 import serviceHeaderBuilder from '../serviceHeaderBuilder';
-import { GraphQLClient, initNetworkInfoFetcher, GRAPHQL_ENDPOINT, InitGqlConfig } from '../graphql';
+import { GraphQLClient, initNetworkInfoFetcher, InitGqlConfig, resolveRequestDocument } from '../graphql';
+import { GRAPHQL_ENDPOINT } from '../../types';
 
 jest.mock('graphql-request', () => ({
   request: jest.fn(),
@@ -138,13 +139,13 @@ describe('GraphQL related functions', () => {
 
   describe('GraphQLClient.resolveRequestDocument', () => {
     it('should resolve a valid string document and extract operation name', () => {
-      const result = GraphQLClient.resolveRequestDocument('query MyTest { users { id } }');
+      const result = resolveRequestDocument('query MyTest { users { id } }');
       expect(result.query).toBe('query MyTest { users { id } }');
       expect(result.operationName).toBe('MyTest');
     });
 
     it('should handle an invalid string document gracefully', () => {
-      const result = GraphQLClient.resolveRequestDocument('this is not a valid query');
+      const result = resolveRequestDocument('this is not a valid query');
       expect(result.query).toBe('this is not a valid query');
       expect(result.operationName).toBeUndefined();
     });
@@ -152,7 +153,7 @@ describe('GraphQL related functions', () => {
     it('should resolve a DocumentNode document', async () => {
       const { parse } = await import('graphql');
       const docNode = parse('query MyTestNode { posts { title } }');
-      const result = GraphQLClient.resolveRequestDocument(docNode);
+      const result = resolveRequestDocument(docNode);
       expect(result.query).toContain('MyTestNode');
       expect(result.operationName).toBe('MyTestNode');
     });
@@ -165,12 +166,7 @@ describe('GraphQL related functions', () => {
     };
 
     beforeEach(() => {
-      jest.clearAllTimers();
       (serviceHeaderBuilder as jest.Mock).mockReturnValue(MOCK_HEADERS);
-    });
-
-    afterEach(() => {
-      jest.runOnlyPendingTimers();
     });
 
     it('should handle various network errors and preserve stack trace', async () => {

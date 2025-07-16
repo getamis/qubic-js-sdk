@@ -82,7 +82,7 @@ interface ChainsResult {
   };
 }
 
-export async function getNetworkInfo(id: string | number): Promise<NetworkInfo | null> {
+export async function getNetworkInfo(id: number): Promise<NetworkInfo> {
   const cacheKey = `networkInfo:${id}`;
   const cachedData = cache.get<NetworkInfo>(cacheKey);
 
@@ -102,11 +102,12 @@ export async function getNetworkInfo(id: string | number): Promise<NetworkInfo |
     );
   }
 
-  if (!isNetwork(chainInfo.chain.chainId)) {
-    throw new Error(`Unknown chainId: ${chainInfo.chain.chainId}. Check Network enum update status.`);
+  const apiChain = chainInfo.chain;
+  if (!isNetwork(apiChain.chainId)) {
+    throw new Error(`Unknown chainId: ${apiChain.chainId}. Check Network enum update status.`);
   }
 
-  const networkInfo = getNetworkFromApiChain(chainInfo.chain);
+  const networkInfo = getNetworkFromApiChain(apiChain);
   cache.set(cacheKey, networkInfo);
   return networkInfo;
 }
@@ -143,9 +144,13 @@ export async function getAllNetworkInfo(type?: ChainType): Promise<NetworkInfo[]
   return allNetworkInfo;
 }
 
-export const parseNetwork = async (chainId: number | string): Promise<Network | null> => {
-  if (!isNetwork(chainId)) return null;
-  return Number(chainId) as Network;
+export const parseNetwork = async (chainId: number): Promise<Network | null> => {
+  try {
+    const networkInfo = await getNetworkInfo(chainId);
+    return networkInfo.chainId;
+  } catch (error) {
+    return null;
+  }
 };
 
 export const NATIVE_TOKEN_ADDRESS = '0x0000000000000000000000000000000000455448';

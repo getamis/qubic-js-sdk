@@ -3,7 +3,7 @@ import NodeCache from 'node-cache';
 import { getNetworkInfo, getAllNetworkInfo, parseNetwork, isNetwork, NATIVE_TOKEN_ADDRESS } from '../chain';
 import { GraphQLClient } from '../graphql';
 
-import { Network, ChainType } from '../../types'; // 假設你的型別定義在 types.ts
+import { Network, ChainType } from '../../types';
 
 import {
   mockNetworkInfo1,
@@ -35,6 +35,7 @@ describe('chain module (multi-network, typed)', () => {
 
   beforeEach(() => {
     jest.resetModules();
+    jest.clearAllMocks();
 
     mockRequest = jest.fn();
     (GraphQLClient.getInstance as jest.Mock).mockReturnValue({
@@ -93,6 +94,9 @@ describe('chain module (multi-network, typed)', () => {
   });
 
   it('should return null for parseNetwork if not a valid Network', async () => {
+    cacheGetMock.mockReturnValue(undefined);
+    mockRequest.mockRejectedValue(new Error('Not found'));
+
     const result = await parseNetwork(99999);
     expect(result).toBeNull();
   });
@@ -251,24 +255,6 @@ describe('chain module (multi-network, typed)', () => {
     expect(NATIVE_TOKEN_ADDRESS).toBe('0x0000000000000000000000000000000000455448');
   });
 
-  it('should handle string chainId in getNetworkInfo', async () => {
-    cacheGetMock.mockReturnValue(undefined);
-    mockRequest.mockResolvedValue({ chain: mockChainInfo1 });
-
-    const result = await getNetworkInfo('1');
-
-    expect(result).toEqual(mockNetworkInfo1);
-    expect(cacheSetMock).toHaveBeenCalledWith('networkInfo:1', mockNetworkInfo1);
-  });
-
-  it('should handle string chainId in parseNetwork', async () => {
-    cacheGetMock.mockReturnValue(mockNetworkInfo1);
-
-    const result = await parseNetwork('1');
-
-    expect(result).toBe(Network.MAINNET);
-  });
-
   it('should successfully parse valid Network when getNetworkInfo succeeds', async () => {
     cacheGetMock.mockReturnValue(mockNetworkInfo1);
 
@@ -277,25 +263,12 @@ describe('chain module (multi-network, typed)', () => {
     expect(result).toBe(Network.MAINNET);
   });
 
-  it('should successfully parse valid string Network when getNetworkInfo succeeds', async () => {
-    cacheGetMock.mockReturnValue(mockNetworkInfo2);
-
-    const result = await parseNetwork('137');
-
-    expect(result).toBe(Network.POLYGON);
-  });
-
   it('should return null for invalid chainId in parseNetwork', async () => {
+    cacheGetMock.mockReturnValue(undefined);
+    mockRequest.mockRejectedValue(new Error('Not found'));
+
     const result = await parseNetwork(99999);
 
     expect(result).toBeNull();
-    expect(mockRequest).not.toHaveBeenCalled();
-  });
-
-  it('should return null for invalid string chainId in parseNetwork', async () => {
-    const result = await parseNetwork('invalid');
-
-    expect(result).toBeNull();
-    expect(mockRequest).not.toHaveBeenCalled();
   });
 });
