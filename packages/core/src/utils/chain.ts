@@ -44,7 +44,9 @@ const CHAINS = gql`
 `;
 
 function isEnumValue<T extends Record<string, unknown>>(enumObj: T, value: unknown): value is T[keyof T] {
-  return Object.values(enumObj).filter(v => typeof v === 'number').includes(Number(value));
+  return Object.values(enumObj)
+    .filter(v => typeof v === 'number')
+    .includes(Number(value));
 }
 
 export function isNetwork(chainId: number | string): chainId is Network {
@@ -96,8 +98,7 @@ export async function getNetworkInfo(id: string | number): Promise<NetworkInfo |
     });
   } catch (error) {
     throw new Error(
-      `Failed to fetch chain info for ID ${id}: ` +
-      `${error instanceof Error ? error.message : String(error)}`
+      `Failed to fetch chain info for ID ${id}: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 
@@ -127,7 +128,7 @@ export async function getAllNetworkInfo(type?: ChainType): Promise<NetworkInfo[]
   } catch (error) {
     throw new Error(
       `Failed to fetch all chain info${type ? ` with type ${type}` : ''}: ` +
-      `${error instanceof Error ? error.message : String(error)}`
+        `${error instanceof Error ? error.message : String(error)}`,
     );
   }
 
@@ -143,15 +144,7 @@ export async function getAllNetworkInfo(type?: ChainType): Promise<NetworkInfo[]
 }
 
 export const parseNetwork = async (chainId: number | string): Promise<Network | null> => {
-  if (!isNetwork(chainId)) {
-    return null;
-  }
-  const correspondNetworkInfo = await getNetworkInfo(chainId);
-  if (!correspondNetworkInfo) {
-    throw new Error(
-      `Chain ID ${chainId} is Network but unknown to API. Check Network enum update status.`
-    );
-  }
+  if (!isNetwork(chainId)) return null;
   return Number(chainId) as Network;
 };
 

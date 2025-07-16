@@ -20,3 +20,5 @@ junit.xml
 
 .env
 .env.*
+
+coverage
