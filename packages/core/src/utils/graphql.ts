@@ -3,7 +3,7 @@
 import { DocumentNode, OperationDefinitionNode, parse, print } from 'graphql';
 import { request as gqlRequest, Variables, RequestDocument } from 'graphql-request';
 import serviceHeaderBuilder from './serviceHeaderBuilder';
-import { GRAPHQL_ENDPOINT } from '../types';
+import { GRAPHQL_ENDPOINT } from '../constants/backend';
 
 export interface GqlConfig {
   apiKey: string;
@@ -53,18 +53,18 @@ export class GraphQLClient {
   private static instance: GraphQLClient | null = null;
   private config: GqlConfig | undefined;
 
-  public static getInstance(): GraphQLClient {
-    if (!GraphQLClient.instance) {
-      throw new Error('GraphQLClient not initialized. Please call initNetworkInfoFetcher() or init() first.');
+  public static getInstance(): GraphQLClient;
+  public static getInstance(inputConfig: InitGqlConfig): GraphQLClient;
+  public static getInstance(inputConfig?: InitGqlConfig): GraphQLClient {
+    // If no config provided, return existing instance or throw error
+    if (!inputConfig) {
+      if (!this.instance) {
+        throw new Error('GraphQLClient not initialized. Please call initNetworkInfoFetcher() first.');
+      }
+      return this.instance;
     }
-    return GraphQLClient.instance;
-  }
 
-  // Private constructor to enforce singleton pattern, avoid being constructed directly
-  // eslint-disable-next-line no-useless-constructor, @typescript-eslint/no-empty-function
-  private constructor() {}
-
-  public static init(inputConfig: InitGqlConfig): void {
+    // If config provided, handle initialization
     if (!inputConfig.apiKey || !inputConfig.apiSecret) {
       throw new Error('Missing required configuration parameters');
     }
@@ -79,7 +79,7 @@ export class GraphQLClient {
     if (!this.instance) {
       this.instance = new GraphQLClient();
       this.instance.config = full;
-      return;
+      return this.instance;
     }
 
     // if instance exists, check if config matches
@@ -95,7 +95,13 @@ export class GraphQLClient {
     ) {
       throw new Error('GraphQLClient already initialized with a different configuration.');
     }
+
+    return this.instance;
   }
+
+  // Private constructor to enforce singleton pattern, avoid being constructed directly
+  // eslint-disable-next-line no-useless-constructor, @typescript-eslint/no-empty-function
+  private constructor() {}
 
   public static _resetInstanceForTesting(): void {
     this.instance = null;
@@ -135,5 +141,5 @@ export class GraphQLClient {
 }
 
 export function initNetworkInfoFetcher(config: InitGqlConfig): void {
-  return GraphQLClient.init(config);
+  GraphQLClient.getInstance(config);
 }
