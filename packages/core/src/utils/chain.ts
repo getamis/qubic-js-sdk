@@ -1,7 +1,10 @@
-import { gql } from 'graphql-request';
+import { gql, ClientError } from 'graphql-request';
 import NodeCache from 'node-cache';
+
 import { GraphQLClient } from './graphql';
 import { ChainInfo, ChainType, Network, NetworkInfo } from '../types';
+
+export { ClientError }; // for `getNetworkInfo`, `getAllNetworkInfo` catch error type
 
 const CHAIN_FIELDS = gql`
   fragment ChainFields on Chain {
@@ -90,17 +93,10 @@ export async function getNetworkInfo(id: number): Promise<NetworkInfo> {
     return cachedData;
   }
 
-  let chainInfo: ChainResult;
-  try {
-    chainInfo = await GraphQLClient.getInstance().request<ChainVariables, ChainResult>({
-      query: CHAIN,
-      variables: { id },
-    });
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch chain info for ID ${id}: ${error instanceof Error ? error.message : String(error)}`,
-    );
-  }
+  const chainInfo = await GraphQLClient.getInstance().request<ChainVariables, ChainResult>({
+    query: CHAIN,
+    variables: { id },
+  });
 
   const apiChain = chainInfo.chain;
   if (!isNetwork(apiChain.chainId)) {
@@ -120,18 +116,10 @@ export async function getAllNetworkInfo(type?: ChainType): Promise<NetworkInfo[]
     return cachedData;
   }
 
-  let allChainInfo: ChainsResult;
-  try {
-    allChainInfo = await GraphQLClient.getInstance().request<ChainsVariables, ChainsResult>({
-      query: CHAINS,
-      variables: { type },
-    });
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch all chain info${type ? ` with type ${type}` : ''}: ` +
-        `${error instanceof Error ? error.message : String(error)}`,
-    );
-  }
+  const allChainInfo = await GraphQLClient.getInstance().request<ChainsVariables, ChainsResult>({
+    query: CHAINS,
+    variables: { type },
+  });
 
   allChainInfo.chains.nodes.forEach(node => {
     if (!isNetwork(node.chainId)) {
